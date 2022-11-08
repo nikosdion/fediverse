@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+  ~ @license   GNU General Public License, version 3
+  -->
+
+<extension type="module" method="upgrade" client="site">
+    <name>MOD_FEDIVERSEFEED</name>
+    <author>Nicholas K. Dionysopoulos</author>
+    <creationDate>2022-11-07</creationDate>
+    <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU GPL v3 or later</license>
+    <authorEmail>nicholas@dionysopoulos.me</authorEmail>
+    <authorUrl>www.dionysopoulos.me</authorUrl>
+    <version>1.0.0</version>
+    <description>MOD_FEDIVERSEFEED_XML_DESCRIPTION</description>
+    <namespace path="src">Joomla\Module\FediverseFeed</namespace>
+
+    <files>
+        <folder>layout</folder>
+        <folder>services</folder>
+        <folder module="mod_fediversefeed">src</folder>
+        <folder>tmpl</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/mod_fediversefeed.ini</language>
+        <language tag="en-GB">en-GB/mod_fediversefeed.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <!-- Basic display -->
+            <fieldset name="basic">
+                <field name="handle"
+                       type="text"
+                       label="MOD_FEDIVERSEFEED_HANDLE_LABEL"
+                       description="MOD_FEDIVERSEFEED_HANDLE_DESC"
+                       addonBefore="@"
+                       default=""
+                />
+            </fieldset>
+
+            <field
+                    name="feed_rtl"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="MOD_FEDIVERSEFEED_FEED_RTL_LABEL"
+                    description="MOD_FEDIVERSEFEED_FEED_RTL_DESC"
+                    default="0"
+                    filter="integer"
+            >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+
+            <!-- TODO feed_title 0/1 Show full name-->
+            <!-- TODO feed_link 0/1 (showon feed_title:1) Link Title -->
+            <!-- TODO feed_image 0/1 Show avatar-->
+            <!-- TODO feed_desc 0/1 Show Mastodon username -->
+            <!-- TODO feed_items int How many toots to show (1-20) -->
+
+            <!-- Caching -->
+            <fieldset name="fedicache">
+                <field name="cache_feed"
+                       type="radio"
+                       layout="joomla.form.field.radio.switcher"
+                       default="1"
+                       label="MOD_FEDIVERSEFEED_CACHE_FEED_LABEL"
+                       description="MOD_FEDIVERSEFEED_CACHE_FEED_DESC"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field name="feed_cache_lifetime"
+                       type="number"
+                       label="MOD_FEDIVERSEFEED_FEED_CACHE_LIFETIME_LABEL"
+                       description="MOD_FEDIVERSEFEED_FEED_CACHE_LIFETIME_DESC"
+                       default="3600"
+                       min="10"
+                       max="604800"
+                       step="1"
+                       filter="integer"
+                       validate="number"
+                       showon="cache_feed:1"
+                />
+            </fieldset>
+
+            <!-- Advanced -->
+            <fieldset name="advanced">
+                <field name="get_timeout"
+                       type="number"
+                       label="MOD_FEDIVERSEFEED_GET_TIMEOUT_LABEL"
+                       description="MOD_FEDIVERSEFEED_GET_TIMEOUT_DESC"
+                       default="5"
+                       min="1"
+                       max="120"
+                       step="1"
+                       filter="integer"
+                       validate="number"
+                />
+
+                <field name="custom_certificate"
+                       type="text"
+                       label="MOD_FEDIVERSEFEED_CUSTOM_CERTIFICATE_LABEL"
+                       description="MOD_FEDIVERSEFEED_CUSTOM_CERTIFICATE_DESC"
+                       default=""
+                />
+
+                <field name="fediversefeed_advanced_spacer_002"
+                       type="note"
+                       label="&amp;nbsp;"
+                       class="border-top w-100"
+                />
+            </fieldset>
+
+        </fields>
+    </config>
+</extension>

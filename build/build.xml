@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<project name="FediverseForJoomla" description="Fediverse for Joomla" default="git" >
+	<import file="${phing.dir}/../../buildfiles/phing/common.xml" />
+
+	<fileset dir="${dirs.release}" id="package">
+		<include name="com_*.zip" />
+		<include name="mod_*.zip" />
+		<include name="plg_*.zip" />
+		<include name="lib_*.zip" />
+		<include name="pkg_*.xml" />
+		<include name="language/**"/>
+		<include name="*.txt" />
+		<include name="script.fediverse.php" />
+	</fileset>
+
+	<target name="package-com" description="Builds the component">
+		<echo>This is a plugins and modules only solution.</echo>
+	</target>
+
+	<target name="documentation" description="The documentation">
+		<echo message="The documentation can be found in the repository's Wiki on GitHub. This task is obsolete." />
+	</target>
+
+	<target name="docsdeploy">
+		<echo message="The documentation can be found in the repository's Wiki on GitHub. This task is obsolete." />
+	</target>
+</project>

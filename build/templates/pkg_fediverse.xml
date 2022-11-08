@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+  ~ @license   GNU General Public License, version 3
+  -->
+
+<extension type="package" method="upgrade">
+    <name>pkg_fediverse</name>
+    <version>##VERSION##</version>
+    <creationDate>##DATE##</creationDate>
+    <author>Nicholas K. Dionysopoulos</author>
+    <authorEmail>no-reply@dionysopoulos.me</authorEmail>
+    <authorUrl>https://www.dionysopoulos.me</authorUrl>
+    <packagename>fediverse</packagename>
+    <url>https://www.dionysopoulos.me</url>
+    <packager>Nicholas K. Dionysopoulos</packager>
+    <packagerurl>https://www.dionysopoulos.me</packagerurl>
+    <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU GPL v3 or later</license>
+    <description>PKG_FEDIVERSE_XML_DESCRIPTION</description>
+
+    <files>
+<!--        <file type="plugin" group="system" id="sociallogin">plg_system_sociallogin.zip</file>-->
+        <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/pkg_fediverse.sys.ini</language>
+    </languages>
+
+    <scriptfile>script.fediverse.php</scriptfile>
+
+    <updateservers>
+        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://cdn.akeeba.com/updates/pkgfediverse.xml</server>
+    </updateservers>
+</extension>

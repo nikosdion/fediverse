@@ -1,0 +1,29 @@
+{
+  "name": "nikosdion/fediverse",
+  "description": "Fediverse Tools for Joomla",
+  "minimum-stability": "stable",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Nicholas K. Dionysopoulos",
+      "homepage": "https://www.dionysopoulos.me",
+      "role": "Lead Developer"
+    }
+  ],
+  "config": {
+    "vendor-dir": "vendor",
+    "platform": {
+      "php": "8.0.0"
+    }
+  },
+  "require": {
+    "php": "^8.0.0",
+    "ext-json": "*",
+    "ext-simplexml": "*",
+    "ext-libxml": "*",
+    "ext-xmlreader": "*"
+  },
+  "suggest": {
+    "ext-curl": "*"
+  }
+}
