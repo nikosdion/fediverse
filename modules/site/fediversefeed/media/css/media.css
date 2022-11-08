@@ -1,0 +1,5 @@
+/*!
+ * @package   FediverseForJoomla
+ * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+ * @license   GNU General Public License, version 3
+ */div.fediverse-toot-media{display:grid;grid-gap:.25em;grid-template-columns:repeat(auto-fit, minmax(8em, 1fr))}div.fediverse-toot-media>.fediverse-toot-media-item{margin:0 auto;cursor:pointer;max-width:300px;box-sizing:border-box;overflow:hidden}div.fediverse-toot-media>.fediverse-toot-media-item>.fediverse-toot-media-sensitive{filter:blur(1.5em)}.fediverse-toot-media-item video{width:100%}/*# sourceMappingURL=media.css.map */

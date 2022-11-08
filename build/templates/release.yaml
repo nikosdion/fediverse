@@ -2,7 +2,7 @@
 release:
   version: '%%VERSION%%'
   date: '%%DATE%%'
-  category: 55
+  category: 999999
   access: 1
   release_notes: '%%DEFAULT_RELEASE_NOTES%%'
   changelog: '%%DEFAULT_CHANGELOG%%'
@@ -27,7 +27,7 @@ connections:
     tls: true
     signature: '%%S3.SIGNATURE%%'
     region: '%%S3.REGION%%'
-    directory: 'downloads/sociallogin'
+    directory: 'downloads/fediverse'
     cdnhostname: '%%S3.CDNHOSTNAME%%'
     acl: 'public-read'
     storage_class: 'STANDARD'
@@ -36,18 +36,18 @@ connections:
 # Release source files configuration.
 files:
   -
-    title: 'SocialLogin'
+    title: 'Fediverse Tools'
     connection: s3
-    source: '%%RELEASEDIR%%/pkg_sociallogin-*.zip'
+    source: '%%RELEASEDIR%%/pkg_fediverse-*.zip'
     access: 1
 
 # Update sources
 updates:
   -
-    title: 'SocialLogin updates'
+    title: 'Fediverse updates'
     connection: s3
     directory: 'updates'
-    stream: 41
-    base_name: 'pkgsociallogin'
+    stream: 999999
+    base_name: 'pkgfediverse'
     formats:
       - 'xml'

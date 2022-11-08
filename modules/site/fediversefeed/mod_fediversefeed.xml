@@ -29,6 +29,13 @@
         <language tag="en-GB">en-GB/mod_fediversefeed.sys.ini</language>
     </languages>
 
+    <media folder="media" destination="mod_fediversefeed">
+        <folder>css</folder>
+        <folder>js</folder>
+
+        <filename>joomla.asset.json</filename>
+    </media>
+
     <config>
         <fields name="params">
             <!-- Basic display -->
@@ -55,11 +62,83 @@
                 <option value="1">JYES</option>
             </field>
 
-            <!-- TODO feed_title 0/1 Show full name-->
-            <!-- TODO feed_link 0/1 (showon feed_title:1) Link Title -->
-            <!-- TODO feed_image 0/1 Show avatar-->
-            <!-- TODO feed_desc 0/1 Show Mastodon username -->
-            <!-- TODO feed_items int How many toots to show (1-20) -->
+            <field
+                    name="feed_title"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="MOD_FEDIVERSEFEED_FEED_TITLE_LABEL"
+                    description="MOD_FEDIVERSEFEED_FEED_TITLE_DESC"
+                    default="1"
+                    filter="integer"
+            >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+
+            <field
+                    name="feed_image"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="MOD_FEDIVERSEFEED_FEED_IMAGE_LABEL"
+                    description="MOD_FEDIVERSEFEED_FEED_IMAGE_DESC"
+                    default="1"
+                    filter="integer"
+            >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+
+            <field
+                    name="feed_link"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="MOD_FEDIVERSEFEED_FEED_LINK_LABEL"
+                    description="MOD_FEDIVERSEFEED_FEED_LINK_DESC"
+                    default="1"
+                    filter="integer"
+                    showon="feed_title:1[OR]feed_image:1"
+            >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+
+            <field
+                    name="feed_desc"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="MOD_FEDIVERSEFEED_FEED_DESC_LABEL"
+                    description="MOD_FEDIVERSEFEED_DESC_LINK_DESC"
+                    default="1"
+                    filter="integer"
+            >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+
+            <field
+                    name="feed_item_use_title"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE_LABEL"
+                    description="MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE_DESC"
+                    default="1"
+                    filter="integer"
+            >
+                <option value="0">MOD_FEDIVERSEFEED_FEED_ITEM_USE_DATE</option>
+                <option value="1">MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE</option>
+            </field>
+
+            <field name="feed_items"
+                   type="number"
+                   label="MOD_FEDIVERSEFEED_FEED_ITEMS_LABEL"
+                   description="MOD_FEDIVERSEFEED_FEED_ITEMS_DESC"
+                   default="5"
+                   min="1"
+                   max="20"
+                   step="1"
+                   filter="integer"
+                   validate="number"
+            />
 
             <!-- Caching -->
             <fieldset name="fedicache">

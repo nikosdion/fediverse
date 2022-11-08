@@ -12,6 +12,7 @@ use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
 use Joomla\CMS\Extension\ModuleInterface;
 use Joomla\CMS\Filter\OutputFilter;
 use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Input\Input;
 use Joomla\Module\FediverseFeed\Site\Helper\FediverseFeedHelper;
 use Joomla\Registry\Registry;
@@ -63,6 +64,10 @@ class Dispatcher extends AbstractModuleDispatcher
 			$profileUrl = str_replace('@', 'web/@', substr($feedURL, 0, -4));
 		}
 
+		/** @var WebAssetManager $wam */
+		$wam = $this->app->getDocument()->getWebAssetManager();
+		$wam->getRegistry()->addExtensionRegistryFile('mod_fediversefeed');
+
 		return array_merge(
 			$layoutData,
 			[
@@ -70,6 +75,8 @@ class Dispatcher extends AbstractModuleDispatcher
 				'feedUrl'                     => $feedURL,
 				'profileUrl'                  => $profileUrl ?? '',
 				'headerTag'                   => $headerTag,
+				'layoutsPath'                 => realpath(__DIR__ . '/../../layout'),
+				'webAssetManager'             => $wam,
 				'modFediverseFeedConvertText' => function (string $text) use ($params): array {
 					// Make links visible again
 					$text = str_replace('<span class="invisible"', '<span ', $text);

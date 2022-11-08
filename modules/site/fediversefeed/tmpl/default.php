@@ -5,10 +5,14 @@
  * @license   GNU General Public License, version 3
  */
 
+defined('_JEXEC') || die;
+
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Feed\Feed;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Layout\LayoutHelper;
+use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Input\Input;
 use Joomla\Registry\Registry;
 
@@ -27,6 +31,8 @@ use Joomla\Registry\Registry;
  * @var string          $profileUrl                  The URL to the Mastodon public profile
  * @var callable        $modFediverseFeedConvertText Helper method to convert the feed description
  * @var string          $headerTag                   HTML tag for the header text
+ * @var string          $layoutsPath                 Custom Joomla Layouts root path
+ * @var WebAssetManager $webAssetManager             Joomla's WebAssetManager
  */
 
 if (empty($feed)):
@@ -42,10 +48,11 @@ $hasTitle       = $feed->title !== null && $params->get('feed_title', 1) == 1;
 $isLinked       = $params->get('feed_link', 1) == 1;
 $hasDate        = $params->get('feed_date', 1) == 1;
 $hasDescription = $params->get('feed_desc', 1) == 1;
+$useTitle       = $params->get('feed_item_use_title', 0) == 1;
 $hasImage       = $feed->image && $params->get('feed_image', 1) == 1;
 $rtlFeed        = $params->get('feed_rtl', 0);
 $direction      = $rtlFeed == 1 ? 'rtl' : 'ltr';
-$maxItems       = min(count($feed), $params->get('feed_items', 10));
+$maxItems       = min(count($feed), $params->get('feed_items', 5));
 
 if ($hasDate)
 {
@@ -60,15 +67,15 @@ if ($hasDate)
 	<div class="mb-3 border-bottom border-muted">
 		<?php if ($hasTitle || $hasImage): ?>
 		<<?= $headerTag ?>>
-			<?php if ($isLinked): ?>
-			<a href="<?= htmlspecialchars($profileUrl, ENT_COMPAT, 'UTF-8') ?>"
-			   target="_blank" rel="noopener"
-			   class="d-flex flex-row gap-2 align-items-center justify-content-evenly">
+		<?php if ($isLinked): ?>
+		<a href="<?= htmlspecialchars($profileUrl, ENT_COMPAT, 'UTF-8') ?>"
+		   target="_blank" rel="noopener"
+		   class="d-flex flex-row gap-2 align-items-center justify-content-evenly">
 			<?php else: ?>
-				<span class="d-flex flex-row gap-2 align-items-center justify-content-evenly">
+			<span class="d-flex flex-row gap-2 align-items-center justify-content-evenly">
 			<?php endif; ?>
 				<?php if ($hasImage): ?>
-				<span class="flex-shrink-1">
+					<span class="flex-shrink-1">
 					<img src="<?= $feed->image->uri ?>"
 						 alt="<?= $feed->image->title ?>"
 						 class="img-fluid rounded-circle"
@@ -76,105 +83,89 @@ if ($hasDate)
 				</span>
 				<?php endif ?>
 				<?php if ($hasTitle): ?>
-				<span class="flex-grow-1">
+					<span class="flex-grow-1">
 					<?= $feed->title ?>
 				</span>
 				<?php endif ?>
-			<?php if ($isLinked): ?>
-			</a>
-			<?php else: ?>
-			</span>
-			<?php endif; ?>
-		</<?= $headerTag ?>>
-		<?php endif ?>
-		<?php if ($hasDescription): ?>
+				<?php if ($isLinked): ?>
+		</a>
+	<?php else: ?>
+		</span>
+	<?php endif; ?>
+	</<?= $headerTag ?>>
+<?php endif ?>
+	<?php if ($hasDescription): ?>
 		<p class="small text-muted">
 			<?= $feed->description ?>
 		</p>
-		<?php endif ?>
-		<?php if ($hasDate): ?>
+	<?php endif ?>
+	<?php if ($hasDate): ?>
 		<p class="small text-muted text-center">
 			<span class="fa fa-calendar" aria-hidden="true"></span>
-			<span class="visually-hidden">Last updated on</span>
+			<span class="visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_LAST_UPDATED_ON') ?></span>
 			<?= HTMLHelper::_('date', $dateSource, Text::_('DATE_FORMAT_LC5')) ?>
 		</p>
-		<?php endif ?>
-	</div>
 	<?php endif ?>
+</div>
+<?php endif ?>
 
-	<ul class="fediverse-toots list-unstyled m-0 p-0">
-		<?php for ($i = 0; $i < $maxItems; $i++): ?>
-			<?php
-			$uri  = $feed[$i]->uri || !$feed[$i]->isPermaLink
-				? trim($feed[$i]->uri)
-				: trim($feed[$i]->guid);
-			$uri  = !$uri || stripos($uri, 'http') !== 0 ? $feedUrl : $uri;
-			[$contentWarning, $text] = $modFediverseFeedConvertText(trim($feed[$i]->content ?? ''));
-			$mediaFiles = $feed[$i]?->media?->content ?? [];
-			?>
-			<li class="fediverse-toot m-0 p-0 <?= ($i !== 0) ? 'border-top border-muted pt-3' : '' ?> pb-1">
-				<div class="fediverse-toot-text">
-					<?php if (!empty($contentWarning)): ?>
-					<details class="mb-2">
-						<summary>
-							<span class="fa fa-exclamation-triangle"
-								  title="<?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING') ?> <?= htmlspecialchars($contentWarning, ENT_COMPAT, 'UTF-8') ?>"
-								  aria-hidden="true"></span>
-							<span class="visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING') ?></span>
-							<strong><?= strip_tags($contentWarning) ?></strong>
-						</summary>
-						<?= $text ?>
-					</details>
-					<?php else: ?>
-					<?= $text ?>
-					<?php endif; ?>
-				</div>
+<ul class="fediverse-toots list-unstyled m-0 p-0">
+	<?php for ($i = 0; $i < $maxItems; $i++): ?>
+		<?php
+		$uri = $feed[$i]->uri || !$feed[$i]->isPermaLink
+			? trim($feed[$i]->uri)
+			: trim($feed[$i]->guid);
+		$uri = !$uri || stripos($uri, 'http') !== 0 ? $feedUrl : $uri;
+		[$contentWarning, $text] = $modFediverseFeedConvertText(trim($feed[$i]->content ?? ''));
+		$mediaFiles = $feed[$i]?->media?->content ?? [];
+		$title      = ($useTitle ? $feed[$i]?->title : null)
+			?: HTMLHelper::_('date', $feed[$i]?->publishedDate ?? 'now', Text::_('DATE_FORMAT_LC2'));
+		?>
+		<li class="fediverse-toot m-0 p-0 <?= ($i !== 0) ? 'border-top border-muted pt-3' : '' ?> pb-1">
+			<?php if (!empty($contentWarning)): ?>
+			<details class="mb-2">
+				<summary>
+					<div class="badge bg-warning">
+						<span class="fa fa-exclamation-triangle"
+							  title="<?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING') ?> <?= htmlspecialchars($contentWarning, ENT_COMPAT, 'UTF-8') ?>"
+							  aria-hidden="true"></span>
+						<span class="visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING') ?></span>
+						<strong><?= strip_tags($contentWarning) ?></strong>
+					</div>
+				</summary>
+				<?php endif; ?>
 
-				<?php if (count($mediaFiles)): ?>
-				<div class="fediverse-toot-media">
-					<?php foreach ($mediaFiles as $media):
-						$description = $media->description === null
-							? null
-							: htmlentities($media->description, ENT_COMPAT, 'UTF-8');
-						?>
-					<?php if (str_starts_with($media->item->type, 'image/')): ?>
-						<img src="<?= $media->item->url ?>"
-							 <?= $media->description ? 'alt="' . $description . '" title="' . $description . '"' : '' ?>
-						/>
-					<?php elseif (str_starts_with($media->item->type, 'video/')): ?>
-						<video controls class="img-responsive" style="max-width: 100%">
-							<source src="<?= $media->item->url ?>" type="<?= $media->item->type ?>">
-						</video>
-					<?php else: ?>
-						<div class="alert alert-warning">
-							<?= sprintf(
-									'Unsupported media type ‘%s’ (%u bytes long)',
-								$media->item->type,
-								$media->item->fileSize,
-							) ?>
-						</div>
-					<?php endif; ?>
-					<?php endforeach; ?>
-				</div>
-				<?php endif ?>
+				<?= $text ?>
 
-				<div class="fediverse-toot-permalink text-end">
+				<?= LayoutHelper::render('fediverse.media', [
+					'mediaFiles'       => $mediaFiles,
+					'feedItem'         => $feed[$i],
+					'inContentWarning' => !empty($contentWarning),
+					'layoutsPath'      => $layoutsPath,
+					'webAssetManager'  => $webAssetManager,
+				], $layoutsPath) ?>
+
+				<?php if (!empty($contentWarning)): ?>
+			</details>
+		<?php endif; ?>
+
+			<div class="fediverse-toot-permalink text-end">
 					<span class="fa fa-clock"
 						  title="<?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?>"
 						  aria-hidden="true"></span>
-					<span class="visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?></span>
-					<?php if (!empty($uri)) : ?>
-						<span class="fediverse-toot-link">
+				<span class="visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?></span>
+				<?php if (!empty($uri)) : ?>
+					<span class="fediverse-toot-link">
                         	<a href="<?= htmlspecialchars($uri, ENT_COMPAT, 'UTF-8') ?>"
 							   target="_blank" rel="noopener">
-                        		<?= trim($feed[$i]->title) ?>
+                        		<?= trim($title) ?>
 							</a>
 						</span>
-					<?php else : ?>
-						<span class="fediverse-toot-link"><?= trim($feed[$i]->title) ?></span>
-					<?php endif; ?>
-				</div>
-			</li>
-		<?php endfor; ?>
-	</ul>
+				<?php else : ?>
+					<span class="fediverse-toot-link"><?= trim($title) ?></span>
+				<?php endif; ?>
+			</div>
+		</li>
+	<?php endfor; ?>
+</ul>
 </div>
