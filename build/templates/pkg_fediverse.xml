@@ -21,7 +21,6 @@
     <description>PKG_FEDIVERSE_XML_DESCRIPTION</description>
 
     <files>
-<!--        <file type="plugin" group="system" id="sociallogin">plg_system_sociallogin.zip</file>-->
         <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
     </files>
 
@@ -32,6 +31,6 @@
     <scriptfile>script.fediverse.php</scriptfile>
 
     <updateservers>
-        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://cdn.akeeba.com/updates/pkgfediverse.xml</server>
+        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://raw.githubusercontent.com/nikosdion/fediverse/main/joomla4/update/pkg_fediverse.xml</server>
     </updateservers>
 </extension>
