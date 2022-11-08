@@ -9,7 +9,20 @@
       "name": "mod_fediversefeed.media",
       "description": "Media styling",
       "type": "style",
-      "uri": "mod_fediversefeed/media.css"
+      "uri": "mod_fediversefeed/media.css",
+      "dependencies": [
+        "fontawesome"
+      ]
+    },
+
+    {
+      "name": "mod_fediversefeed.custom",
+      "description": "Custom module styling",
+      "type": "style",
+      "uri": "mod_fediversefeed/custom.css",
+      "dependencies": [
+        "fontawesome"
+      ]
     },
 
     {
@@ -33,6 +46,15 @@
       "dependencies": [
         "mod_fediversefeed.media#style",
         "mod_fediversefeed.media#script"
+      ]
+    },
+
+    {
+      "name": "mod_fediversefeed.custom",
+      "description": "Custom module styling",
+      "type": "preset",
+      "dependencies": [
+        "mod_fediversefeed.custom#style"
       ]
     }
   ]

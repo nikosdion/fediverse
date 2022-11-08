@@ -58,7 +58,7 @@ $webAssetManager->usePreset('mod_fediversefeed.media');
 		<?php if (!empty($media->description) || $sensitive): ?>
 		<figcaption class="bg-dark text-white border-top border-muted px-2 py-1">
 			<?php if ($sensitive): ?>
-			<span class="badge bg-warning">
+			<span class="badge bg-warning fediverse-cw-badge">
 				<span class="fa fa-exclamation-triangle"
 					  aria-hidden="true"></span>
 				<?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING_BADGE') ?>

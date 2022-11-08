@@ -47,98 +47,98 @@
                        addonBefore="@"
                        default=""
                 />
+
+                <field
+                        name="feed_rtl"
+                        type="radio"
+                        layout="joomla.form.field.radio.switcher"
+                        label="MOD_FEDIVERSEFEED_FEED_RTL_LABEL"
+                        description="MOD_FEDIVERSEFEED_FEED_RTL_DESC"
+                        default="0"
+                        filter="integer"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field
+                        name="feed_title"
+                        type="radio"
+                        layout="joomla.form.field.radio.switcher"
+                        label="MOD_FEDIVERSEFEED_FEED_TITLE_LABEL"
+                        description="MOD_FEDIVERSEFEED_FEED_TITLE_DESC"
+                        default="1"
+                        filter="integer"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field
+                        name="feed_image"
+                        type="radio"
+                        layout="joomla.form.field.radio.switcher"
+                        label="MOD_FEDIVERSEFEED_FEED_IMAGE_LABEL"
+                        description="MOD_FEDIVERSEFEED_FEED_IMAGE_DESC"
+                        default="1"
+                        filter="integer"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field
+                        name="feed_link"
+                        type="radio"
+                        layout="joomla.form.field.radio.switcher"
+                        label="MOD_FEDIVERSEFEED_FEED_LINK_LABEL"
+                        description="MOD_FEDIVERSEFEED_FEED_LINK_DESC"
+                        default="1"
+                        filter="integer"
+                        showon="feed_title:1[OR]feed_image:1"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field
+                        name="feed_desc"
+                        type="radio"
+                        layout="joomla.form.field.radio.switcher"
+                        label="MOD_FEDIVERSEFEED_FEED_DESC_LABEL"
+                        description="MOD_FEDIVERSEFEED_DESC_LINK_DESC"
+                        default="1"
+                        filter="integer"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+                <field
+                        name="feed_item_use_title"
+                        type="radio"
+                        layout="joomla.form.field.radio.switcher"
+                        label="MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE_LABEL"
+                        description="MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE_DESC"
+                        default="1"
+                        filter="integer"
+                >
+                    <option value="0">MOD_FEDIVERSEFEED_FEED_ITEM_USE_DATE</option>
+                    <option value="1">MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE</option>
+                </field>
+
+                <field name="feed_items"
+                       type="number"
+                       label="MOD_FEDIVERSEFEED_FEED_ITEMS_LABEL"
+                       description="MOD_FEDIVERSEFEED_FEED_ITEMS_DESC"
+                       default="5"
+                       min="1"
+                       max="20"
+                       step="1"
+                       filter="integer"
+                       validate="number"
+                />
             </fieldset>
-
-            <field
-                    name="feed_rtl"
-                    type="radio"
-                    layout="joomla.form.field.radio.switcher"
-                    label="MOD_FEDIVERSEFEED_FEED_RTL_LABEL"
-                    description="MOD_FEDIVERSEFEED_FEED_RTL_DESC"
-                    default="0"
-                    filter="integer"
-            >
-                <option value="0">JNO</option>
-                <option value="1">JYES</option>
-            </field>
-
-            <field
-                    name="feed_title"
-                    type="radio"
-                    layout="joomla.form.field.radio.switcher"
-                    label="MOD_FEDIVERSEFEED_FEED_TITLE_LABEL"
-                    description="MOD_FEDIVERSEFEED_FEED_TITLE_DESC"
-                    default="1"
-                    filter="integer"
-            >
-                <option value="0">JNO</option>
-                <option value="1">JYES</option>
-            </field>
-
-            <field
-                    name="feed_image"
-                    type="radio"
-                    layout="joomla.form.field.radio.switcher"
-                    label="MOD_FEDIVERSEFEED_FEED_IMAGE_LABEL"
-                    description="MOD_FEDIVERSEFEED_FEED_IMAGE_DESC"
-                    default="1"
-                    filter="integer"
-            >
-                <option value="0">JNO</option>
-                <option value="1">JYES</option>
-            </field>
-
-            <field
-                    name="feed_link"
-                    type="radio"
-                    layout="joomla.form.field.radio.switcher"
-                    label="MOD_FEDIVERSEFEED_FEED_LINK_LABEL"
-                    description="MOD_FEDIVERSEFEED_FEED_LINK_DESC"
-                    default="1"
-                    filter="integer"
-                    showon="feed_title:1[OR]feed_image:1"
-            >
-                <option value="0">JNO</option>
-                <option value="1">JYES</option>
-            </field>
-
-            <field
-                    name="feed_desc"
-                    type="radio"
-                    layout="joomla.form.field.radio.switcher"
-                    label="MOD_FEDIVERSEFEED_FEED_DESC_LABEL"
-                    description="MOD_FEDIVERSEFEED_DESC_LINK_DESC"
-                    default="1"
-                    filter="integer"
-            >
-                <option value="0">JNO</option>
-                <option value="1">JYES</option>
-            </field>
-
-            <field
-                    name="feed_item_use_title"
-                    type="radio"
-                    layout="joomla.form.field.radio.switcher"
-                    label="MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE_LABEL"
-                    description="MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE_DESC"
-                    default="1"
-                    filter="integer"
-            >
-                <option value="0">MOD_FEDIVERSEFEED_FEED_ITEM_USE_DATE</option>
-                <option value="1">MOD_FEDIVERSEFEED_FEED_ITEM_USE_TITLE</option>
-            </field>
-
-            <field name="feed_items"
-                   type="number"
-                   label="MOD_FEDIVERSEFEED_FEED_ITEMS_LABEL"
-                   description="MOD_FEDIVERSEFEED_FEED_ITEMS_DESC"
-                   default="5"
-                   min="1"
-                   max="20"
-                   step="1"
-                   filter="integer"
-                   validate="number"
-            />
 
             <!-- Caching -->
             <fieldset name="fedicache">
@@ -193,6 +193,51 @@
                        label="&amp;nbsp;"
                        class="border-top w-100"
                 />
+
+                <field
+                        name="layout"
+                        type="modulelayout"
+                        label="JFIELD_ALT_LAYOUT_LABEL"
+                        class="form-select"
+                        default="_:default"
+                        validate="moduleLayout"
+                />
+
+                <field
+                        name="moduleclass_sfx"
+                        type="textarea"
+                        label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+                        rows="3"
+                        validate="CssIdentifier"
+                />
+
+                <field
+                        name="cache"
+                        type="list"
+                        label="COM_MODULES_FIELD_CACHING_LABEL"
+                        default="1"
+                        filter="integer"
+                        validate="options"
+                >
+                    <option value="1">JGLOBAL_USE_GLOBAL</option>
+                    <option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+                </field>
+
+                <field
+                        name="cache_time"
+                        type="number"
+                        label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+                        default="900"
+                        filter="integer"
+                />
+
+                <field
+                        name="cachemode"
+                        type="hidden"
+                        default="static"
+                >
+                    <option value="static"></option>
+                </field>
             </fieldset>
 
         </fields>

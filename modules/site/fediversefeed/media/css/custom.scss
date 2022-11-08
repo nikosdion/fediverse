@@ -1,0 +1,107 @@
+/*!
+ * @package   FediverseForJoomla
+ * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+ * @license   GNU General Public License, version 3
+ */
+
+.fediverse-feed {
+  text-align: left;
+
+  &.fediverse-feed-rtl {
+    text-align: right;
+  }
+
+  .fediverse-feed-header {
+    margin-bottom: .75em;
+    border-bottom: 2px solid darkgray;
+
+    .fediverse-feed-header-top {
+      .fediverse-feed-header-top-container {
+        display: flex;
+        flex-direction: row;
+        gap: .5em;
+        align-items: center;
+        justify-content: space-evenly;
+
+        .fediverse-feed-header-top-avatar-wrapper {
+          flex-shrink: 1;
+
+          .fediverse-feed-header-top-avatar {
+            width: 100%;
+            max-width: 2em;
+            height: auto;
+            border-radius: 50%;
+          }
+        }
+
+        .fediverse-feed-header-top-title {
+          flex-grow: 1;
+        }
+      }
+    }
+
+    .fediverse-feed-header-description, .fediverse-feed-header-date {
+      font-size: smaller;
+      color: darkgrey;
+    }
+
+    .fediverse-feed-header-date {
+      text-align: center;
+    }
+  }
+
+  ul.fediverse-toots {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li.fediverse-toot {
+      margin-bottom: .75em;
+      padding: 0 0 .5em;
+
+      &+li {
+        padding: .75em 0 0;
+        border-top: thin solid darkgrey;
+      }
+
+      .fediverse-toot-permalink {
+        text-align: right;
+
+        &.fediverse-toot-permalink-rtl {
+          text-align: left;
+        }
+      }
+
+      .fediverse-toot-media {
+        figcaption {
+          background-color: darkslategrey;
+          color: white;
+          border-top: thin solid darkgrey;
+          padding: .25em .5em;
+        }
+      }
+    }
+  }
+}
+
+.fediverse-cw-badge {
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  padding: .25em .5em;
+  border-radius: .25em;
+  font-size: smaller;
+  display: inline-block;
+}
+
+.fediverse-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
