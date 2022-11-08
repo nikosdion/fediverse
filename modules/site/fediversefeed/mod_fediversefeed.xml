@@ -138,6 +138,18 @@
                        filter="integer"
                        validate="number"
                 />
+
+                <field name="feed_media"
+                       type="radio"
+                       layout="joomla.form.field.radio.switcher"
+                       label="MOD_FEDIVERSEFEED_FEED_MEDIA_LABEL"
+                       description="MOD_FEDIVERSEFEED_FEED_MEDIA_DESC"
+                       default="1"
+                       filter="integer"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
             </fieldset>
 
             <!-- Caching -->

@@ -137,6 +137,7 @@ if ($hasDate)
 
 				<?= $text ?>
 
+				<?php if ($params->get('feed_media', 1) == 1): ?>
 				<?= LayoutHelper::render('fediverse.media', [
 					'mediaFiles'       => $mediaFiles,
 					'feedItem'         => $feed[$i],
@@ -144,6 +145,7 @@ if ($hasDate)
 					'layoutsPath'      => $layoutsPath,
 					'webAssetManager'  => $webAssetManager,
 				], $layoutsPath) ?>
+				<?php endif ?>
 
 				<?php if (!empty($contentWarning)): ?>
 			</details>

@@ -137,6 +137,7 @@ $webAssetManager->usePreset('mod_fediversefeed.custom');
 
 				<?= $text ?>
 
+				<?php if ($params->get('feed_media', 1) == 1): ?>
 				<?= LayoutHelper::render('fediverse.media', [
 					'mediaFiles'       => $mediaFiles,
 					'feedItem'         => $feed[$i],
@@ -144,6 +145,7 @@ $webAssetManager->usePreset('mod_fediversefeed.custom');
 					'layoutsPath'      => $layoutsPath,
 					'webAssetManager'  => $webAssetManager,
 				], $layoutsPath) ?>
+				<?php endif ?>
 
 				<?php if (!empty($contentWarning)): ?>
 			</details>
