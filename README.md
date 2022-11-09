@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## About
 
-The plugins in this package help you integrate Mastodon with your site. Currently, the following extensions are included:
+The extensions in this package help you integrate Mastodon with your site. Currently, the following extensions are included:
 
-* **Fediverse - Mastodon Feed** (Module). Displays the public Mastodon feed of a user. Supports media (images and videos), as well as content warnings on the entire toot or just each media item. 
+* [**Fediverse - Mastodon Feed** (Module)](docs/mod_fediversefeed.md). Displays the public Mastodon feed of a user. Supports media (images and videos), as well as content warnings on the entire toot or just each media item.
+* [**Content - Embed Toot** (Plugin)](docs/plg_content_fediverse.md). A plugin to embed toots in articles, Custom HTML modules, and third party extensions which support Joomla's standard content events.

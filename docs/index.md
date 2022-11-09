@@ -25,3 +25,4 @@ A toot contains plain text, up to 500 characters of it, and optionally media (im
 ## Extensions included
 
 * [**Fediverse - Mastodon Feed** (Module)](mod_fediversefeed.md). Displays the public Mastodon feed of a user. Supports media (images and videos), as well as content warnings on the entire toot or just each media item.
+* [**Content - Embed Toot (Plugin)**](plg_content_fediverse.md). A plugin to embed toots in articles, Custom HTML modules, and third party extensions which support Joomla's standard content events.

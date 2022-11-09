@@ -30,7 +30,7 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 	 */
 	protected $extensionsToEnable = [
 		// System plugins
-		// ['plugin', 'something', 1, 'system'],
+		['plugin', 'fediverse', 1, 'content'],
 	];
 
 
