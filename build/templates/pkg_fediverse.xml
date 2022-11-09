@@ -22,6 +22,8 @@
 
     <files>
         <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
+
+        <file type="plugin" group="content" id="fediverse">plg_content_fediverse.zip</file>
     </files>
 
     <languages folder="language">

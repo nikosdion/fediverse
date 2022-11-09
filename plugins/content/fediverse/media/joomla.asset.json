@@ -1,0 +1,41 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "plg_content_fediverse",
+  "version": "1.0.0",
+  "description": "Fediverse Embed Toot plugin",
+  "license": "GPL-3.0-or-later",
+  "assets": [
+    {
+      "name": "plg_content_fediverse.embedded",
+      "description": "Toot styling",
+      "type": "style",
+      "uri": "plg_content_fediverse/embedded.css",
+      "dependencies": [
+        "fontawesome"
+      ]
+    },
+
+    {
+      "name": "plg_content_fediverse.media",
+      "description": "Media Lightbox",
+      "type": "script",
+      "uri": "plg_content_fediverse/media.min.js",
+      "dependencies": [
+        "core",
+        "bootstrap.modal"
+      ],
+      "attributes": {
+        "defer": true
+      }
+    },
+
+    {
+      "name": "plg_content_fediverse.embedded",
+      "description": "Toot styling and basic interactions",
+      "type": "preset",
+      "dependencies": [
+        "plg_content_fediverse.embedded#style"
+      ]
+    }
+  ]
+}

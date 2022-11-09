@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+  ~ @license   GNU General Public License, version 3
+  -->
+
+<extension type="plugin" group="content" method="upgrade">
+	<name>PLG_CONTENT_FEDIVERSE</name>
+	<author>Nicholas K. Dionysopoulos</author>
+	<authorEmail>nicholas@dionysopoulos.me</authorEmail>
+	<authorUrl>https://www.dionysopoulos.me</authorUrl>
+	<copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
+	<license>GNU GPL v3 or later</license>
+	<creationDate>2022-11-08</creationDate>
+	<version>1.0.0</version>
+	<description>PLG_CONTENT_FEDIVERSE_XML_DESCRIPTION</description>
+	<namespace path="src">Joomla\Plugin\Content\Fediverse</namespace>
+
+	<files>
+		<folder>services</folder>
+		<folder plugin="fediverse">src</folder>
+		<folder>tmpl</folder>
+	</files>
+
+	<media folder="media" destination="plg_content_fediverse">
+		<folder>css</folder>
+		<folder>js</folder>
+
+		<filename>joomla.asset.json</filename>
+	</media>
+
+	<languages folder="language">
+		<language tag="en-GB">en-GB/plg_content_fediverse.ini</language>
+		<language tag="en-GB">en-GB/plg_content_fediverse.sys.ini</language>
+	</languages>
+
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="cache_toot"
+					   type="radio"
+					   layout="joomla.form.field.radio.switcher"
+					   default="1"
+					   label="PLG_CONTENT_FEDIVERSE_CACHE_TOOT_LABEL"
+					   description="PLG_CONTENT_FEDIVERSE_CACHE_TOOT_DESC"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+
+				<field name="toot_cache_lifetime"
+					   type="number"
+					   label="PLG_CONTENT_FEDIVERSE_TOOT_CACHE_LIFETIME_LABEL"
+					   description="PLG_CONTENT_FEDIVERSE_TOOT_CACHE_LIFETIME_DESC"
+					   default="120"
+					   min="10"
+					   max="604800"
+					   step="1"
+					   filter="integer"
+					   validate="number"
+					   showon="cache_toot:1"
+				/>
+
+				<field name="get_timeout"
+					   type="number"
+					   label="PLG_CONTENT_FEDIVERSE_GET_TIMEOUT_LABEL"
+					   description="PLG_CONTENT_FEDIVERSE_GET_TIMEOUT_DESC"
+					   default="5"
+					   min="1"
+					   max="120"
+					   step="1"
+					   filter="integer"
+					   validate="number"
+				/>
+
+				<field name="custom_certificate"
+					   type="text"
+					   label="PLG_CONTENT_FEDIVERSE_CUSTOM_CERTIFICATE_LABEL"
+					   description="PLG_CONTENT_FEDIVERSE_CUSTOM_CERTIFICATE_DESC"
+					   default=""
+				/>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

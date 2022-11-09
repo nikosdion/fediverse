@@ -1,0 +1,204 @@
+/*!
+ * @package   FediverseForJoomla
+ * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+ * @license   GNU General Public License, version 3
+ */
+
+aside.toot-embed {
+  // Parent toot (in reply to)
+  aside.toot-embed-parent {
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: rgba(0,0,0,.05);
+    border-bottom: thin solid rgba(0,0,0,.2);
+
+    header.toot-embed-header {
+      margin-top: 0;
+      padding-top: .5em;
+    }
+
+    div.toot-embed-content, div.toot-embed-actions {
+      margin-left: calc(clamp(24px, 20%, 3em) + 1em);
+      background-color: transparent;
+      border-top: none;
+      justify-content: flex-start;
+    }
+  }
+
+  display: block;
+  width: clamp(20em, 85vw, 40em);
+  border: thin solid darkgrey;
+  border-radius: .5em;
+  background-color: rgba(0,0,0,.02);
+  margin: .5em auto;
+
+  header.toot-embed-header {
+    margin: .5em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .5em;
+
+    div.toot-embed-header-avatar {
+      flex-shrink: 1;
+      width: clamp(24px, 20%, 3em);
+
+      img {
+        width: 100%;
+        border-radius: .25em;
+      }
+    }
+
+    div.toot-embed-header-info {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: start;
+      justify-content: space-evenly;
+      gap: .25em;
+      font-size: smaller;
+
+      span.toot-embed-header-displayname {
+        font-weight: bold;
+      }
+
+      span.toot-embed-header-username {
+        color: darkslategrey;
+
+        a {
+          text-decoration: none;
+          color: darkslategrey;
+        }
+      }
+    }
+
+    div.toot-embed-header-ago {
+      font-size: smaller;
+      color: slategray;
+
+      a {
+        text-decoration: none;
+        color: slategray;
+      }
+    }
+  }
+
+  div.toot-embed-content {
+    margin: 0 .5em;
+  }
+
+  div.toot-embed-content-media {
+    display: grid;
+    grid-gap: .25em;
+    grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
+    margin-bottom: .5em;
+
+    figure.toot-embed-content-media-item {
+      margin: 0 auto;
+      cursor: pointer;
+      max-width: 300px;
+      box-sizing: border-box;
+      overflow: hidden;
+
+      .toot-embed-content-media-item-sensitive {
+        filter: blur(1.5em);
+      }
+
+      video {
+        width: 100%;
+      }
+
+      figcaption {
+        padding: .25em .5em;
+        background-color: darkslategrey;
+        color: white;
+      }
+    }
+  }
+
+  div.toot-embed-status {
+    margin: 0.5em 0 0;
+    padding: .25em .5em;
+    font-size: small;
+    color: slategrey;
+    display: flex;
+    flex-direction: row;
+    gap: .25em;
+
+    a {
+      color: slategrey;
+      text-decoration: none;
+    }
+  }
+
+  div.toot-embed-actions {
+    margin: 0;
+    padding: .25em .5em;
+    background-color: rgba(0,0,0,0.1);
+    border-top: thin solid slategrey;
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+    justify-content: space-evenly;
+    color: darkslategrey;
+
+    a {
+      color: darkslategrey;
+      text-decoration: none;
+    }
+  }
+
+  &.toot-embed-missing {
+    border-color: indianred;
+    background-color: rgba(127,0,0,.02);
+    padding: 0;
+
+    header {
+      text-align: center;
+      padding: .5em;
+      margin-bottom: .5em;
+      color: darkslategrey;
+      font-size: larger;
+      font-weight: bold;
+      border-bottom: thin solid slategrey;
+    }
+
+    p {
+      color: dimgray;
+      margin: 0 .5em .5em;
+
+      a {
+        color: lightslategray;
+      }
+    }
+  }
+}
+
+.toot-embed-cw-badge {
+  background-color: darkred;
+  color: white;
+  font-weight: bold;
+  padding: .25em .5em;
+  border-radius: .25em;
+  font-size: smaller;
+  display: inline-block;
+}
+
+.toot-embed-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+#plg_content_fediverse_dialog_content {
+  video {
+    max-width: 100%;
+  }
+}
