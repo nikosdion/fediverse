@@ -15,10 +15,14 @@ div.fediverse-toot-media {
   grid-gap: .25em;
   grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
 
+  &> :first-child {
+    grid-column: 1/ -1;
+  }
+
   &>.fediverse-toot-media-item {
     margin: 0 auto;
     cursor: pointer;
-    max-width: 300px;
+    max-width: 100%;
     box-sizing: border-box;
     overflow: hidden;
 
