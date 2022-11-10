@@ -4,6 +4,13 @@
  * @license   GNU General Public License, version 3
  */
 
+:root {
+  --mod-fediverse-color-separator: darkgray;
+  --mod-fediverse-color-muted: darkgrey;
+  --mod-fediverse-color-cw-bg: darkred;
+  --mod-fediverse-color-cw-fg: white;
+}
+
 .fediverse-feed {
   text-align: left;
 
@@ -13,7 +20,7 @@
 
   .fediverse-feed-header {
     margin-bottom: .75em;
-    border-bottom: 2px solid darkgray;
+    border-bottom: 2px solid var(--mod-fediverse-color-separator, darkgray);
 
     .fediverse-feed-header-top {
       .fediverse-feed-header-top-container {
@@ -42,7 +49,7 @@
 
     .fediverse-feed-header-description, .fediverse-feed-header-date {
       font-size: smaller;
-      color: darkgrey;
+      color: var(--mod-fediverse-color-muted, darkgrey);
     }
 
     .fediverse-feed-header-date {
@@ -61,7 +68,7 @@
 
       &+li {
         padding: .75em 0 0;
-        border-top: thin solid darkgrey;
+        border-top: thin solid var(--mod-fediverse-color-separator, darkgray);
       }
 
       .fediverse-toot-permalink {
@@ -71,22 +78,13 @@
           text-align: left;
         }
       }
-
-      .fediverse-toot-media {
-        figcaption {
-          background-color: darkslategrey;
-          color: white;
-          border-top: thin solid darkgrey;
-          padding: .25em .5em;
-        }
-      }
     }
   }
 }
 
 .fediverse-cw-badge {
-  background-color: darkred;
-  color: white;
+  background-color: var(--mod-fediverse-color-cw-bg, darkred);
+  color: var(--mod-fediverse-color-cw-fg, white);
   font-weight: bold;
   padding: .25em .5em;
   border-radius: .25em;

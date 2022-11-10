@@ -4,13 +4,60 @@
  * @license   GNU General Public License, version 3
  */
 
+:root {
+  color-scheme: light dark;
+  --plg-content-fediverse-parent-bg: rgba(0, 0, 0, .05);
+  --plg-content-fediverse-parent-separator: rgba(0, 0, 0, .2);
+  --plg-content-fediverse-bg: rgba(0, 0, 0, .02);
+  --plg-content-fediverse-border: darkgrey;
+  --plg-content-fediverse-username: darkslategrey;
+  --plg-content-fediverse-timeago: slategrey;
+  --plg-content-fediverse-caption-bg: darkslategrey;
+  --plg-content-fediverse-caption-fg: white;
+  --plg-content-fediverse-status: slategrey;
+  --plg-content-fediverse-actions-bg: rgba(0, 0, 0, 0.1);
+  --plg-content-fediverse-actions-fg: darkslategrey;
+  --plg-content-fediverse-actions-border: slategrey;
+  --plg-content-fediverse-missing-border: indianred;
+  --plg-content-fediverse-missing-bg: rgba(127, 0, 0, .02);
+  --plg-content-fediverse-missing: darkslategrey;
+  --plg-content-fediverse-missing-separator: slategrey;
+  --plg-content-fediverse-missing-text: dimgray;
+  --plg-content-fediverse-missing-link: lightslategray;
+  --plg-content-fediverse-cw-bg: darkred;
+  --plg-content-fediverse-cw-fg: white;
+}
+
+@media (screen and prefers-color-scheme: dark) {
+  :root {
+    --plg-content-fediverse-parent-bg: rgba(0,0,0, .3);
+    --plg-content-fediverse-parent-separator: slategrey;
+    --plg-content-fediverse-bg: rgba(255, 255, 255, .1);
+    --plg-content-fediverse-username: slategrey;
+    --plg-content-fediverse-timeago: grey;
+    --plg-content-fediverse-caption-bg: dimgrey;
+    --plg-content-fediverse-status: darkgrey;
+    --plg-content-fediverse-actions-bg: rgba(0, 0, 0, 0.2);
+    --plg-content-fediverse-actions-fg: ghostwhite;
+    --plg-content-fediverse-actions-border: dimgrey;
+    --plg-content-fediverse-missing-bg: rgba(127, 0, 0, .15);
+    --plg-content-fediverse-missing: lightgrey;
+    --plg-content-fediverse-missing-separator: red;
+    --plg-content-fediverse-missing-text: whitesmoke;
+    --plg-content-fediverse-missing-link: lightgrey;
+  }
+}
+.xxx {
+  color: whitesmoke;
+}
+
 aside.toot-embed {
   // Parent toot (in reply to)
   aside.toot-embed-parent {
     margin: 0 !important;
     padding: 0 !important;
-    background-color: rgba(0,0,0,.05);
-    border-bottom: thin solid rgba(0,0,0,.2);
+    background-color: var(--plg-content-fediverse-parent-bg, rgba(0, 0, 0, .05));
+    border-bottom: thin solid var(--plg-content-fediverse-parent-separator, rgba(0, 0, 0, .2));
 
     header.toot-embed-header {
       margin-top: 0;
@@ -27,9 +74,9 @@ aside.toot-embed {
 
   display: block;
   width: clamp(20em, 85vw, 40em);
-  border: thin solid darkgrey;
+  border: thin solid var(--plg-content-fediverse-border, darkgrey);
   border-radius: .5em;
-  background-color: rgba(0,0,0,.02);
+  background-color: var(--plg-content-fediverse-bg, rgba(0, 0, 0, .02));
   margin: .5em auto;
 
   header.toot-embed-header {
@@ -64,22 +111,22 @@ aside.toot-embed {
       }
 
       span.toot-embed-header-username {
-        color: darkslategrey;
+        color: var(--plg-content-fediverse-username, darkslategrey);
 
         a {
           text-decoration: none;
-          color: darkslategrey;
+          color: var(--plg-content-fediverse-username, darkslategrey);
         }
       }
     }
 
     div.toot-embed-header-ago {
       font-size: smaller;
-      color: slategray;
+      color: var(--plg-content-fediverse-timeago, slategray);
 
       a {
         text-decoration: none;
-        color: slategray;
+        color: var(--plg-content-fediverse-timeago, slategray);
       }
     }
   }
@@ -111,8 +158,8 @@ aside.toot-embed {
 
       figcaption {
         padding: .25em .5em;
-        background-color: darkslategrey;
-        color: white;
+        background-color: var(--plg-content-fediverse-caption-bg, darkslategrey);
+        color: var(--plg-content-fediverse-caption-fg, white);
       }
     }
   }
@@ -121,13 +168,13 @@ aside.toot-embed {
     margin: 0.5em 0 0;
     padding: .25em .5em;
     font-size: small;
-    color: slategrey;
+    color: var(--plg-content-fediverse-status, slategrey);
     display: flex;
     flex-direction: row;
     gap: .25em;
 
     a {
-      color: slategrey;
+      color: var(--plg-content-fediverse-status, slategrey);
       text-decoration: none;
     }
   }
@@ -135,49 +182,49 @@ aside.toot-embed {
   div.toot-embed-actions {
     margin: 0;
     padding: .25em .5em;
-    background-color: rgba(0,0,0,0.1);
-    border-top: thin solid slategrey;
+    background-color: var(--plg-content-fediverse-actions-bg, rgba(0, 0, 0, 0.1));
+    border-top: thin solid var(--plg-content-fediverse-actions-border, slategrey);
     display: flex;
     flex-direction: row;
     gap: 1em;
     justify-content: space-evenly;
-    color: darkslategrey;
+    color: var(--plg-content-fediverse-actions-fg, darkslategrey);
 
     a {
-      color: darkslategrey;
+      color: var(--plg-content-fediverse-actions-fg, darkslategrey);
       text-decoration: none;
     }
   }
 
   &.toot-embed-missing {
-    border-color: indianred;
-    background-color: rgba(127,0,0,.02);
+    border-color: var(--plg-content-fediverse-missing-border, indianred);
+    background-color: var(--plg-content-fediverse-missing-bg, rgba(127, 0, 0, .02));
     padding: 0;
 
     header {
       text-align: center;
       padding: .5em;
       margin-bottom: .5em;
-      color: darkslategrey;
+      color: var(--plg-content-fediverse-missing, darkslategrey);
       font-size: larger;
       font-weight: bold;
-      border-bottom: thin solid slategrey;
+      border-bottom: thin solid var(--plg-content-fediverse-missing-separator, slategrey);
     }
 
     p {
-      color: dimgray;
+      color: var(--plg-content-fediverse-missing-text, dimgray);
       margin: 0 .5em .5em;
 
       a {
-        color: lightslategray;
+        color: var(--plg-content-fediverse-missing-link, lightslategray);
       }
     }
   }
 }
 
 .toot-embed-cw-badge {
-  background-color: darkred;
-  color: white;
+  background-color: var(--plg-content-fediverse-cw-bg, darkred);
+  color: var(--plg-content-fediverse-cw-fg, white);
   font-weight: bold;
   padding: .25em .5em;
   border-radius: .25em;

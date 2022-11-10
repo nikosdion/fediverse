@@ -4,6 +4,12 @@
  * @license   GNU General Public License, version 3
  */
 
+:root {
+  --mod-fediverse-color-caption-bg: darkslategrey;
+  --mod-fediverse-color-caption-fg: white;
+  --mod-fediverse-color-caption-border: darkgrey;
+}
+
 div.fediverse-toot-media {
   display: grid;
   grid-gap: .25em;
@@ -18,6 +24,15 @@ div.fediverse-toot-media {
 
     &>.fediverse-toot-media-sensitive {
       filter: blur(1.5em);
+    }
+
+    .fediverse-toot-media {
+      figcaption {
+        background-color: var(--mod-fediverse-color-caption-bg, darkslategrey);
+        color: var(--mod-fediverse-color-caption-fg, white);
+        border-top: thin solid var(--mod-fediverse-color-caption-border, darkgrey);
+        padding: .25em .5em;
+      }
     }
   }
 }
