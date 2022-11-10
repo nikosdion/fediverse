@@ -24,6 +24,10 @@ use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;
 
 $webAssetManager->usePreset('plg_content_fediverse.embedded');
 
+/**
+ * @var object $currentToot The current toot to render
+ * @see https://docs.joinmastodon.org/entities/status/
+ */
 $currentToot    = $currentToot ?? $toot;
 
 if (empty($currentToot))
@@ -39,6 +43,9 @@ $sensitiveMedia = $currentToot->sensitive && empty($currentToot->spoiler_text);
 
 ?>
 <aside class="toot-embed<?= $parentToot ? '-parent' : '' ?>"
+	   <?php if (!$parentToot): ?>
+	   lang="<?= $currentToot?->language ?? 'en' ?>"
+	   <?php endif; ?>
 	   data-url="<?= htmlentities($tootUrl, ENT_COMPAT, 'UTF-8') ?>">
 	<?php
 	// Display parent toot, if present
