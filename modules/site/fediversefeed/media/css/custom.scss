@@ -12,15 +12,15 @@
 }
 
 .fediverse-feed {
-  text-align: left;
+  text-align: start;
 
   &.fediverse-feed-rtl {
-    text-align: right;
+    direction: rtl;
   }
 
   .fediverse-feed-header {
-    margin-bottom: .75em;
-    border-bottom: 2px solid var(--mod-fediverse-color-separator, darkgray);
+    margin-block-end: .75em;
+    border-block-end: 2px solid var(--mod-fediverse-color-separator, darkgray);
 
     .fediverse-feed-header-top {
       .fediverse-feed-header-top-container {
@@ -34,9 +34,9 @@
           flex-shrink: 1;
 
           .fediverse-feed-header-top-avatar {
-            width: 100%;
-            max-width: 2em;
-            height: auto;
+            inline-size: 100%;
+            max-inline-size: 2em;
+            block-size: auto;
             border-radius: 50%;
           }
         }
@@ -63,20 +63,16 @@
     padding: 0;
 
     li.fediverse-toot {
-      margin-bottom: .75em;
+      margin-block-end: .75em;
       padding: 0 0 .5em;
 
       &+li {
         padding: .75em 0 0;
-        border-top: thin solid var(--mod-fediverse-color-separator, darkgray);
+        border-block-start: thin solid var(--mod-fediverse-color-separator, darkgray);
       }
 
       .fediverse-toot-permalink {
-        text-align: right;
-
-        &.fediverse-toot-permalink-rtl {
-          text-align: left;
-        }
+        text-align: start;
       }
     }
   }
@@ -86,7 +82,8 @@
   background-color: var(--mod-fediverse-color-cw-bg, darkred);
   color: var(--mod-fediverse-color-cw-fg, white);
   font-weight: bold;
-  padding: .25em .5em;
+  padding-block: .25em;
+  padding-inline: .5em;
   border-radius: .25em;
   font-size: smaller;
   display: inline-block;
