@@ -37,12 +37,13 @@ if (empty($currentToot))
 	return;
 }
 
-$parentToot     = $currentToot !== $toot;
-$sensitive      = $currentToot->sensitive && !empty($currentToot->spoiler_text);
-$sensitiveMedia = $currentToot->sensitive && empty($currentToot->spoiler_text);
+$parentToot       = $currentToot !== $toot;
+$sensitive        = $currentToot->sensitive && !empty($currentToot->spoiler_text);
+$sensitiveMedia   = $currentToot->sensitive && empty($currentToot->spoiler_text);
+$writingDirection = $this->langToWritingSystemClass($currentToot?->language ?? 'en');
 
 ?>
-<aside class="toot-embed<?= $parentToot ? '-parent' : '' ?>"
+<aside class="toot-embed<?= $parentToot ? '-parent' : '' ?> toot-embed-writing-system-<?= $writingDirection ?>"
 	   <?php if (!$parentToot): ?>
 	   lang="<?= $currentToot?->language ?? 'en' ?>"
 	   <?php endif; ?>
@@ -54,12 +55,14 @@ $sensitiveMedia = $currentToot->sensitive && empty($currentToot->spoiler_text);
 		$cacheSensitive = $sensitive;
 		$cacheSensitiveMedia = $sensitiveMedia;
 		$cacheCurrentToot = $currentToot;
+		$cacheWritingDirection = $writingDirection;
 		$currentToot      = $currentToot->_parent;
 		require PluginHelper::getLayoutPath($this->_type, $this->_name);
 		$currentToot = $cacheCurrentToot;
 		$parentToot = false;
 		$sensitive = $cacheSensitive;
 		$sensitiveMedia = $cacheSensitiveMedia;
+		$writingDirection = $cacheWritingDirection;
 	}
 	?>
 	<header class="toot-embed-header">
@@ -72,7 +75,7 @@ $sensitiveMedia = $currentToot->sensitive && empty($currentToot->spoiler_text);
 			<span class="toot-embed-header-displayname"><?= $currentToot->account->display_name ?></span>
 			<span class="toot-embed-header-username">
 				<a href="<?= $currentToot->account->url ?>" rel="nofollow">
-					@<?= $currentToot->account->username ?>@<?= $serverFromUrl($currentToot->account->url) ?>
+					@<span class="toot-embed-header-username-localname-<?= $writingDirection ?>"><?= $currentToot->account->username ?></span>@<span class="toot-embed-header-username-servername-<?= $writingDirection ?>"><?= $serverFromUrl($currentToot->account->url) ?></span>
 				</a>
 			</span>
 		</div>

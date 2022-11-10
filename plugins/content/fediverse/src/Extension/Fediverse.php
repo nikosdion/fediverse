@@ -206,4 +206,22 @@ class Fediverse extends CMSPlugin implements SubscriberInterface
 		return '';
 	}
 
+	/**
+	 * Convert a language code to a writing system class (e.g. rtl, ltr, ...)
+	 *
+	 * @param   string|null  $lang
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	private function langToWritingSystemClass(?string $lang): string
+	{
+		[$lang, ] = explode('-', strtolower($lang ?? ''));
+
+		return match($lang) {
+			/** @see https://lingohub.com/academy/glossary/right-to-left-language */
+			'ar', 'arc', 'dv', 'fa', 'ha', 'he', 'khw', 'ks', 'ku', 'ps', 'ur', 'yi' => 'rtl',
+			default => 'ltr',
+		};
+	}
 }

@@ -115,7 +115,7 @@ class TootLoader
 	private function loadToot(string $url, ?int $tootId = null, bool $withParent = true): ?object
 	{
 		$url          = trim($url);
-		$separatorPos = strpos($url, '/web') ?: strpos($url, '/api/v1/statuses/');
+		$separatorPos = strpos($url, '/web') ?: strpos($url, '/@') ?: strpos($url, '/api/v1/statuses/');
 
 		if ($separatorPos === false)
 		{
