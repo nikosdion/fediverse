@@ -47,37 +47,43 @@
     --plg-content-fediverse-missing-link: lightgrey;
   }
 }
-.xxx {
-  color: whitesmoke;
-}
 
 aside.toot-embed {
+  &.toot-embed-writing-system-rtl {
+    direction: rtl;
+  }
+
+  &.toot-embed-writing-system-ltr {
+    direction: ltr;
+  }
+
   // Parent toot (in reply to)
   aside.toot-embed-parent {
     margin: 0 !important;
     padding: 0 !important;
     background-color: var(--plg-content-fediverse-parent-bg, rgba(0, 0, 0, .05));
-    border-bottom: thin solid var(--plg-content-fediverse-parent-separator, rgba(0, 0, 0, .2));
+    border-block-end: thin solid var(--plg-content-fediverse-parent-separator, rgba(0, 0, 0, .2));
 
     header.toot-embed-header {
-      margin-top: 0;
-      padding-top: .5em;
+      margin-block-start: 0;
+      padding-block-start: .5em;
     }
 
     div.toot-embed-content, div.toot-embed-actions {
-      margin-left: calc(clamp(24px, 20%, 3em) + 1em);
+      margin-inline-start: calc(clamp(24px, 20%, 3em) + 1em);
       background-color: transparent;
-      border-top: none;
+      border-block-start: none;
       justify-content: flex-start;
     }
   }
 
   display: block;
-  width: clamp(20em, 85vw, 40em);
+  inline-size: clamp(20em, 85vw, 40em);
   border: thin solid var(--plg-content-fediverse-border, darkgrey);
   border-radius: .5em;
   background-color: var(--plg-content-fediverse-bg, rgba(0, 0, 0, .02));
-  margin: .5em auto;
+  margin-block: .5em;
+  margin-inline: auto;
 
   header.toot-embed-header {
     margin: .5em;
@@ -89,7 +95,7 @@ aside.toot-embed {
 
     div.toot-embed-header-avatar {
       flex-shrink: 1;
-      width: clamp(24px, 20%, 3em);
+      inline-size: clamp(24px, 20%, 3em);
 
       img {
         width: 100%;
@@ -113,6 +119,19 @@ aside.toot-embed {
       span.toot-embed-header-username {
         color: var(--plg-content-fediverse-username, darkslategrey);
 
+        /**
+         * Usernames must be @LOCALNAME@SERVERNAME. If it's an RTL language, and we had this SPAN inherit the RTL
+         * direction it would appear as LOCALNAME@SERVERNAME@. So we apply LTR direction in the SPAN and inject SPANs
+         * around each element of the username which get the RTL direction so that localised local and server names
+         * appear correctly
+         */
+        direction: ltr;
+
+        span.toot-embed-header-username-localname-rtl,
+        span.toot-embed-header-username-servername-rtl {
+          direction: rtl;
+        }
+
         a {
           text-decoration: none;
           color: var(--plg-content-fediverse-username, darkslategrey);
@@ -132,23 +151,25 @@ aside.toot-embed {
   }
 
   div.toot-embed-content {
-    margin: 0 .5em;
+    margin-block: 0;
+    margin-inline: .5em;
   }
 
   div.toot-embed-content-media {
     display: grid;
     grid-gap: .25em;
     grid-template-columns: repeat(auto-fit, minmax(40%, 1fr));
-    margin-bottom: .5em;
+    margin-block-end: .5em;
 
     &> :first-child {
       grid-column: 1/ -1;
     }
 
     figure.toot-embed-content-media-item {
-      margin: 0 auto;
+      margin-block: 0;
+      margin-inline: auto;
       cursor: pointer;
-      max-width: 100%;
+      max-inline-size: 100%;
       box-sizing: border-box;
       overflow: hidden;
 
@@ -157,11 +178,12 @@ aside.toot-embed {
       }
 
       video {
-        width: 100%;
+        inline-size: 100%;
       }
 
       figcaption {
-        padding: .25em .5em;
+        padding-block: .25em;
+        padding-inline: .5em;
         background-color: var(--plg-content-fediverse-caption-bg, darkslategrey);
         color: var(--plg-content-fediverse-caption-fg, white);
       }
@@ -169,8 +191,10 @@ aside.toot-embed {
   }
 
   div.toot-embed-status {
-    margin: 0.5em 0 0;
-    padding: .25em .5em;
+    margin-block: .5em 0;
+    margin-inline: 0;
+    padding-block: .25em;
+    padding-inline: .5em;
     font-size: small;
     color: var(--plg-content-fediverse-status, slategrey);
     display: flex;
@@ -185,9 +209,10 @@ aside.toot-embed {
 
   div.toot-embed-actions {
     margin: 0;
-    padding: .25em .5em;
+    padding-block: .25em;
+    padding-inline: .5em;
     background-color: var(--plg-content-fediverse-actions-bg, rgba(0, 0, 0, 0.1));
-    border-top: thin solid var(--plg-content-fediverse-actions-border, slategrey);
+    border-block-start: thin solid var(--plg-content-fediverse-actions-border, slategrey);
     display: flex;
     flex-direction: row;
     gap: 1em;
@@ -208,16 +233,17 @@ aside.toot-embed {
     header {
       text-align: center;
       padding: .5em;
-      margin-bottom: .5em;
+      margin-block-end: .5em;
       color: var(--plg-content-fediverse-missing, darkslategrey);
       font-size: larger;
       font-weight: bold;
-      border-bottom: thin solid var(--plg-content-fediverse-missing-separator, slategrey);
+      border-block-end: thin solid var(--plg-content-fediverse-missing-separator, slategrey);
     }
 
     p {
       color: var(--plg-content-fediverse-missing-text, dimgray);
-      margin: 0 .5em .5em;
+      margin-block: 0 .5em;
+      margin-inline: .5em;
 
       a {
         color: var(--plg-content-fediverse-missing-link, lightslategray);
@@ -230,7 +256,8 @@ aside.toot-embed {
   background-color: var(--plg-content-fediverse-cw-bg, darkred);
   color: var(--plg-content-fediverse-cw-fg, white);
   font-weight: bold;
-  padding: .25em .5em;
+  padding-block: .25em;
+  padding-inline: .5em;
   border-radius: .25em;
   font-size: smaller;
   display: inline-block;
@@ -250,6 +277,6 @@ aside.toot-embed {
 
 #plg_content_fediverse_dialog_content {
   video {
-    max-width: 100%;
+    max-inline-size: 100%;
   }
 }
