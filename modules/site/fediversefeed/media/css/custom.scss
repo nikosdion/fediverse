@@ -135,6 +135,29 @@
         font-weight: bold;
       }
 
+      div.fediverse-toot-poll {
+        font-size: smaller;
+        display: flex;
+        flex-direction: column;
+        gap: .25em;
+        margin-block-end: .5em;
+
+        .fediverse-toot-poll-option {
+          .fediverse-toot-poll-option-title {
+            .fediverse-toot-poll-option-percent {
+              display: inline-block;
+              inline-size: 3em;
+              font-weight: bold;
+            }
+          }
+        }
+
+        .fediverse-toot-poll-info {
+          padding-block-start: .25em;
+          color: dimgrey;
+        }
+      }
+
       div.fediverse-toot-media {
         display: grid;
         grid-gap: .25em;

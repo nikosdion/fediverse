@@ -68,8 +68,9 @@ $title          = HTMLHelper::_('date', $currentToot->created_at ?? 'now', Text:
 	</div>
 	<?php endif; ?>
 
-
 	<?php require ModuleHelper::getLayoutPath($module->module, 'default_media') ?>
+
+	<?php require ModuleHelper::getLayoutPath($module->module, 'default_poll') ?>
 
 	<?php if (!empty($contentWarning)): ?>
 </details>

@@ -158,6 +158,28 @@ aside.toot-embed {
   div.toot-embed-content {
     margin-block: 0;
     margin-inline: .5em;
+
+    div.toot-embed-poll {
+      font-size: smaller;
+      display: flex;
+      flex-direction: column;
+      gap: .25em;
+
+      .toot-embed-poll-option {
+        .toot-embed-poll-option-title {
+          .toot-embed-poll-option-percent {
+            display: inline-block;
+            inline-size: 3em;
+            font-weight: bold;
+          }
+        }
+      }
+
+      .toot-embed-poll-info {
+        padding-block-start: .25em;
+        color: dimgrey;
+      }
+    }
   }
 
   div.toot-embed-content-media {

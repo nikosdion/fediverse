@@ -5,6 +5,8 @@
  * @license   GNU General Public License, version 3
  */
 
+defined('_JEXEC') || die;
+
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;

@@ -5,6 +5,8 @@
  * @license   GNU General Public License, version 3
  */
 
+defined('_JEXEC') || die;
+
 /**
  * @var object $currentToot    The toot we are processing
  * @var bool   $sensitiveMedia Is the media (and only the media!) marked as sensitive?

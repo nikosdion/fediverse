@@ -5,6 +5,8 @@
  * @license   GNU General Public License, version 3
  */
 
+defined('_JEXEC') || die;
+
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -116,6 +118,9 @@ $writingDirection = $this->langToWritingSystemClass($currentToot?->language ?? '
 				require PluginHelper::getLayoutPath($this->_type, $this->_name, 'default_media');
 			}
 			?>
+
+			<?php require PluginHelper::getLayoutPath($this->_type, $this->_name, 'default_poll'); ?>
+
 			<?php if ($sensitive): ?>
 		</details>
 	<?php endif; // sensitive ?>

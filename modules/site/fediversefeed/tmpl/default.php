@@ -11,7 +11,6 @@ use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Helper\ModuleHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Layout\LayoutHelper;
 use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Input\Input;
 use Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher;

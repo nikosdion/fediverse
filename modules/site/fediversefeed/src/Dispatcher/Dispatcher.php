@@ -9,11 +9,13 @@ namespace Joomla\Module\FediverseFeed\Site\Dispatcher;
 
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Date\Date;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Http\Http;
 use Joomla\CMS\Http\HttpFactory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Module\FediverseFeed\Site\Service\AccountLoader;
 use Joomla\Module\FediverseFeed\Site\Service\TootStreamLoader;
@@ -211,5 +213,65 @@ class Dispatcher extends AbstractModuleDispatcher
 			requestTimeout: (int) $params->get('get_timeout', 5),
 			useCaching    : $params->get('cache_feed', 1) == 1
 		);
+	}
+
+	/**
+	 * Returns a short description of how much time has elapsed, e.g. "24h" for about 24 hours ago.
+	 *
+	 * @param   int|string  $referenceDateTime  Timestamp os ISO date of the reference date/time
+	 * @param   bool        $short              Use short form (s, m, ...) or long form (seconds, minutes, ...)?
+	 *
+	 * @return  string
+	 *
+	 * @since   1.0.0
+	 */
+	public function timeAgo(int|string $referenceDateTime = 0, bool $short = true): string
+	{
+		if (is_string($referenceDateTime))
+		{
+			$referenceDateTime = Date::getInstance($referenceDateTime)->getTimestamp();
+		}
+
+		$currentDateTime = time();
+		$raw             = $currentDateTime - $referenceDateTime;
+		$clean           = abs($raw);
+
+		$calcNum = [
+			['s', 60],
+			['m', 60 * 60],
+			['h', 60 * 60 * 60],
+			['d', 60 * 60 * 60 * 24],
+			['w', 60 * 60 * 60 * 24 * 7],
+			['y', 60 * 60 * 60 * 24 * 365],
+		];
+
+		$calc = [
+			's' => [1, sprintf('MOD_FEDIVERSEFEED_TIME_%s_SECOND', $short ? 'SHORT' : 'LONG')],
+			'm' => [60, sprintf('MOD_FEDIVERSEFEED_TIME_%s_MINUTE', $short ? 'SHORT' : 'LONG')],
+			'h' => [60 * 60, sprintf('MOD_FEDIVERSEFEED_TIME_%s_HOUR', $short ? 'SHORT' : 'LONG')],
+			'd' => [60 * 60 * 24, sprintf('MOD_FEDIVERSEFEED_TIME_%s_DAY', $short ? 'SHORT' : 'LONG')],
+			'w' => [60 * 60 * 24 * 7, sprintf('MOD_FEDIVERSEFEED_TIME_%s_WEEK', $short ? 'SHORT' : 'LONG')],
+			'y' => [60 * 60 * 24 * 365, sprintf('MOD_FEDIVERSEFEED_TIME_%s_YEAR', $short ? 'SHORT' : 'LONG')],
+		];
+
+		$usemeasure = 's';
+
+		for ($i = 0; $i < count($calcNum); $i++)
+		{
+			if ($clean <= $calcNum[$i][1])
+			{
+				$usemeasure = $calcNum[$i][0];
+				$i          = count($calcNum);
+			}
+		}
+
+		$datedifference = floor($clean / $calc[$usemeasure][0]);
+
+		if ($referenceDateTime != 0)
+		{
+			return Text::plural($calc[$usemeasure][1], $datedifference);
+		}
+
+		return '';
 	}
 }
