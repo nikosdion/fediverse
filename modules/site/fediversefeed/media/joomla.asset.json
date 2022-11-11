@@ -6,16 +6,6 @@
   "license": "GPL-3.0-or-later",
   "assets": [
     {
-      "name": "mod_fediversefeed.media",
-      "description": "Media styling",
-      "type": "style",
-      "uri": "mod_fediversefeed/media.css",
-      "dependencies": [
-        "fontawesome"
-      ]
-    },
-
-    {
       "name": "mod_fediversefeed.custom",
       "description": "Custom module styling",
       "type": "style",
@@ -44,7 +34,6 @@
       "description": "Media styling, with lightbox",
       "type": "preset",
       "dependencies": [
-        "mod_fediversefeed.media#style",
         "mod_fediversefeed.media#script"
       ]
     },

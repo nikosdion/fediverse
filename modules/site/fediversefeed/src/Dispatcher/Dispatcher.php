@@ -7,45 +7,91 @@
 
 namespace Joomla\Module\FediverseFeed\Site\Dispatcher;
 
-use Joomla\CMS\Application\CMSApplicationInterface;
+use Exception;
+use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
-use Joomla\CMS\Extension\ModuleInterface;
-use Joomla\CMS\Filter\OutputFilter;
+use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Http\Http;
+use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\WebAsset\WebAssetManager;
-use Joomla\Input\Input;
-use Joomla\Module\FediverseFeed\Site\Helper\FediverseFeedHelper;
+use Joomla\Module\FediverseFeed\Site\Service\AccountLoader;
+use Joomla\Module\FediverseFeed\Site\Service\TootStreamLoader;
 use Joomla\Registry\Registry;
 
 class Dispatcher extends AbstractModuleDispatcher
 {
 	/**
-	 * The module extension object.
+	 * Replaces custom emojis in a string with <img> tags.
 	 *
-	 * @since 1.0.0
-	 * @var   ModuleInterface
+	 * @param   string  $text    The original text, including emoji shortcodes
+	 * @param   array   $emojis  An array of Mastodon API Emoji objects
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 * @see     https://docs.joinmastodon.org/entities/emoji/
 	 */
-	private ModuleInterface $moduleExtension;
-
-	public function __construct(\stdClass $module, CMSApplicationInterface $app, Input $input)
+	public function parseEmojis(string $text, array $emojis): string
 	{
-		parent::__construct($module, $app, $input);
+		if (empty($emojis))
+		{
+			return $text;
+		}
 
-		$this->moduleExtension = $this->app->bootModule('mod_fediversefeed', 'site');
+		$replacements = [];
+
+		foreach ($emojis as $emoji)
+		{
+			$replacements[sprintf(':%s:', $emoji->shortcode)] =
+				HTMLHelper::_(
+					'image',
+					$emoji->url,
+					$emoji->shortcode,
+					[
+						'class' => 'fediverse-content-emoji',
+					]
+				);
+		}
+
+		return str_replace(array_keys($replacements), array_values($replacements), $text);
 	}
 
-	protected function getLayoutData()
+	/**
+	 * Returns the layout data.
+	 *
+	 * If false is returned, then it means that the dispatch process should be aborted.
+	 *
+	 * @return  array|false
+	 *
+	 * @throws  Exception
+	 * @since   1.0.0
+	 */
+	protected function getLayoutData(): array|false
 	{
-		/** @var FediverseFeedHelper $helper */
-		$helper = $this->moduleExtension->getHelper('FediverseFeedHelper');
-		$helper->setApplication($this->app);
-
 		$layoutData = parent::getLayoutData();
+
 		/** @var Registry $params */
-		$params   = $layoutData['params'];
-		$username = $params->get('handle', '');
-		$feedURL  = $helper->getFeedURL($username);
-		$feed     = $feedURL ? $helper->getFeed($feedURL, $params) : null;
+		$params        = $layoutData['params'];
+		$accountLoader = $this->getAccountLoader($params);
+		$streamLoader  = $this->getStreamLoader(
+			params       : $params,
+			accountLoader: $accountLoader
+		);
+
+		$username    = $params->get('handle', '');
+		$accountInfo = $accountLoader->getInformationFromUsername($username);
+
+		if ($accountInfo === null)
+		{
+			return false;
+		}
+
+		$tootsStream = $streamLoader->getStreamForUsername($username, $accountInfo);
+
+		if ($tootsStream === null)
+		{
+			return false;
+		}
 
 		$headerTag = $params->get('header_tag', 'h3');
 		$headerTag = match ($headerTag)
@@ -59,11 +105,6 @@ class Dispatcher extends AbstractModuleDispatcher
 			'default' => 'h3',
 		};
 
-		if ($feedURL)
-		{
-			$profileUrl = str_replace('@', 'web/@', substr($feedURL, 0, -4));
-		}
-
 		/** @var WebAssetManager $wam */
 		$wam = $this->app->getDocument()->getWebAssetManager();
 		$wam->getRegistry()->addExtensionRegistryFile('mod_fediversefeed');
@@ -71,37 +112,85 @@ class Dispatcher extends AbstractModuleDispatcher
 		return array_merge(
 			$layoutData,
 			[
-				'feed'                        => $feed,
-				'feedUrl'                     => $feedURL,
-				'profileUrl'                  => $profileUrl ?? '',
-				'headerTag'                   => $headerTag,
-				'layoutsPath'                 => realpath(__DIR__ . '/../../layout'),
-				'webAssetManager'             => $wam,
-				'modFediverseFeedConvertText' => function (string $text) use ($params): array {
-					// Make links visible again
-					$text = str_replace('<span class="invisible"', '<span ', $text);
-					// Strip the images.
-					$text = OutputFilter::stripImages($text);
-
-					// Process content warning
-					$contentWarning = null;
-
-					if (str_starts_with($text, '<p><strong>'))
-					{
-						$hrPos          = strpos($text, '<hr />');
-						$contentWarning = substr($text, 0, $hrPos);
-						$strongPos      = strpos($contentWarning, '</strong>');
-						$contentWarning = strip_tags(substr($contentWarning, $strongPos + 9));
-						$text           = substr($text, $hrPos + 6);
-					}
-
-					$text = HTMLHelper::_('string.truncate', $text, $params->get('word_count', 0));
-					$text = str_replace('&apos;', "'", $text);
-
-					return [$contentWarning, $text];
-				},
+				'self'            => $this,
+				'toots'           => $tootsStream,
+				'account'         => $accountInfo,
+				'headerTag'       => $headerTag,
+				'layoutsPath'     => realpath(__DIR__ . '/../../layout'),
+				'webAssetManager' => $wam,
 			]
 		);
 	}
 
+	/**
+	 * Returns the account loader service
+	 *
+	 * @param   Registry  $params  The module parameters
+	 *
+	 * @return  AccountLoader The account loader service
+	 * @throws  Exception
+	 * @since   1.0.0
+	 */
+	private function getAccountLoader(Registry $params): AccountLoader
+	{
+		return new AccountLoader(
+			http          : $this->getHttp($params),
+			app           : $this->app instanceof CMSApplication ? $this->app : Factory::getApplication(),
+			cacheLifetime : (int) $params->get('account_cache_lifetime', 3600),
+			requestTimeout: (int) $params->get('get_timeout', 5),
+			useCaching    : $params->get('cache_feed', 1) == 1
+		);
+	}
+
+	/**
+	 * Get a preconfigured Joomla HTTP client object
+	 *
+	 * @param   Registry  $params  The module parameters
+	 *
+	 * @return  Http  The Joomla HTTP client object
+	 * @since   1.0.0
+	 */
+	private function getHttp(Registry $params): Http
+	{
+		$optionsSource = [
+			'userAgent' => 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0',
+		];
+
+		if (!empty($customCertificate = $params->get('custom_certificate', null)))
+		{
+			$optionsSource['curl']   = [
+				'certpath' => $customCertificate,
+			];
+			$optionsSource['stream'] = [
+				'certpath' => $customCertificate,
+			];
+		}
+
+		$httpParams = new Registry($optionsSource);
+
+		return (new HttpFactory())->getHttp($httpParams);
+	}
+
+	/**
+	 * Returns the toot stream (timeline) loader service
+	 *
+	 * @param   Registry            $params         The module parameters
+	 * @param   AccountLoader|null  $accountLoader  The account loader service
+	 *
+	 * @return  TootStreamLoader  The toot stream (timeline) loader service
+	 * @throws  Exception
+	 * @since   1.0.0
+	 */
+	private function getStreamLoader(Registry $params, ?AccountLoader $accountLoader = null): TootStreamLoader
+	{
+		return new TootStreamLoader(
+			http          : $this->getHttp($params),
+			app           : $this->app instanceof CMSApplication ? $this->app : Factory::getApplication(),
+			accountLoader : $accountLoader ?? $this->getAccountLoader($params),
+			maxToots      : (int) $params->get('feed_items', 5),
+			cacheLifetime : (int) $params->get('feed_cache_lifetime', 3600),
+			requestTimeout: (int) $params->get('get_timeout', 5),
+			useCaching    : $params->get('cache_feed', 1) == 1
+		);
+	}
 }

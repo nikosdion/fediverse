@@ -9,6 +9,26 @@
   --mod-fediverse-color-muted: darkgrey;
   --mod-fediverse-color-cw-bg: darkred;
   --mod-fediverse-color-cw-fg: white;
+  --mod-fediverse-color-caption-bg: darkslategrey;
+  --mod-fediverse-color-caption-fg: white;
+  --mod-fediverse-color-caption-border: darkgrey;
+}
+
+.fediverse-toot-media-item {
+  picture {
+    inline-size: 100%;
+  }
+
+  video {
+    inline-size: 100%;
+  }
+
+  figcaption {
+    background-color: var(--mod-fediverse-color-caption-bg, darkslategrey);
+    color: var(--mod-fediverse-color-caption-fg, white);
+    border-block-start: thin solid var(--mod-fediverse-color-caption-border, darkgrey);
+    padding: .25em .5em;
+  }
 }
 
 .fediverse-feed {
@@ -16,6 +36,11 @@
 
   &.fediverse-feed-rtl {
     direction: rtl;
+  }
+
+  .fediverse-content-emoji {
+    max-inline-size: 1.5rem;
+    max-block-size: 1rem;
   }
 
   .fediverse-feed-header {
@@ -69,6 +94,65 @@
       &+li {
         padding: .75em 0 0;
         border-block-start: thin solid var(--mod-fediverse-color-separator, darkgray);
+      }
+
+      .fediverse-reblog-info {
+        padding-block: .25em;
+        padding-inline: .5em;
+        margin-block-end: .25em;
+        color: darkslategrey;
+        border-bottom: thin solid rgba(0,0,0,0.1);
+
+        a:any-link {
+          color: darkslategrey;
+          text-decoration: none;
+        }
+      }
+
+      blockquote {
+        display: flex;
+        flex-direction: row;
+        align-items: start;
+        gap: .5em;
+      }
+
+      blockquote::before {
+        flex-shrink: 1;
+        color: dimgrey;
+        border-inline-end: .1em solid darkgray;
+        padding-inline-end: .25em;
+        content: "“";
+        font-family: serif;
+        font-size: 2em;
+        font-weight: bold;
+      }
+
+      div.fediverse-toot-media {
+        display: grid;
+        grid-gap: .25em;
+        grid-template-columns: repeat(auto-fit, minmax(8em, 1fr));
+        margin-block-end: 0.5em;
+
+        &> :first-child {
+          grid-column: 1/ -1;
+        }
+
+        &>.fediverse-toot-media-item {
+          margin-block: 0;
+          margin-inline: auto;
+          cursor: pointer;
+          max-inline-size: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
+
+          &>.fediverse-toot-media-sensitive {
+            filter: blur(1.5em);
+          }
+
+          figcaption {
+            display: none;
+          }
+        }
       }
 
       .fediverse-toot-permalink {
