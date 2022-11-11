@@ -33,6 +33,9 @@
 	<languages folder="language">
 		<language tag="en-GB">en-GB/plg_content_fediverse.ini</language>
 		<language tag="en-GB">en-GB/plg_content_fediverse.sys.ini</language>
+
+		<language tag="de-DE">de-DE/plg_content_fediverse.ini</language>
+		<language tag="de-DE">de-DE/plg_content_fediverse.sys.ini</language>
 	</languages>
 
 	<config>
