@@ -5,13 +5,27 @@
  */
 
 :root {
-  --mod-fediverse-color-separator: darkgray;
-  --mod-fediverse-color-muted: darkgrey;
-  --mod-fediverse-color-cw-bg: darkred;
-  --mod-fediverse-color-cw-fg: white;
-  --mod-fediverse-color-caption-bg: darkslategrey;
-  --mod-fediverse-color-caption-fg: white;
-  --mod-fediverse-color-caption-border: darkgrey;
+  --mod-fediversefeed-color-separator: darkgray;
+  --mod-fediversefeed-color-muted: darkgrey;
+  --mod-fediversefeed-color-cw-bg: darkred;
+  --mod-fediversefeed-color-cw-fg: white;
+  --mod-fediversefeed-color-caption-bg: darkslategrey;
+  --mod-fediversefeed-color-caption-fg: white;
+  --mod-fediversefeed-color-caption-border: darkgrey;
+  --mod-fediversefeed-color-reblog: darkslategrey;
+  --mod-fediversefeed-color-reblog-border: rgba(0,0,0,0.1);
+  --mod-fediversefeed-color-blockquote-before: dimgrey;
+  --mod-fediversefeed-color-blockquote-border: darkgray;
+  --mod-fediversefeed-color-poll-info: dimgrey;
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --mod-fediversefeed-color-reblog: darkgrey;
+    --mod-fediversefeed-color-reblog-border: rgba(255,255,255,0.3);
+    --mod-fediversefeed-color-blockquote-before: lightgray;
+    --mod-fediversefeed-color-poll-info: lightgray;
+  }
 }
 
 .fediverse-toot-media-item {
@@ -24,9 +38,9 @@
   }
 
   figcaption {
-    background-color: var(--mod-fediverse-color-caption-bg, darkslategrey);
-    color: var(--mod-fediverse-color-caption-fg, white);
-    border-block-start: thin solid var(--mod-fediverse-color-caption-border, darkgrey);
+    background-color: var(--mod-fediversefeed-color-caption-bg, darkslategrey);
+    color: var(--mod-fediversefeed-color-caption-fg, white);
+    border-block-start: thin solid var(--mod-fediversefeed-color-caption-border, darkgrey);
     padding: .25em .5em;
   }
 }
@@ -45,7 +59,7 @@
 
   .fediverse-feed-header {
     margin-block-end: .75em;
-    border-block-end: 2px solid var(--mod-fediverse-color-separator, darkgray);
+    border-block-end: 2px solid var(--mod-fediversefeed-color-separator, darkgray);
 
     .fediverse-feed-header-top {
       .fediverse-feed-header-top-container {
@@ -74,7 +88,7 @@
 
     .fediverse-feed-header-description, .fediverse-feed-header-date {
       font-size: smaller;
-      color: var(--mod-fediverse-color-muted, darkgrey);
+      color: var(--mod-fediversefeed-color-muted, darkgrey);
     }
 
     .fediverse-feed-header-date {
@@ -93,7 +107,7 @@
 
       &+li {
         padding: .75em 0 0;
-        border-block-start: thin solid var(--mod-fediverse-color-separator, darkgray);
+        border-block-start: thin solid var(--mod-fediversefeed-color-separator, darkgray);
       }
 
       &.fediverse-toot-rtl {
@@ -108,11 +122,11 @@
         padding-block: .25em;
         padding-inline: .5em;
         margin-block-end: .25em;
-        color: darkslategrey;
-        border-bottom: thin solid rgba(0,0,0,0.1);
+        color: var(--mod-fediversefeed-color-reblog, darkslategrey);
+        border-bottom: thin solid var(--mod-fediversefeed-color-reblog-border, rgba(0,0,0,0.1));
 
         a:any-link {
-          color: darkslategrey;
+          color: var(--mod-fediversefeed-color-reblog, darkslategrey);
           text-decoration: none;
         }
       }
@@ -126,8 +140,8 @@
 
       blockquote::before {
         flex-shrink: 1;
-        color: dimgrey;
-        border-inline-end: .1em solid darkgray;
+        color: var(--mod-fediversefeed-color-blockquote-before, dimgrey);
+        border-inline-end: .1em solid var(--mod-fediversefeed-color-blockquote-border, darkgray);
         padding-inline-end: .25em;
         content: "“";
         font-family: serif;
@@ -154,7 +168,7 @@
 
         .fediverse-toot-poll-info {
           padding-block-start: .25em;
-          color: dimgrey;
+          color: var(--mod-fediversefeed-color-poll-info, dimgrey);
         }
       }
 
@@ -202,8 +216,8 @@
 }
 
 .fediverse-cw-badge {
-  background-color: var(--mod-fediverse-color-cw-bg, darkred);
-  color: var(--mod-fediverse-color-cw-fg, white);
+  background-color: var(--mod-fediversefeed-color-cw-bg, darkred);
+  color: var(--mod-fediversefeed-color-cw-fg, white);
   font-weight: bold;
   padding-block: .25em;
   padding-inline: .5em;

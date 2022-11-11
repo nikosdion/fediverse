@@ -26,6 +26,7 @@
   --plg-content-fediverse-missing-link: lightslategray;
   --plg-content-fediverse-cw-bg: darkred;
   --plg-content-fediverse-cw-fg: white;
+  --plg-content-fediverse-poll-info: dimgrey;
 }
 
 @media (screen and prefers-color-scheme: dark) {
@@ -45,6 +46,7 @@
     --plg-content-fediverse-missing-separator: red;
     --plg-content-fediverse-missing-text: whitesmoke;
     --plg-content-fediverse-missing-link: lightgrey;
+    --plg-content-fediverse-poll-info: lightgrey;
   }
 }
 
@@ -177,7 +179,7 @@ aside.toot-embed {
 
       .toot-embed-poll-info {
         padding-block-start: .25em;
-        color: dimgrey;
+        color: var(--plg-content-fediverse-poll-info, dimgrey);
       }
     }
   }
