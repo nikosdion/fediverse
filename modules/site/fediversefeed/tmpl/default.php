@@ -61,7 +61,7 @@ $webAssetManager->usePreset('mod_fediversefeed.custom');
 				<?php if ($hasImage): ?>
 				<span class="fediverse-feed-header-top-avatar-wrapper">
 					<img src="<?= $account->avatar ?>"
-						 alt="<?= $self->parseEmojis($account->display_name, $account->emojis) ?>"
+						 alt="<?= htmlentities($self->parseEmojis($account->display_name, $account->emojis), ENT_COMPAT, 'UTF-8') ?>"
 						 class="fediverse-feed-header-top-avatar">
 				</span>
 				<?php endif ?>
@@ -104,7 +104,7 @@ $webAssetManager->usePreset('mod_fediversefeed.custom');
 			$currentToot = $toot->reblog;
 		}
 		?>
-	<li class="fediverse-toot">
+	<li class="fediverse-toot fediverse-toot-<?= $self->langToWritingSystemClass($currentToot->language) ?>">
 		<?php if ($reblog): ?>
 		<div class="fediverse-reblog-info">
 			<span class="fa fa-retweet"

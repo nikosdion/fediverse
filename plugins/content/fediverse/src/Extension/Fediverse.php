@@ -7,6 +7,7 @@
 
 namespace Joomla\Plugin\Content\Fediverse\Extension;
 
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -224,4 +225,40 @@ class Fediverse extends CMSPlugin implements SubscriberInterface
 			default => 'ltr',
 		};
 	}
+
+	/**
+	 * Replaces custom emojis in a string with <img> tags.
+	 *
+	 * @param   string  $text    The original text, including emoji shortcodes
+	 * @param   array   $emojis  An array of Mastodon API Emoji objects
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 * @see     https://docs.joinmastodon.org/entities/emoji/
+	 */
+	private function parseEmojis(string $text, array $emojis): string
+	{
+		if (empty($emojis))
+		{
+			return $text;
+		}
+
+		$replacements = [];
+
+		foreach ($emojis as $emoji)
+		{
+			$replacements[sprintf(':%s:', $emoji->shortcode)] =
+				HTMLHelper::_(
+					'image',
+					$emoji->url,
+					$emoji->shortcode,
+					[
+						'class' => 'plg-fediverse-content-emoji',
+					]
+				);
+		}
+
+		return str_replace(array_keys($replacements), array_values($replacements), $text);
+	}
+
 }

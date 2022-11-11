@@ -72,7 +72,7 @@ $writingDirection = $this->langToWritingSystemClass($currentToot?->language ?? '
 				 class="toot-embed-header-avatar-image">
 		</div>
 		<div class="toot-embed-header-info">
-			<span class="toot-embed-header-displayname"><?= $currentToot->account->display_name ?></span>
+			<span class="toot-embed-header-displayname"><?= $this->parseEmojis($currentToot->account->display_name, $currentToot->account->emojis) ?></span>
 			<span class="toot-embed-header-username">
 				<a href="<?= $currentToot->account->url ?>" rel="nofollow">
 					@<span class="toot-embed-header-username-localname-<?= $writingDirection ?>"><?= $currentToot->account->username ?></span>@<span class="toot-embed-header-username-servername-<?= $writingDirection ?>"><?= $serverFromUrl($currentToot->account->url) ?></span>
@@ -107,7 +107,7 @@ $writingDirection = $this->langToWritingSystemClass($currentToot?->language ?? '
 			</summary>
 			<?php endif; // sensitive ?>
 			<div class="toot-embed-content-text">
-				<?= $currentToot->content ?>
+				<?= $this->parseEmojis($currentToot->content, $currentToot->emojis) ?>
 			</div>
 			<?php
 			if (is_countable($currentToot->media_attachments) && count($currentToot->media_attachments))

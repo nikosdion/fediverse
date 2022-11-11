@@ -57,6 +57,11 @@ aside.toot-embed {
     direction: ltr;
   }
 
+  .plg-fediverse-content-emoji {
+    max-inline-size: 1.5rem;
+    max-block-size: 1rem;
+  }
+
   // Parent toot (in reply to)
   aside.toot-embed-parent {
     margin: 0 !important;

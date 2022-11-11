@@ -96,6 +96,14 @@
         border-block-start: thin solid var(--mod-fediverse-color-separator, darkgray);
       }
 
+      &.fediverse-toot-rtl {
+        direction: rtl;
+      }
+
+      &.fediverse-toot-ltr {
+        direction: ltr;
+      }
+
       .fediverse-reblog-info {
         padding-block: .25em;
         padding-inline: .5em;
@@ -157,6 +165,14 @@
 
       .fediverse-toot-permalink {
         text-align: start;
+
+        &.fediverse-toot-permalink-ltr {
+          direction: ltr;
+        }
+
+        &.fediverse-toot-permalink-rtl {
+          direction: rtl;
+        }
       }
     }
   }

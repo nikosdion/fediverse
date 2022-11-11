@@ -57,6 +57,25 @@ class Dispatcher extends AbstractModuleDispatcher
 	}
 
 	/**
+	 * Convert a language code to a writing system class (e.g. rtl, ltr, ...)
+	 *
+	 * @param   string|null  $lang
+	 *
+	 * @return  string
+	 * @since   1.0.0
+	 */
+	public function langToWritingSystemClass(?string $lang): string
+	{
+		[$lang, ] = explode('-', strtolower($lang ?? ''));
+
+		return match($lang) {
+			/** @see https://lingohub.com/academy/glossary/right-to-left-language */
+			'ar', 'arc', 'dv', 'fa', 'ha', 'he', 'khw', 'ks', 'ku', 'ps', 'ur', 'yi' => 'rtl',
+			default => 'ltr',
+		};
+	}
+
+	/**
 	 * Returns the layout data.
 	 *
 	 * If false is returned, then it means that the dispatch process should be aborted.
