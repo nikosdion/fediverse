@@ -19,9 +19,7 @@
   "require": {
     "php": "^8.0.0",
     "ext-json": "*",
-    "ext-simplexml": "*",
-    "ext-libxml": "*",
-    "ext-xmlreader": "*"
+    "ext-openssl": "*"
   },
   "suggest": {
     "ext-curl": "*"

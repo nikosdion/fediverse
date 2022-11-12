@@ -13,10 +13,6 @@
 		<include name="script.fediverse.php" />
 	</fileset>
 
-	<target name="package-com" description="Builds the component">
-		<echo>This is a plugins and modules only solution.</echo>
-	</target>
-
 	<target name="documentation" description="The documentation">
 		<echo message="The documentation can be found in the repository's Wiki on GitHub. This task is obsolete." />
 	</target>

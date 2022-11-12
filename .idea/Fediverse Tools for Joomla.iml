@@ -4,6 +4,8 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/modules/site/fediversefeed/src" isTestSource="false" packagePrefix="Joomla\Module\FediverseFeed\Site" />
       <sourceFolder url="file://$MODULE_DIR$/plugins/content/fediverse/src" isTestSource="false" packagePrefix="Joomla\Plugin\Content\Fediverse" />
+      <sourceFolder url="file://$MODULE_DIR$/component/api/src" isTestSource="false" packagePrefix="Dionysopoulos\Component\ActivityPub\Api" />
+      <sourceFolder url="file://$MODULE_DIR$/component/backend/src" isTestSource="false" packagePrefix="Dionysopoulos\Component\ActivityPub\Administrator" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer" />
     </content>
     <orderEntry type="inheritedJdk" />

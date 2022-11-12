@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<extension type="component" method="upgrade">
+    <name>com_activitypub</name>
+    <creationDate>2022-11-11</creationDate>
+    <author>Nicholas K. Dionysopoulos</author>
+    <authorEmail>nicholas@dionysopoulos.me</authorEmail>
+    <authorUrl>https://www.dionysopoulos.me</authorUrl>
+    <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+    <version>1.0.0</version>
+    <description>COM_ACTIVITYPUB_XML_DESCRIPTION</description>
+    <namespace path="src">Dionysopoulos\Component\ActivityPub</namespace>
+
+    <api>
+        <files folder="api">
+            <folder>src</folder>
+        </files>
+    </api>
+
+    <administration>
+        <menu>
+            COM_ACTIVITYPUB
+        </menu>
+
+        <!-- Back-end files -->
+        <files folder="backend">
+            <folder>language</folder>
+            <folder>services</folder>
+            <folder>src</folder>
+            <folder>tmpl</folder>
+
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+        </files>
+
+        <languages folder="backend/language">
+            <language tag="en-GB">en-GB/com_activitypub.ini</language>
+            <language tag="en-GB">en-GB/com_activitypub.sys.ini</language>
+        </languages>
+    </administration>
+</extension>
