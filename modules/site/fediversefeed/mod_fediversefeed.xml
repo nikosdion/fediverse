@@ -8,7 +8,7 @@
 <extension type="module" method="upgrade" client="site">
     <name>MOD_FEDIVERSEFEED</name>
     <author>Nicholas K. Dionysopoulos</author>
-    <creationDate>2022-11-07</creationDate>
+    <creationDate>2022-11-16</creationDate>
     <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
     <authorEmail>nicholas@dionysopoulos.me</authorEmail>
