@@ -28,6 +28,7 @@
 
     <languages folder="language">
         <language tag="en-GB">en-GB/pkg_fediverse.sys.ini</language>
+        <language tag="el-GR">el-GR/pkg_fediverse.sys.ini</language>
     </languages>
 
     <scriptfile>script.fediverse.php</scriptfile>
