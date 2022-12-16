@@ -118,9 +118,14 @@ $webAssetManager->usePreset('mod_fediversefeed.custom');
 				@<?= $currentToot->account->acct ?>
 			</a>
 		</div>
+		<div class="fediverse-reblog-content">
 		<?php endif; ?>
 
 		<?php require ModuleHelper::getLayoutPath($module->module, 'default_toot') ?>
+
+		<?php if ($reblog): ?>
+		</div>
+		<?php endif; ?>
 
 		<?php
 			$title = HTMLHelper::_('date', $toot->created_at ?? 'now', Text::_('DATE_FORMAT_LC2'));

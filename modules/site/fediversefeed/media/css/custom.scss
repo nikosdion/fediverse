@@ -17,6 +17,8 @@
   --mod-fediversefeed-color-blockquote-before: dimgrey;
   --mod-fediversefeed-color-blockquote-border: darkgray;
   --mod-fediversefeed-color-poll-info: dimgrey;
+  --mod-fediversefeed-color-blockquote-reblog-border: lightblue;
+  --mod-fediversefeed-color-blockquote-reblog-background: linear-gradient(90deg, transparent, rgba(0,0,0,0.01));
 }
 
 @media screen and (prefers-color-scheme: dark) {
@@ -25,6 +27,8 @@
     --mod-fediversefeed-color-reblog-border: rgba(255,255,255,0.3);
     --mod-fediversefeed-color-blockquote-before: lightgray;
     --mod-fediversefeed-color-poll-info: lightgray;
+    --mod-fediversefeed-color-blockquote-reblog-border: lightblue;
+    --mod-fediversefeed-color-blockquote-reblog-background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05));
   }
 }
 
@@ -132,21 +136,33 @@
       }
 
       blockquote {
-        display: flex;
-        flex-direction: row;
-        align-items: start;
-        gap: .5em;
+        margin-inline-start: 1.75rem;
+        padding-inline-start: .25rem;
+        border-inline-start: .25rem solid var(--mod-fediversefeed-color-blockquote-border, darkgray);
       }
 
       blockquote::before {
-        flex-shrink: 1;
-        color: var(--mod-fediversefeed-color-blockquote-before, dimgrey);
-        border-inline-end: .1em solid var(--mod-fediversefeed-color-blockquote-border, darkgray);
-        padding-inline-end: .25em;
         content: "“";
+        display: block;
+        float: left;
+        position: absolute;
+        margin-inline-start: -2rem;
+        z-index: 10;
         font-family: serif;
-        font-size: 2em;
+        font-size: 2.5em;
         font-weight: bold;
+        color: var(--mod-fediversefeed-color-blockquote-before, dimgrey);
+      }
+
+      .fediverse-reblog-content blockquote {
+        margin-inline-start: .25rem;
+        padding-inline: .25rem;
+        border-inline-start: .25rem solid var(--mod-fediversefeed-color-blockquote-reblog-border, lightblue);
+        background: var(--mod-fediversefeed-color-blockquote-reblog-background, linear-gradient(90deg, transparent, rgba(0,0,0,0.01)));
+
+        &:before {
+          display: none;
+        }
       }
 
       div.fediverse-toot-poll {
