@@ -18,7 +18,7 @@ use OutOfBoundsException;
  * - CMSApplication $application The Joomla application we are running under
  * - UserFactoryInterface $userFactory The Joomla User Factory
  *
- * @since  1.0.0
+ * @since  2.0.0
  */
 trait ActorUrlTrait
 {
@@ -30,7 +30,7 @@ trait ActorUrlTrait
 	 * @param   int  $userId  The user ID to get the actor URL for
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	protected function getActorUrl(int $userId): string
 	{

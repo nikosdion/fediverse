@@ -23,7 +23,7 @@ use Joomla\Database\ParameterType;
 /**
  * ActivityPub signature service
  *
- * @since  1.0.0
+ * @since  2.0.0
  */
 class Signature implements DatabaseAwareInterface
 {
@@ -33,7 +33,7 @@ class Signature implements DatabaseAwareInterface
 	/**
 	 * The #__user_profiles key name for the JSON-serialised ActivityPub key pair
 	 *
-	 * @since 1.0.0
+	 * @since 2.0.0
 	 * @var   string
 	 */
 	private const PROFILE_KEY = 'activitypub.keypair';
@@ -41,7 +41,7 @@ class Signature implements DatabaseAwareInterface
 	/**
 	 * Internal memory cache of key pairs, indexed by user ID
 	 *
-	 * @since 1.0.0
+	 * @since 2.0.0
 	 * @var   KeyPair[]
 	 */
 	private static array $cache = [];
@@ -51,7 +51,7 @@ class Signature implements DatabaseAwareInterface
 	 *
 	 * @param   DatabaseInterface  $db  The Joomla database driver object
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function __construct(
 		DatabaseInterface            $db,
@@ -68,7 +68,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   string  $body  The
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 * @see     self::sign()
 	 */
 	public function digest(string $body): string
@@ -83,7 +83,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   bool  $force   When true, a new key pair will be created even if one already exists
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function getPrivateKey(int $userId = 0, bool $force = false): string
 	{
@@ -98,7 +98,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   bool  $force   When true, a new key pair will be created even if one already exists
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function getPublicKey(int $userId = 0, bool $force = false): string
 	{
@@ -115,7 +115,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   string|null  $sha256Digest  (Optional) The base64-encoded SHA-256 binary digest of the POST content
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 * @see     self::digest()
 	 */
 	public function sign(int $userId, string $url, ?Date $date = null, string $sha256Digest = null): string
@@ -161,7 +161,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   int  $userId  The ID of the user we are creating a new public key for
 	 *
 	 * @return  KeyPair
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	private function generateKeyPair(int $userId): KeyPair
 	{
@@ -178,7 +178,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   int  $userId
 	 *
 	 * @return  KeyPair
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	private function loadKeyPair(int $userId): KeyPair
 	{
@@ -222,7 +222,7 @@ class Signature implements DatabaseAwareInterface
 	 * @param   KeyPair  $keyPair  The key pair to save
 	 *
 	 * @return  void
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	private function saveKeyPair(int $userId, KeyPair $keyPair): void
 	{

@@ -10,7 +10,7 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\DataShape;
 /**
  * RSA Key Pair abstraction
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
 class KeyPair implements \JsonSerializable
 {
@@ -20,7 +20,7 @@ class KeyPair implements \JsonSerializable
 	 * @param   string  $privateKey  The private key
 	 * @param   string  $publicKey   The public key
 	 *
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function __construct(
 		private string $privateKey,
@@ -31,7 +31,7 @@ class KeyPair implements \JsonSerializable
 	 * Returns a new key pair
 	 *
 	 * @return  static
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public static function create(): self
 	{
@@ -59,7 +59,7 @@ class KeyPair implements \JsonSerializable
 	 * @param   string  $json  The JSON-serialised representation of the key pair
 	 *
 	 * @return  static
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public static function fromJson(string $json): self
 	{
@@ -80,7 +80,7 @@ class KeyPair implements \JsonSerializable
 	 * Get the private key
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function getPrivateKey(): string
 	{
@@ -91,7 +91,7 @@ class KeyPair implements \JsonSerializable
 	 * Get the public key
 	 *
 	 * @return  string
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function getPublicKey(): string
 	{
@@ -102,7 +102,7 @@ class KeyPair implements \JsonSerializable
 	 * Specify data which should be serialized to JSON
 	 *
 	 * @return  mixed data which can be serialized by <b>json_encode</b>
-	 * @since   1.0.0
+	 * @since   2.0.0
 	 */
 	public function jsonSerialize()
 	{
