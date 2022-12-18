@@ -28,11 +28,12 @@
 
     <languages folder="language">
         <language tag="en-GB">en-GB/pkg_fediverse.sys.ini</language>
+        <language tag="el-GR">el-GR/pkg_fediverse.sys.ini</language>
     </languages>
 
     <scriptfile>script.fediverse.php</scriptfile>
 
     <updateservers>
-        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://raw.githubusercontent.com/nikosdion/fediverse/main/joomla4/update/pkg_fediverse.xml</server>
+        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://raw.githubusercontent.com/nikosdion/fediverse/main/update/pkg_fediverse.xml</server>
     </updateservers>
 </extension>

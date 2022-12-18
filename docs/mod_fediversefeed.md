@@ -64,7 +64,7 @@ Toots marked with a content warning will appear collapsed (using an HTML DETAILS
 
 Media files marked as sensitive in a toot which is NOT marked with a content warning will appear blurred with a radius of 1.5em to make the unidentifiable. You will need to click on the media file to display it. This may not work on older browsers which do not support the `filter` CSS property.
 
-## ALT attributes
+## ALT attributes (image descriptions)
 
 Media files in Mastodon are encouraged to have descriptions (ALT attribute). This module honours the description and adds it as an ALT attribute to images to ensure that the displayed toots stream is accessible to people with disabilities. Furthermore, the description is rendered as a FIGCAPTION element for sighted users to read when you click on a media item.
 

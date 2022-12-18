@@ -8,12 +8,12 @@
 <extension type="module" method="upgrade" client="site">
     <name>MOD_FEDIVERSEFEED</name>
     <author>Nicholas K. Dionysopoulos</author>
-    <creationDate>2022-11-07</creationDate>
+    <creationDate>2022-11-17</creationDate>
     <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
     <authorEmail>nicholas@dionysopoulos.me</authorEmail>
     <authorUrl>www.dionysopoulos.me</authorUrl>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <description>MOD_FEDIVERSEFEED_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Module\FediverseFeed</namespace>
 
@@ -26,6 +26,9 @@
     <languages folder="language">
         <language tag="en-GB">en-GB/mod_fediversefeed.ini</language>
         <language tag="en-GB">en-GB/mod_fediversefeed.sys.ini</language>
+
+        <language tag="el-GR">el-GR/mod_fediversefeed.ini</language>
+        <language tag="el-GR">el-GR/mod_fediversefeed.sys.ini</language>
 
         <language tag="de-DE">de-DE/mod_fediversefeed.ini</language>
         <language tag="de-DE">de-DE/mod_fediversefeed.sys.ini</language>

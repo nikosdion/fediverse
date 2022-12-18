@@ -12,8 +12,8 @@
 	<authorUrl>https://www.dionysopoulos.me</authorUrl>
 	<copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
 	<license>GNU GPL v3 or later</license>
-	<creationDate>2022-11-08</creationDate>
-	<version>1.0.0</version>
+	<creationDate>2022-11-17</creationDate>
+	<version>1.0.1</version>
 	<description>PLG_CONTENT_FEDIVERSE_XML_DESCRIPTION</description>
 	<namespace path="src">Joomla\Plugin\Content\Fediverse</namespace>
 
@@ -33,6 +33,9 @@
 	<languages folder="language">
 		<language tag="en-GB">en-GB/plg_content_fediverse.ini</language>
 		<language tag="en-GB">en-GB/plg_content_fediverse.sys.ini</language>
+
+		<language tag="el-GR">el-GR/plg_content_fediverse.ini</language>
+		<language tag="el-GR">el-GR/plg_content_fediverse.sys.ini</language>
 
 		<language tag="de-DE">de-DE/plg_content_fediverse.ini</language>
 		<language tag="de-DE">de-DE/plg_content_fediverse.sys.ini</language>

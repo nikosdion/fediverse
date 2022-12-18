@@ -70,7 +70,7 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 		try
 		{
 			/** @var DatabaseDriver $db */
-			$db    = Factory::getApplication()->get('DatabaseDriver');
+			$db    = Factory::getContainer()->get('DatabaseDriver');
 			$query = $db->getQuery(true)
 			            ->update('#__extensions')
 			            ->set($db->qn('enabled') . ' = ' . $db->q(1))
