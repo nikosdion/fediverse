@@ -1,4 +1,10 @@
 <?xml version="1.0"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
 <project name="FediverseForJoomla" description="Fediverse for Joomla" default="git" >
 	<import file="${phing.dir}/../../buildfiles/phing/common.xml" />
 
