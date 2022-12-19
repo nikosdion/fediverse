@@ -21,9 +21,12 @@
     <description>PKG_FEDIVERSE_XML_DESCRIPTION</description>
 
     <files>
+        <!--<file type="component" id="com_activitypub">com_activitypub.zip</file>-->
+
         <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
 
         <file type="plugin" group="content" id="fediverse">plg_content_fediverse.zip</file>
+        <file type="plugin" group="system" id="webfinger">plg_system_webfinger.zip</file>
     </files>
 
     <languages folder="language">
@@ -34,6 +37,8 @@
     <scriptfile>script.fediverse.php</scriptfile>
 
     <updateservers>
-        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://raw.githubusercontent.com/nikosdion/fediverse/main/update/pkg_fediverse.xml</server>
+        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">
+            https://raw.githubusercontent.com/nikosdion/fediverse/main/update/pkg_fediverse.xml
+        </server>
     </updateservers>
 </extension>

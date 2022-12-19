@@ -39,4 +39,8 @@
             <language tag="en-GB">en-GB/com_activitypub.sys.ini</language>
         </languages>
     </administration>
+
+    <files folder="frontend">
+        <folder>src</folder>
+    </files>
 </extension>

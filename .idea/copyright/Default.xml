@@ -1,7 +1,7 @@
 <component name="CopyrightManager">
   <copyright>
     <option name="allowReplaceRegexp" value="Copyright \(c\)20" />
-    <option name="notice" value="@package   FediverseForJoomla&#10;@copyright Copyright (c)&amp;#36;today.year Nicholas K. Dionysopoulos&#10;@license   GNU General Public License, version 3" />
+    <option name="notice" value="@package   FediverseForJoomla&#10;@copyright Copyright (c)&amp;#36;today.year Nicholas K. Dionysopoulos&#10;@license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later" />
     <option name="myName" value="Default" />
   </copyright>
 </component>
