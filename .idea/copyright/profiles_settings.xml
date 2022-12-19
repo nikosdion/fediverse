@@ -1,3 +1,12 @@
 <component name="CopyrightManager">
-  <settings default="Default" />
+  <settings>
+    <module2copyright>
+      <element module="Copyright" copyright="Default" />
+    </module2copyright>
+    <LanguageOptions name="PHP">
+      <option name="fileTypeOverride" value="3" />
+      <option name="separateBefore" value="true" />
+      <option name="lenBefore" value="1" />
+    </LanguageOptions>
+  </settings>
 </component>
