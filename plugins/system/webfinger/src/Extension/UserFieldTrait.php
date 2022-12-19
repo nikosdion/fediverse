@@ -9,6 +9,8 @@ namespace Joomla\Plugin\System\WebFinger\Extension;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\User\User;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseDriver;
@@ -19,6 +21,19 @@ use Joomla\Utilities\ArrayHelper;
 trait UserFieldTrait
 {
 	use UserFilterTrait;
+
+	/**
+	 * Used with HTMLHelper in the frontend to render the WebFinger consent field as a Yes/No language string.
+	 *
+	 * @param   string  $value  The stored value of the field
+	 *
+	 * @return  string
+	 * @since   2.0.0
+	 */
+	public static function renderWebFingerConsentField(string $value): string
+	{
+		return $value ? Text::_('JYES') : Text::_('JNO');
+	}
 
 	/**
 	 * Load the WebFinger user profile form.
@@ -43,42 +58,87 @@ trait UserFieldTrait
 			return;
 		}
 
+		/**
+		 * Modify the form in all user profile edit pages.
+		 *
+		 * Note that we do not include 'com_users.registration' as we do not want the WebFinger preference to be visible
+		 * on user registration: at this point we don't know if the user is subject forced consent/non-consent due to a
+		 * user group membership.
+		 */
 		if (!in_array($form->getName(), [
-			'com_admin.profile', 'com_users.user', 'com_users.registration', 'com_users.profile',
+			'com_admin.profile', 'com_users.user', 'com_users.profile',
 		]))
 		{
 			return;
 		}
 
+		// Do we have forced consent?
+		$forcedConsent = call_user_func(
+			function ($data): ?bool {
+				// If we are showing the form (instead of just loading it to save data) check for forced consent.
+				$userId = $data->id ?? null;
+
+				if (!is_int($userId))
+				{
+					return null;
+				}
+
+				$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($userId);
+
+				if (!$user instanceof User || $user->id != $userId)
+				{
+					return null;
+				}
+
+				return $this->getForcedConsent($user);
+			},
+			$data
+		);
+
 		// Load the language files and the form
+		$formFile = JPATH_PLUGINS . '/system/webfinger/forms/webfinger.xml';
+
+		if (
+			$this->getApplication()->isClient('site')
+			&& $form->getName() === 'com_users.profile'
+			&& $this->getApplication()->input->getCmd('layout', '') !== 'edit'
+		)
+		{
+			// Frontend profile display w/ forced consent: show nothing
+			if ($forcedConsent !== null)
+			{
+				return;
+			}
+
+			/**
+			 * Supposedly HTMLHelper::register will be removed in Joomla 5.0, without an alternative way to change the
+			 * display of user profile fields (LOLWUT?!). If this happens, we will just NOT list WebFinger in the
+			 * frontend profile...
+			 */
+			if (!method_exists(HTMLHelper::class, 'register'))
+			{
+				return;
+			}
+
+			// Alternate form file for the frontend Profile page
+			$formFile = JPATH_PLUGINS . '/system/webfinger/forms/webfinger_profile.xml';
+
+			/**
+			 * Register an HTML helper to render our consent field. Now, this is going to be very confusing if there's
+			 * another field with the same name in the form. This is a HORRIBLE way to process form display. Sigh...
+			 */
+			HTMLHelper::register('users.consent', [__CLASS__, 'renderWebFingerConsentField']);
+		}
+
 		$this->loadLanguage();
-		$form->loadFile(JPATH_PLUGINS . '/system/webfinger/forms/webfinger.xml');
+		$form->loadFile($formFile);
 
-		// If we are showing the form (instead of just loading it to save data) check for forced consent.
-		$userId = $data->id ?? null;
-
-		if (!is_int($userId))
+		// Forced consent in all edit forms: hide consent and set it to a fixed value
+		if ($forcedConsent !== null)
 		{
-			return;
+			$form->setFieldAttribute('consent', 'type', 'hidden', 'webfinger');
+			$form->setFieldAttribute('consent', 'value', $forcedConsent ? 1 : 0, 'webfinger');
 		}
-
-		$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($userId);
-
-		if (!$user instanceof User || $user->id != $userId)
-		{
-			return;
-		}
-
-		$forcedConsent = $this->getForcedConsent($user);
-
-		if ($forcedConsent === null)
-		{
-			return;
-		}
-
-		// Hide consent and if forcibly set
-		$form->setFieldAttribute('consent', 'type', 'hidden', 'webfinger');
-		$form->setFieldAttribute('consent', 'value', $forcedConsent ? 1 : 0, 'webfinger');
 	}
 
 	/**
@@ -260,12 +320,12 @@ trait UserFieldTrait
 		}
 
 		/** @var DatabaseDriver $db */
-		$db = $this->getDatabase();
+		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
 			->delete($db->quoteName('#__user_profiles'))
 			->where([
 				$db->quoteName('profile_key') . ' LIKE ' . $db->quote('webfinger.%'),
-				$db->quoteName('user_id') . ' = :user_id'
+				$db->quoteName('user_id') . ' = :user_id',
 			])
 			->bind(':user_id', $userId, ParameterType::INTEGER);
 

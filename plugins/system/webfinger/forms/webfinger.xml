@@ -10,6 +10,8 @@
         <fieldset name="webfinger"
                   label="PLG_SYSTEM_WEBFINGER_PROFILE_WEBFINGER_LABEL"
         >
+            <!-- TODO Custom field: check SEF URLs and rewrite is enabled; show WebFinger address for the account -->
+
             <field name="consent"
                    type="radio"
                    layout="joomla.form.field.radio.switcher"
