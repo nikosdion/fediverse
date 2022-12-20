@@ -11,11 +11,13 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\User\User;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
+use Joomla\Plugin\System\WebFinger\Event\LoadUserForm;
 use Joomla\Utilities\ArrayHelper;
 
 trait UserFieldTrait
@@ -139,6 +141,16 @@ trait UserFieldTrait
 			$form->setFieldAttribute('consent', 'type', 'hidden', 'webfinger');
 			$form->setFieldAttribute('consent', 'value', $forcedConsent ? 1 : 0, 'webfinger');
 		}
+
+		// Call the plugins
+		PluginHelper::importPlugin('webfinger');
+
+		$event = new LoadUserForm([
+			'form' => $form,
+		]);
+		$dispatcher    = $this->getApplication()->getDispatcher();
+
+		$dispatcher->dispatch($event->getName(), $event);
 	}
 
 	/**

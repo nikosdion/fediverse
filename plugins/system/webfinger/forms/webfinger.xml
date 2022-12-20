@@ -12,7 +12,7 @@
                   addfieldprefix="Joomla\Plugin\System\WebFinger\Field"
         >
             <field name="webfingerNote"
-                   type="webfingerinfo"
+                   type="WebFingerInfo"
                    />
 
             <field name="consent"

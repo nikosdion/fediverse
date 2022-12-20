@@ -20,6 +20,8 @@ use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
+use Joomla\Plugin\System\WebFinger\Event\GetResource;
+use Joomla\Plugin\System\WebFinger\Event\ResolveResource;
 use Joomla\Plugin\System\WebFinger\Exception\GenericWebFingerException;
 use Joomla\Registry\Registry;
 use Throwable;
@@ -280,7 +282,7 @@ trait WebFingerTrait
 		// Go through plugins to retrieve additional resource information
 		PluginHelper::importPlugin('webfinger');
 
-		$event         = new Event('onWebFingerGetResource', [
+		$event = new GetResource([
 			'resource' => $resource,
 			'rel'      => $rel,
 			'user'     => $user,
@@ -300,6 +302,8 @@ trait WebFingerTrait
 		{
 			$result['subject'] = $normalisedUserAccount;
 		}
+
+		$resource = $result;
 
 		/**
 		 * Sanitize aliases.
@@ -474,7 +478,7 @@ trait WebFingerTrait
 		// Fallback to the plugin event
 		PluginHelper::importPlugin('webfinger');
 
-		$event         = new Event('onWebFingerResolveResource', [
+		$event         = new ResolveResource([
 			'resource' => $resource,
 		]);
 		$dispatcher    = $this->getApplication()->getDispatcher();
@@ -487,7 +491,7 @@ trait WebFingerTrait
 		}
 
 		// Only accept the results which are User objects and represent a virtual user OR a real user who has consented.
-		$result = array_filter($result, fn($x) => $x instanceof User && $this->filterUser($user));
+		$result = array_filter($result, fn($x) => $x instanceof User && $this->filterUser($x));
 
 		// No results? Return null (no resource found).
 		if (empty($result))
