@@ -26,6 +26,8 @@ return new class implements ServiceProviderInterface {
 	 */
 	public function register(Container $container)
 	{
+		$this->activityPubAutoloader();
+
 		$container->registerServiceProvider(new MVCFactory('Dionysopoulos\\Component\\ActivityPub'));
 		$container->registerServiceProvider(new ComponentDispatcherFactory('Dionysopoulos\\Component\\ActivityPub'));
 
@@ -39,5 +41,25 @@ return new class implements ServiceProviderInterface {
 				return $component;
 			}
 		);
+	}
+
+	/**
+	 * Register a PSR-4 autoloader for our ActivityPhp fork.
+	 *
+	 * @return  void
+	 * @since   2.0.0
+	 */
+	private function activityPubAutoloader()
+	{
+		static $isLoaded = false;
+
+		if ($isLoaded)
+		{
+			return;
+		}
+
+		$isLoaded = true;
+
+		JLoader::registerNamespace('ActivityPub', realpath(__DIR__ . '/../src/ActivityPhp'));
 	}
 };
