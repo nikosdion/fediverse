@@ -19,6 +19,18 @@
 		<include name="script.fediverse.php" />
 	</fileset>
 
+	<fileset dir="${dirs.component}" id="component">
+		<include name="api/**"/>
+		<include name="backend/**"/>
+		<include name="frontend/**"/>
+		<include name="*"/>
+
+		<exclude name="LICENSE.txt"/>
+		<exclude name="script.fediverse.php"/>
+
+		<exclude name="backend/activitypub.xml"/>
+	</fileset>
+
 	<target name="documentation" description="The documentation">
 		<echo message="The documentation can be found in the repository's Wiki on GitHub. This task is obsolete." />
 	</target>

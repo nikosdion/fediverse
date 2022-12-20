@@ -26,7 +26,10 @@
         <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
 
         <file type="plugin" group="content" id="fediverse">plg_content_fediverse.zip</file>
+
         <file type="plugin" group="system" id="webfinger">plg_system_webfinger.zip</file>
+
+        <file type="plugin" group="webfinger" id="mastodon">plg_webfinger_mastodon.zip</file>
     </files>
 
     <languages folder="language">
