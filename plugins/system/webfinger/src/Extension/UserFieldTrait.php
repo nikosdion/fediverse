@@ -199,6 +199,11 @@ trait UserFieldTrait
 
 		foreach ($myFields as $k => $v)
 		{
+			if (is_array($v))
+			{
+				$v = json_encode($v);
+			}
+
 			$query->values(
 				sprintf(
 					'%s,%s,%s',

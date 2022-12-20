@@ -737,6 +737,22 @@ trait WebFingerTrait
 			$resource['aliases'][] = 'mailto:' . $user->email;
 		}
 
+		$customAliases = $preferences->get('webfinger.custom_aliases', []);
+		$customAliases = array_map(
+			function ($row)
+			{
+				return is_array($row) ? array_shift($row) : $row;
+			},
+			$customAliases = is_string($customAliases)
+				? (@json_decode($customAliases, true) ?: [])
+				: $customAliases
+		);
+
+		foreach ($customAliases as $alias)
+		{
+			$resource['aliases'][] = $alias;
+		}
+
 		if ($preferences->get('webfinger.show_name', 0) && $this->isRel('author', $rel))
 		{
 			$resource['links'][] = [

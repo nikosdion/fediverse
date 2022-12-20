@@ -74,6 +74,32 @@
                 <option value="1">JYES</option>
             </field>
 
+            <field
+                    name="custom_aliases"
+                    type="subform"
+                    label="PLG_SYSTEM_WEBFINGER_PROFILE_CUSTOM_ALIASES_LABEL"
+                    description="PLG_SYSTEM_WEBFINGER_PROFILE_CUSTOM_ALIASES_DESC"
+                    layout="joomla.form.field.subform.repeatable-table"
+                    multiple="true"
+                    min="0"
+                    buttons="add,remove,move"
+                    groupByFieldset="false"
+                    validate="subform"
+                    default=""
+                    showon="consent:1"
+            >
+                <form>
+                    <field
+                            name="alias"
+                            type="text"
+                            label="PLG_SYSTEM_WEBFINGER_PROFILE_ALIAS_LABEL"
+                            required="true"
+                            recursive="true"
+                    />
+                </form>
+            </field>
+
+
         </fieldset>
     </fields>
 </form>
