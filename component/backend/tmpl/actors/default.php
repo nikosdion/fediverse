@@ -99,11 +99,12 @@ $i = 0;
 							<td>
 								<?php if ($item->user_id): ?>
 									<span class="fa fa-user" aria-hidden="true"></span>
-									<?= $user->username ?>
+									<?= $itemUser->username ?>
 								<?php else: ?>
 									<span class="text-muted">
 									<span class="fa fa-user-cog" aria-hidden="true"></span>
-									<?= Text::_('COM_ACTIVITYPUB_ACTORS_LBL_VIRTUAL') ?>
+									<span class="sr-only"><?= Text::_('COM_ACTIVITYPUB_ACTORS_LBL_VIRTUAL') ?></span>
+										<?= $itemUser->username ?>
 									</span>
 								<?php endif; ?>
 							</td>
@@ -115,11 +116,6 @@ $i = 0;
 								<?php else: ?>
 									<?= $this->escape($itemUser->name); ?>
 								<?php endif ?>
-								<br/>
-								<small>
-									<strong><?= Text::_('JGLOBAL_USERNAME') ?></strong>:
-									<?= $this->escape($itemUser->username); ?>
-								</small>
 							</td>
 							<td class="d-none d-md-table-cell">
 								<span class="fa <?= $typeIcon ?>" aria-hidden="true"></span>

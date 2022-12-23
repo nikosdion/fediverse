@@ -62,5 +62,59 @@
     <fieldset name="params"
               label="JGLOBAL_FIELDSET_INTEGRATION">
 
+        <field
+                name="content_enable"
+                type="radio"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ENABLE_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ENABLE_DESC"
+                default="1"
+                layout="joomla.form.field.radio.switcher"
+                filter="integer"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+
+        <field
+                name="content_note_filtered"
+                type="note"
+                class="alert alert-info w-100"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_FILTERED_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_FILTERED_DESC"
+                showon="content_enable:1[AND]user_id!:0"
+            />
+
+        <field
+                name="content_note_unfiltered"
+                type="note"
+                class="alert alert-warning w-100"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_UNFILTERED_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_UNFILTERED_DESC"
+                showon="content_enable:1[AND]user_id:0"
+            />
+
+        <field
+                name="content_categories"
+                type="category"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_CATEGORIES_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_CATEGORIES_DESC"
+                extension="com_content"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                default=""
+                showon="content_enable:1"
+        />
+
+        <field
+                name="content_accesslevel"
+                type="accesslevel"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ACCESSLEVEL_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ACCESSLEVEL_DESC"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                default="[1,5]"
+                showon="content_enable:1"
+        />
+
     </fieldset>
 </form>
