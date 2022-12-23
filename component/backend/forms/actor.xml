@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<form addfieldprefix="Dionysopoulos\Component\ActivityPub\Administrator\Field">
+    <fieldset name="main"
+              label="JGLOBAL_FIELDSET_GLOBAL">
+        <field
+                name="id"
+                type="text"
+                label="JGLOBAL_FIELD_ID_LABEL"
+                default="0"
+                readonly="true"
+                class="readonly"
+        />
+
+        <field
+                name="user_id"
+                type="user"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_USER_ID_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_USER_ID_DESC"
+                default=""
+                validate="UserId"
+        />
+
+        <field
+                name="name"
+                type="text"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_NAME_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_NAME_DESC"
+                default=""
+                showon="user_id:0"
+        />
+
+        <field
+                name="username"
+                type="text"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_USERNAME_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_USERNAME_DESC"
+                default=""
+                showon="user_id:0"
+        />
+
+        <field
+                name="type"
+                type="list"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_DESC"
+                default="Person"
+                validate="options"
+        >
+            <option value="Person">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_PERSON</option>
+            <option value="Organization">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_ORGANIZATION</option>
+            <option value="Service">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_SERVICE</option>
+        </field>
+
+    </fieldset>
+
+    <fieldset name="params"
+              label="JGLOBAL_FIELDSET_INTEGRATION">
+
+    </fieldset>
+</form>

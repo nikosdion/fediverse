@@ -21,7 +21,7 @@
     <description>PKG_FEDIVERSE_XML_DESCRIPTION</description>
 
     <files>
-        <!--<file type="component" id="com_activitypub">com_activitypub.zip</file>-->
+        <file type="component" id="com_activitypub">com_activitypub.zip</file>
 
         <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
 

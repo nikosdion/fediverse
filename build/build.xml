@@ -23,6 +23,7 @@
 		<include name="api/**"/>
 		<include name="backend/**"/>
 		<include name="frontend/**"/>
+		<include name="*.xml"/>
 		<include name="*"/>
 
 		<exclude name="LICENSE.txt"/>

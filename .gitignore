@@ -3,3 +3,4 @@
 /vendor
 
 /pkg_*.xml
+/component/backend/activitypub.xml

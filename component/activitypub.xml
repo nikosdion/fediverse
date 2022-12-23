@@ -28,16 +28,28 @@
         <menu>
             COM_ACTIVITYPUB
         </menu>
+        <submenu>
+            <menu view="actors">
+                COM_ACTIVITYPUB_TITLE_ACTORS
+                <params>
+                    <menu-quicktask>index.php?option=com_activitypub&amp;amp;task=actor.add</menu-quicktask>
+                    <menu-quicktask-title>COM_ACTIVITYPUB_ACTORS_NEW</menu-quicktask-title>
+                    <menu-quicktask-permission>core.create;com_activitypub</menu-quicktask-permission>
+                </params>
+            </menu>
+        </submenu>
 
         <!-- Back-end files -->
         <files folder="backend">
+            <folder>forms</folder>
             <folder>language</folder>
             <folder>services</folder>
+            <folder>sql</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
 
             <filename>access.xml</filename>
-            <filename>config.xml</filename>
+            <!--<filename>config.xml</filename>-->
         </files>
 
         <languages folder="backend/language">
@@ -49,4 +61,23 @@
     <files folder="frontend">
         <folder>src</folder>
     </files>
+
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install.sql</file>
+        </sql>
+    </install>
+
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/uninstall.sql</file>
+        </sql>
+    </uninstall>
+
+    <update>
+        <schemas>
+            <schemapath type="mysql">sql/updates</schemapath>
+        </schemas>
+    </update>
+
 </extension>
