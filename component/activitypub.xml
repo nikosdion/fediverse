@@ -49,7 +49,7 @@
             <folder>tmpl</folder>
 
             <filename>access.xml</filename>
-            <!--<filename>config.xml</filename>-->
+            <filename>config.xml</filename>
         </files>
 
         <languages folder="backend/language">

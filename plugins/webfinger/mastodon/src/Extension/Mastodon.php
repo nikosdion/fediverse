@@ -142,6 +142,14 @@ class Mastodon extends CMSPlugin implements SubscriberInterface, DatabaseAwareIn
 		$event->setArgument('resource', $resource);
 	}
 
+	/**
+	 * Resolves a resource alias (e.g. `acct:user@example.com`) to a user object
+	 *
+	 * @param   ResolveResource  $event
+	 *
+	 * @return  void|null
+	 * @since   2.0.0
+	 */
 	public function resolveResource(ResolveResource $event)
 	{
 		$resource = $event->getArgument('resource');
@@ -165,7 +173,12 @@ class Mastodon extends CMSPlugin implements SubscriberInterface, DatabaseAwareIn
 				return null;
 			}
 
-			$event->addResult($user);
+			if ($user !== null)
+			{
+				$event->addResult($user);
+			}
+
+			return;
 		}
 
 		/**

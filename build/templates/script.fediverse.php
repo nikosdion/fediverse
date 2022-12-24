@@ -29,8 +29,10 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 	 * @var   array
 	 */
 	protected $extensionsToEnable = [
-		// System plugins
 		['plugin', 'fediverse', 1, 'content'],
+		['plugin', 'webfinger', 1, 'system'],
+		//['plugin', 'mastodon', 1, 'webfinger'],
+		['plugin', 'activitypub', 1, 'webfinger'],
 	];
 
 

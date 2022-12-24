@@ -30,6 +30,7 @@
         <file type="plugin" group="system" id="webfinger">plg_system_webfinger.zip</file>
 
         <file type="plugin" group="webfinger" id="mastodon">plg_webfinger_mastodon.zip</file>
+        <file type="plugin" group="webfinger" id="activitypub">plg_webfinger_activitypub.zip</file>
     </files>
 
     <languages folder="language">

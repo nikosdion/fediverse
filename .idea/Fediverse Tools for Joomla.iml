@@ -2,13 +2,15 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/component/api/src" isTestSource="false" packagePrefix="Dionysopoulos\Component\ActivityPub\Api"/>
-      <sourceFolder url="file://$MODULE_DIR$/component/backend/src" isTestSource="false" packagePrefix="Dionysopoulos\Component\ActivityPub\Administrator"/>
       <sourceFolder url="file://$MODULE_DIR$/component/backend/src/ActivityPhp" isTestSource="false" packagePrefix="ActivityPhp"/>
       <excludeFolder url="file://$MODULE_DIR$/vendor/composer"/>
+      <sourceFolder url="file://$MODULE_DIR$/component/api/src" packagePrefix="Dionysopoulos\Component\ActivityPub\Api\" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/component/frontend/src" packagePrefix="Dionysopoulos\Component\ActivityPub\Site\" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/component/backend/src" packagePrefix="Dionysopoulos\Component\ActivityPub\Administrator\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/modules/site/fediversefeed/src" packagePrefix="Joomla\Module\FediverseFeed\Site\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/content/fediverse/src" packagePrefix="Joomla\Plugin\Content\Fediverse\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/system/webfinger/src" packagePrefix="Joomla\Plugin\System\WebFinger\" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/plugins/webfinger/activitypub/src" packagePrefix="Joomla\Plugin\WebFinger\ActivityPub\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/webfinger/mastodon/src" packagePrefix="Joomla\Plugin\WebFinger\Mastodon\" isTestSource="false"/>
     </content>
     <orderEntry type="inheritedJdk"/>
