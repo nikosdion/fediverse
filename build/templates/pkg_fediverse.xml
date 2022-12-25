@@ -31,6 +31,8 @@
 
         <file type="plugin" group="webfinger" id="mastodon">plg_webfinger_mastodon.zip</file>
         <file type="plugin" group="webfinger" id="activitypub">plg_webfinger_activitypub.zip</file>
+
+        <file type="plugin" group="webservices" id="activitypub">plg_webservices_activitypub.zip</file>
     </files>
 
     <languages folder="language">

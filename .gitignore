@@ -1,6 +1,14 @@
+### Node.js and Composer build dependencies
 /node_modules
-/release
 /vendor
 
+### Release builds
+/release
+
+### Temporary XML manifests
+# These manifests are not supposed to be committed to Git or packaged in builds
 /pkg_*.xml
 /component/backend/activitypub.xml
+
+### Private files
+/api_dev/http-client.private.env.json

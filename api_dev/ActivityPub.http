@@ -1,0 +1,3 @@
+GET https://{{hostname}}/api/v1/activitypub/actor/{{username}}
+User-Agent: ApiDevelopment/2.0
+Accept: application/activity+json

@@ -31,8 +31,8 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 	protected $extensionsToEnable = [
 		['plugin', 'fediverse', 1, 'content'],
 		['plugin', 'webfinger', 1, 'system'],
-		//['plugin', 'mastodon', 1, 'webfinger'],
 		['plugin', 'activitypub', 1, 'webfinger'],
+		['plugin', 'activitypub', 1, 'webservices'],
 	];
 
 
