@@ -78,7 +78,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		$form = $event->getArgument('form');
 
 		$this->loadLanguage();
-		$form->loadFile(__DIR__ . '/../../forms/webfinger.xml');
+		$form->loadFile(__DIR__ . '/../../forms/activitypub.xml');
 	}
 
 	/**
@@ -395,12 +395,27 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 	 */
 	private function getActorUri(User $user): string
 	{
-		return Route::link(
-			client: 'api',
-			url: 'index.php?option=com_activitypub&controller=actor&username=' . urlencode($user->username),
-			xhtml: false,
-			tls: Route::TLS_FORCE,
-			absolute: true
-		);
+		/**
+		 * We cannot use \Joomla\CMS\Router\Route::link directly because the \Joomla\CMS\Router\ApiRouter can only parse
+		 * routes, not build them. This is an… odd choice on Joomla!'s part, but what can you do? We have to weasel our
+		 * way around this limitation by building the API route ourselves.
+		 */
+		$useIndex = $this->getApplication()->get('sef_rewrite', 0) != 1;
+		$basePath = rtrim(Uri::base(false), '/');
+
+		// Note: this branch should NEVER execute!
+		if ($this->getApplication()->isClient('administrator') && str_ends_with($basePath, '/administrator'))
+		{
+			$basePath = substr($basePath, 0, -14);
+		}
+
+		$basePath = rtrim($basePath, '/') . '/api';
+
+		if ($useIndex)
+		{
+			$basePath .= '/index.php';
+		}
+
+		return $basePath . '/v1/activitypub/actor/' . urlencode($user->username);
 	}
 }
