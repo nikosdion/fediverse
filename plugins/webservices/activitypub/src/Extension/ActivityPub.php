@@ -49,6 +49,11 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 		/** @var ApiApplication $app */
 		[$app] = $e->getArguments();
 
+		if ($app->input->getCmd('option') !== 'com_activitypub')
+		{
+			return;
+		}
+
 		// Get the 'format' request parameter from the application's input
 		if ($app->input->getMethod() === 'POST')
 		{
@@ -59,37 +64,36 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			$format = $app->input->get('format', '');
 		}
 
-		// If it's not an array I have nothing to do (not my view or the bug is fixed)
-		if (!is_array($format))
+		if (is_array($format))
 		{
-			return;
-		}
+			// At this point the format entries have lost all of their punctuation. Reshape 'em!
+			$format = array_map(
+				fn($f) => match ($f)
+				{
+					'applicationactivityjson' => 'application/activity+json',
+					'applicationldjson' => 'application/ld+json',
+					'applicationvnd.apijson' => 'application/vnd.api+json',
+					'applicationjson' => 'application/json',
+					default => $f
+				},
+				$format
+			);
 
-		// At this point the format entries have lost all of their punctuation. Reshape 'em!
-		$format = array_map(
-			fn($f) => match ($f)
+			// Re-run the Negotiator
+			try
 			{
-				'applicationactivityjson' => 'application/activity+json',
-				'applicationldjson' => 'application/ld+json',
-				'applicationvnd.apijson' => 'application/vnd.api+json',
-				'applicationjson' => 'application/json',
-				default => $f
-			},
-			$format
-		);
+				$negotiator = new Negotiator();
+				$mediaType  = $negotiator->getBest($app->input->server->getString('HTTP_ACCEPT'), $format);
+				$format     = $mediaType->getValue();
+			}
+			catch (Exception $e)
+			{
+				// If an error occurred, fall back to Joomla API Application's default format
+				$format = 'application/vnd.api+json';
+			}
+		}
 
-		// Re-run the Negotiator
-		try
-		{
-			$negotiator = new Negotiator();
-			$mediaType  = $negotiator->getBest($app->input->server->getString('HTTP_ACCEPT'), $format);
-			$format     = $mediaType->getValue();
-		}
-		catch (Exception $e)
-		{
-			// If an error occurred, fall back to Joomla API Application's default format
-			$format = 'application/vnd.api+json';
-		}
+		$format = $this->translateFormat($format);
 
 		// Set the format back to the application
 		if ($app->input->getMethod() === 'POST')
@@ -143,5 +147,21 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 
 		// Finally, add the routes to the router.
 		$router->addRoutes($routes);
+	}
+
+	private function translateFormat(string $format): string
+	{
+		return match ($format)
+		{
+			'application/activity+json',
+			'applicationactivityjson',
+			'application/ld+json',
+			'applicationldjson',
+			'application/json',
+			'applicationjson',
+			'application/vnd.api+json',
+			'applicationvnd.apijson' => 'json',
+			default => $format,
+		};
 	}
 }

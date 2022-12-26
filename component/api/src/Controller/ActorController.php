@@ -13,6 +13,11 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\MVC\View\JsonApiView;
 
+/**
+ * Controller for ACtivityPub Actor interactions
+ *
+ * @since  2.0.0
+ */
 class ActorController extends BaseController
 {
 	protected string $contentType = 'actor';

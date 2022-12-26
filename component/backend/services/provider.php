@@ -60,6 +60,11 @@ return new class implements ServiceProviderInterface {
 
 		$isLoaded = true;
 
-		JLoader::registerNamespace('ActivityPub', realpath(__DIR__ . '/../src/ActivityPhp'));
+		if (class_exists(\ActivityPhp\Server\Actor::class))
+		{
+			return;
+		}
+
+		JLoader::registerNamespace('ActivityPhp', realpath(__DIR__ . '/../src/ActivityPhp'));
 	}
 };

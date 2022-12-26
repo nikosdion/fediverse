@@ -104,7 +104,7 @@ class KeyPair implements \JsonSerializable
 	 * @return  mixed data which can be serialized by <b>json_encode</b>
 	 * @since   2.0.0
 	 */
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return [
 			'privateKey' => $this->privateKey,

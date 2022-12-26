@@ -9,6 +9,7 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Table;
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\KeyPair;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseDriver;
@@ -138,8 +139,13 @@ class ActorTable extends Table
 			}
 		}
 
-		// The params must be empty, or a JSON-encoded string
+		// Get the params as a Registry object for further inspection.
 		$registry = new Registry($this->params);
+
+		// We must have a non-empty, valid core.keyPair parameter
+		$this->validateOrCreateKeyPair($registry);
+
+		// The params must be empty, or a JSON-encoded string
 		$this->params = $registry->toString();
 
 		return parent::check();
@@ -221,5 +227,31 @@ class ActorTable extends Table
 		$numberOfUsers = $db->setQuery($query)->loadResult();
 
 		return $numberOfUsers === 0;
+	}
+
+	/**
+	 * Validate an existing keypair, or create a new one.
+	 *
+	 * @param   Registry  $registry  The Registry object with the Actor parameters
+	 *
+	 * @return  void
+	 * @since   2.0.0
+	 */
+	private function validateOrCreateKeyPair(Registry $registry): void
+	{
+		$keyPairJSON = $registry->get('core.keyPair', null) ?? '{}';
+
+		try
+		{
+			$keyPair = KeyPair::fromJson($keyPairJSON);
+
+			return;
+		}
+		catch (\InvalidArgumentException $e)
+		{
+			$keyPair = KeyPair::create();
+
+			$registry->set('core.keyPair', json_encode($keyPair));
+		}
 	}
 }
