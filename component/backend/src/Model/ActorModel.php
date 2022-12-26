@@ -10,8 +10,11 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Model;
 defined('_JEXEC');
 
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\SaveActorEvent;
+use Dionysopoulos\Component\ActivityPub\Administrator\Traits\IntegrationParamsMappingTrait;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
+use Joomla\CMS\Form\FormFactoryInterface;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\AdminModel;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\Registry\Registry;
@@ -36,10 +39,16 @@ use Joomla\Registry\Registry;
  * Handle data saving. Translate your field values in the $data array into $params registry values for persisting to the
  * database.
  *
+ * You can use the \Dionysopoulos\Component\ActivityPub\Administrator\Traits\IntegrationParamsMappingTrait trait to
+ * handle the onContentPrepareData and onActivityPubSaveActor event handlers more easily. See this model's
+ * `__construct`, `save`, and `preprocessData` methods to see how these mappings become little more than one-liners.
+ *
  * @since  2.0.0
  */
 class ActorModel extends AdminModel
 {
+	use IntegrationParamsMappingTrait;
+
 	/**
 	 * The prefix to use with controller messages.
 	 *
@@ -47,6 +56,19 @@ class ActorModel extends AdminModel
 	 * @since  2.0.0
 	 */
 	protected $text_prefix = 'COM_ACTIVITYPUB_ACTOR';
+
+	public function __construct($config = [], MVCFactoryInterface $factory = null, FormFactoryInterface $formFactory = null)
+	{
+		parent::__construct($config, $factory, $formFactory);
+
+		$this->addIntegrationParamsMapping('content_enable', 'content.enable', 1);
+		$this->addIntegrationParamsMapping('content_categories', 'content.categories', []);
+		$this->addIntegrationParamsMapping('content_accesslevel', 'content.accesslevel', [1, 5]);
+		$this->addIntegrationParamsMapping('activitypub_summary', 'activitypub.summary', '');
+		$this->addIntegrationParamsMapping('activitypub_icon_source', 'activitypub.icon_source', 'gravatar');
+		$this->addIntegrationParamsMapping('activitypub_url', 'activitypub.url', '');
+		$this->addIntegrationParamsMapping('activitypub_media', 'activitypub.media', '');
+	}
 
 	public function getForm($data = [], $loadData = true)
 	{
@@ -115,10 +137,8 @@ class ActorModel extends AdminModel
 				$event
 			)->getArgument('params');
 
-		// Handle the content parameters, built into the component
-		$params->set('content.enable', $data['content_enable'] ?? 1);
-		$params->set('content.categories', $data['content_categories'] ?? []);
-		$params->set('content.accesslevel', $data['content_accesslevel'] ?? [1, 5]);
+		// Handle the parameters which are built into the component
+		$this->setParamsFromFormData($params, $data);
 
 		// Convert params registry to JSON string and put it into the $data array
 		$data['params'] = $params->toString();
@@ -157,9 +177,8 @@ class ActorModel extends AdminModel
 
 		// Handle the content parameters, built into the component
 		$params                    = new Registry($data->params ?? []);
-		$data->content_enable      = $params->get('content.enable', 1);
-		$data->content_categories  = $params->get('content.categories', []);
-		$data->content_accesslevel = $params->get('content.accesslevel', [1, 5]);
+
+		$this->setFormDataFromParams($params, $data);
 
 		// Call the parent method which goes through the plugins
 		parent::preprocessData($context, $data, $group);

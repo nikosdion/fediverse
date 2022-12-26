@@ -62,6 +62,47 @@
     <fieldset name="params"
               label="JGLOBAL_FIELDSET_INTEGRATION">
 
+        <field name="activitypub_summary"
+               type="editor"
+               default=""
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_SUMMARY_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_SUMMARY_DESC"
+               cols="50"
+               rows="5"
+               filter="JComponentHelper::filterText"
+               buttons="false"
+        />
+
+        <field name="activitypub_icon_source"
+               type="list"
+               default="gravatar"
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_DESC"
+        >
+            <option value="none">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_NONE</option>
+            <option value="gravatar">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_GRAVATAR</option>
+            <option value="url">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_URL</option>
+            <option value="media">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_MEDIA</option>
+        </field>
+
+        <field name="activitypub_url"
+               type="url"
+               filter="url"
+               validate="url"
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_URL_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_URL_DESC"
+               showon="activitypub_icon_source:url"
+        />
+
+        <field name="activitypub_media"
+               type="media"
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_MEDIA_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_MEDIA_DESC"
+               showon="activitypub_icon_source:media"
+        />
+
+        <!-- TODO Separator -->
+
         <field
                 name="content_enable"
                 type="radio"

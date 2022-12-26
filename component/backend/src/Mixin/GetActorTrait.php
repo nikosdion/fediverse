@@ -222,6 +222,38 @@ trait GetActorTrait
 		return $table;
 	}
 
+	protected function getFrontendBasePath(): string
+	{
+		static $basePath = null;
+
+		if ($basePath === null)
+		{
+			$app = method_exists($this, 'getApplication')
+				? $this->getApplication()
+				: (
+				property_exists($this, 'app')
+					? $this->app
+					: Factory::getApplication()
+				);
+
+			$basePath = rtrim(Uri::base(false), '/');
+
+			// Note: this branch should NEVER execute!
+			if ($app->isClient('administrator') && str_ends_with($basePath, '/administrator'))
+			{
+				$basePath = substr($basePath, 0, -14);
+			}
+			elseif ($app->isClient('api') && str_ends_with($basePath, '/api'))
+			{
+				$basePath = substr($basePath, 0, -4);
+			}
+
+			$basePath = rtrim($basePath, '/');
+		}
+
+		return $basePath;
+	}
+
 	/**
 	 * Get the actor URI for a user. Remember that the Actor URI is keyed by the _username_ of the user.
 	 *
@@ -258,6 +290,10 @@ trait GetActorTrait
 			if ($app->isClient('administrator') && str_ends_with($basePath, '/administrator'))
 			{
 				$basePath = substr($basePath, 0, -14);
+			}
+			elseif ($app->isClient('api') && str_ends_with($basePath, '/api'))
+			{
+				$basePath = substr($basePath, 0, -4);
 			}
 
 			$basePath = rtrim($basePath, '/') . '/api';
