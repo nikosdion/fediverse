@@ -72,9 +72,52 @@ class ActorModel extends BaseDatabaseModel
 			'gravatar' => $user->email ? sprintf('https://www.gravatar.com/avatar/%s?s=%s', md5(strtolower(trim($user->email))), 256) : null,
 			'url' => $actorParams->get('activitypub.url') ?: null,
 			'media' => $this->getFrontendBasePath() . '/' . HTMLHelper::cleanImageURL(
-				$actorParams->get('activitypub.media')
-			)->url
+					$actorParams->get('activitypub.media')
+				)->url
 		};
+
+		$mediaType = '';
+
+		if (str_ends_with(strtolower($profileIcon ?? ''), '.jpg'))
+		{
+			$mediaType = 'image/jpeg';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.jpeg'))
+		{
+			$mediaType = 'image/jpeg';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.png'))
+		{
+			$mediaType = 'image/png';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.gif'))
+		{
+			$mediaType = 'image/gif';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.webp'))
+		{
+			$mediaType = 'image/webp';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.svg'))
+		{
+			$mediaType = 'image/svg+xml';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.bmp'))
+		{
+			$mediaType = 'image/bmp';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.ico'))
+		{
+			$mediaType = 'image/vnd.microsoft.icon';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.tif'))
+		{
+			$mediaType = 'image/tiff';
+		}
+		elseif (str_ends_with(strtolower($profileIcon ?? ''), '.tiff'))
+		{
+			$mediaType = 'image/tiff';
+		}
 
 		/**
 		 * @see https://www.w3.org/TR/activitypub/#actors
@@ -106,12 +149,21 @@ class ActorModel extends BaseDatabaseModel
 				'publicKeyPem' => $publicKeyPem,
 			],
 			'summary'           => $actorParams->get('activitypub.summary', '') ?? '',
-			'icon'              => $profileIcon,
+			'icon'              => [
+				'type'      => 'Image',
+				'mediaType' => $mediaType,
+				'url'       => $profileIcon,
+			],
 		];
 
 		if (empty($publicKeyPem))
 		{
 			unset($actorConfiguration['publicKey']);
+		}
+
+		if (empty($mediaType) || empty($profileIcon))
+		{
+			unset($actorConfiguration['icon']);
 		}
 
 		if (empty(trim(strip_tags($actorConfiguration['summary']))))
