@@ -222,7 +222,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 	 */
 	private function isAllowedActivityPubUser(User $user): bool
 	{
-		$cParams       = ComponentHelper::getParams('com_activity');
+		$cParams       = ComponentHelper::getParams('com_activitypub');
 		$anyUser       = (bool) $cParams->get('arbitrary_users', 0);
 		$allowedGroups = $cParams->get('allowed_groups', [1]);
 

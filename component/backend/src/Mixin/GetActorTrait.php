@@ -138,7 +138,7 @@ trait GetActorTrait
 		}
 
 		// No configured actor. I need the component parameters to decide what to do next.
-		$cParams       = ComponentHelper::getParams('com_activity');
+		$cParams       = ComponentHelper::getParams('com_activitypub');
 		$anyUser       = (bool) $cParams->get('arbitrary_users', 0);
 		$allowedGroups = $cParams->get('allowed_groups', [1]);
 
