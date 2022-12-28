@@ -12,6 +12,7 @@ defined('_JEXEC') || die;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Joomla\CMS\Event\AbstractImmutableEvent;
 use Joomla\CMS\Event\Result\ResultAware;
+use Joomla\CMS\Event\Result\ResultAwareInterface;
 use Joomla\CMS\Event\Result\ResultTypeObjectAware;
 use Joomla\Database\DatabaseQuery;
 use Joomla\Database\QueryInterface;
@@ -23,7 +24,7 @@ use Joomla\Database\QueryInterface;
  *
  * @since  2.0.0
  */
-class GetActivityListQuery extends AbstractImmutableEvent
+class GetActivityListQuery extends AbstractImmutableEvent implements ResultAwareInterface
 {
 	use ResultAware;
 	use ResultTypeObjectAware;

@@ -10,6 +10,7 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Model;
 use ActivityPhp\Type\Core\AbstractActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivityListQuery;
+use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Exception;
 use Joomla\CMS\Factory;
@@ -21,6 +22,8 @@ use Joomla\Database\DatabaseQuery;
 
 class OutboxModel extends AbstractListModel
 {
+	use GetActorTrait;
+
 	/**
 	 * The actor for which we're listing Activities in their Outbox.
 	 *
@@ -60,17 +63,17 @@ class OutboxModel extends AbstractListModel
 	 */
 	protected function getListQuery(): DatabaseQuery
 	{
-		$username   = $this->getUsername();
+		$username         = $this->getUsername();
 		$this->actorTable = $this->getActorTable($username);
-		$queryList  = $this->getQueryList($this->actorTable);
+		$queryList        = $this->getQueryList($this->actorTable);
 
 		/** @var DatabaseDriver $db */
-		$db    = $this->getDatabase();
+		$db = $this->getDatabase();
 
 		if (count($queryList) === 1)
 		{
 			/** @var DatabaseQuery $query */
-			$query = array_unshift($queryList);
+			$query = array_shift($queryList);
 			$query->order($db->quoteName('timestamp') . ' DESC');
 
 			return $query;
@@ -78,11 +81,11 @@ class OutboxModel extends AbstractListModel
 
 		$query = $db->getQuery(true);
 		/** @noinspection PhpParamsInspection */
-		$query->querySet(array_unshift($queryList));
+		$query->querySet(array_shift($queryList));
 
 		while (!empty($queryList))
 		{
-			$query->union(array_unshift($queryList));
+			$query->union(array_shift($queryList));
 		}
 
 		$query->order($db->quoteName('timestamp') . ' DESC');
@@ -120,7 +123,7 @@ class OutboxModel extends AbstractListModel
 
 		foreach ($items as $item)
 		{
-			$perContext[$item->context] ??= [];
+			$perContext[$item->context]   ??= [];
 			$perContext[$item->context][] = $item->id;
 		}
 
@@ -129,7 +132,7 @@ class OutboxModel extends AbstractListModel
 		PluginHelper::importPlugin('content');
 
 		$dispatcher = Factory::getApplication()->getDispatcher();
-		$results = [];
+		$results    = [];
 
 		foreach ($perContext as $context => $ids)
 		{
@@ -162,7 +165,7 @@ class OutboxModel extends AbstractListModel
 
 		if (empty($username))
 		{
-			throw new ResourceNotFound();
+			throw new ResourceNotFound('Not Found', 404);
 		}
 
 		return $username;
@@ -182,11 +185,12 @@ class OutboxModel extends AbstractListModel
 		/** @var ActorModel $actorModel */
 		$actorModel = $this->getMVCFactory()
 			->createModel('Actor', 'Api', ['ignore_request' => true]);
-		$actorTable = $actorModel->getActorRecordForUser($username, false);
+		$user       = $this->getUserFromUsername($username);
+		$actorTable = $actorModel->getActorRecordForUser($user, false);
 
 		if ($actorTable === null)
 		{
-			throw new ResourceNotFound();
+			throw new ResourceNotFound('Not Found', 404);
 		}
 
 		return $actorTable;
@@ -214,7 +218,7 @@ class OutboxModel extends AbstractListModel
 
 		if (empty($queryList))
 		{
-			throw new ResourceNotFound();
+			throw new ResourceNotFound('Not Found', 404);
 		}
 
 		return $queryList;

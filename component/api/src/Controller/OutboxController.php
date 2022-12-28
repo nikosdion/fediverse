@@ -34,7 +34,7 @@ class OutboxController extends BaseController
 	{
 		// Pass parameters from the request into a new model state object
 		$username      = $this->input->getRaw('username', '');
-		$hasPagination = $this->input->getBool('page', false);
+		$hasPagination = in_array(strtolower($this->input->getCmd('page', '')), ['1', 'true', 'yes']);
 
 		$modelState = new CMSObject();
 		$modelState->set('filter.username', $username);
@@ -90,7 +90,7 @@ class OutboxController extends BaseController
 
 		if (!$hasPagination && $offset > $model->getTotal())
 		{
-			throw new ResourceNotFound();
+			throw new ResourceNotFound('Not Found', 404);
 		}
 
 		// Push the document and ask the view to display the list

@@ -56,7 +56,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$userId      = $actor->user_id;
 		$categories  = $params->get('content.categories', []);
 		$categories  = is_array($categories) ? $categories : [];
-		$accessLevel = $params->get('content.categories', [1, 5]);
+		$accessLevel = $params->get('content.accesslevel', [1, 5]);
 		$accessLevel = is_array($accessLevel) ? $accessLevel : [1, 5];
 
 		/** @var DatabaseDriver $db */
@@ -70,6 +70,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 					$db->quote($this->context) . ' AS ' . $db->quoteName('context'),
 				]
 			)
+			->from($db->quoteName('#__content'))
 			->where([
 				$db->quoteName('state') . ' = ' . $db->quote('1'),
 				$db->quoteName('publish_up') . ' < NOW()',
@@ -214,23 +215,25 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		$sourceType   = $sourceType === 'metadesc' ? 'Note' : 'Article';
 		$sourceObject = [
-			'id'           => $activityId,
-			'type'         => $sourceType,
-			'summary'      => (empty($rawData->metadesc) || $sourceType === 'Note') ? null : $rawData->metadesc,
-			'inReplyTo'    => null,
-			'published'    => $published,
-			'url'          => $url,
-			'attributedTo' => $actorUri,
-			'to'           => [
+			'id'               => $activityId,
+			'type'             => $sourceType,
+			'summary'          => (empty($rawData->metadesc) || $sourceType === 'Note') ? null : $rawData->metadesc,
+			'inReplyTo'        => null,
+			'atomUri'          => $activityId,
+			'inReplyToAtomUri' => null,
+			'published'        => $published,
+			'url'              => $url,
+			'attributedTo'     => $actorUri,
+			'to'               => [
 				'https://www.w3.org/ns/activitystreams#Public',
 			],
-			'cc'           => [
+			'cc'               => [
 				$followersUri,
 			],
-			'sensitive'    => false,
-			'content'      => $content,
-			'contentMap'   => [
-				$language => $content
+			'sensitive'        => false,
+			'content'          => $content,
+			'contentMap'       => [
+				$language => $content,
 			],
 		];
 
@@ -239,7 +242,10 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			$sourceObject['name'] = $rawData->title;
 		}
 
-		// TODO Images as attachments
+		if ($attachImages)
+		{
+			// TODO Images as attachments
+		}
 
 		$attributes = [
 			'id'        => $activityId,

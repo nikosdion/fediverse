@@ -15,8 +15,9 @@ use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use InvalidArgumentException;
 use Joomla\CMS\Event\AbstractImmutableEvent;
 use Joomla\CMS\Event\Result\ResultAware;
+use Joomla\CMS\Event\Result\ResultAwareInterface;
 
-class GetActivity extends AbstractImmutableEvent
+class GetActivity extends AbstractImmutableEvent implements ResultAwareInterface
 {
 	use ResultAware;
 
@@ -89,12 +90,12 @@ class GetActivity extends AbstractImmutableEvent
 
 		if (
 			!str_starts_with($extension, 'com_')
-			|| !str_starts_with($extension, 'plg_')
-			|| !str_starts_with($extension, 'mod_')
-			|| !str_starts_with($extension, 'lib_')
-			|| !str_starts_with($extension, 'pkg_')
-			|| !str_starts_with($extension, 'tpl_')
-			|| !str_starts_with($extension, 'files_')
+			&& !str_starts_with($extension, 'plg_')
+			&& !str_starts_with($extension, 'mod_')
+			&& !str_starts_with($extension, 'lib_')
+			&& !str_starts_with($extension, 'pkg_')
+			&& !str_starts_with($extension, 'tpl_')
+			&& !str_starts_with($extension, 'files_')
 		)
 		{
 			throw new InvalidArgumentException(

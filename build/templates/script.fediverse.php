@@ -30,11 +30,11 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 	 */
 	protected $extensionsToEnable = [
 		['plugin', 'fediverse', 1, 'content'],
+		['plugin', 'plg_content_contentactivitypub', 1, 'content'],
 		['plugin', 'webfinger', 1, 'system'],
 		['plugin', 'activitypub', 1, 'webfinger'],
 		['plugin', 'activitypub', 1, 'webservices'],
 	];
-
 
 	/**
 	 * Tuns on installation (but not on upgrade). This happens in install and discover_install installation routes.

@@ -10,6 +10,12 @@ Accept: application/activity+json
 
 ###
 
+GET https://{{hostname}}/api/v1/activitypub/outbox/{{username}}?page=true
+User-Agent: ApiDevelopment/2.0
+Accept: application/activity+json
+
+###
+
 POST https://{{hostname}}/api/v1/activitypub/outbox/{{username}}
 User-Agent: ApiDevelopment/2.0
 Accept: application/activity+json
