@@ -102,23 +102,27 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			$defaults
 		);
 
+		// Outbox -- supports GET and POST. Well, actually the POST will simply return 405, but we MUST handle it either way.
+		$routes[] = new Route(
+			['GET'],
+			'v1/activitypub/outbox/:username',
+			'outbox.displayList',
+			[
+				'username' => '[^/]+',
+			],
+			$defaults
+		);
+		$routes[] = new Route(
+			['POST'],
+			'v1/activitypub/outbox/:username',
+			'outbox.notImplemented',
+			[
+				'username' => '[^/]+',
+			],
+			$defaults
+		);
+
 		// Finally, add the routes to the router.
 		$router->addRoutes($routes);
-	}
-
-	private function translateFormat(string $format): string
-	{
-		return match ($format)
-		{
-			'application/activity+json',
-			'applicationactivityjson',
-			'application/ld+json',
-			'applicationldjson',
-			'application/json',
-			'applicationjson',
-			'application/vnd.api+json',
-			'applicationvnd.apijson' => 'json',
-			default => $format,
-		};
 	}
 }

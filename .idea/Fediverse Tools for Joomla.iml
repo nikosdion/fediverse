@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/component/frontend/src" packagePrefix="Dionysopoulos\Component\ActivityPub\Site\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/component/backend/src" packagePrefix="Dionysopoulos\Component\ActivityPub\Administrator\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/modules/site/fediversefeed/src" packagePrefix="Joomla\Module\FediverseFeed\Site\" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/plugins/content/contentactivitypub/src" packagePrefix="Joomla\Plugin\Content\ContentActivityPub\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/content/fediverse/src" packagePrefix="Joomla\Plugin\Content\Fediverse\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/system/webfinger/src" packagePrefix="Joomla\Plugin\System\WebFinger\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/webfinger/activitypub/src" packagePrefix="Joomla\Plugin\WebFinger\ActivityPub\" isTestSource="false"/>

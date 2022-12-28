@@ -10,7 +10,6 @@ namespace Dionysopoulos\Component\ActivityPub\Api\View\Actor;
 defined('_JEXEC') || die;
 
 use Dionysopoulos\Component\ActivityPub\Api\Model\ActorModel;
-use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\JsonView as BaseJsonView;
 

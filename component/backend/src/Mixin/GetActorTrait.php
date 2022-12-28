@@ -12,7 +12,6 @@ use Exception;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
-use Joomla\CMS\MVC\Model\BaseModel;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\User;
 use Joomla\CMS\User\UserFactoryInterface;
@@ -23,54 +22,71 @@ use Joomla\Utilities\ArrayHelper;
 trait GetActorTrait
 {
 	/**
-	 * Has the user consented to using ActivityPub?
+	 * Retrieve the actor record for the specified user.
 	 *
-	 * This works as an opt-out check. The default state in absence of an explicit setting is implied consent.
+	 * If you set $createActor to true and this is a concrete Joomla user without an existing actor record, a new Actor
+	 * record will be created for that user.
 	 *
-	 * @param   int  $user_id  The user ID to check
+	 * Note that no new actor will be created for non-concrete users (ID <= 0), i.e. those used internally for "virtual"
+	 * actors.
 	 *
-	 * @return  bool
+	 * @return  object|null
 	 * @since   2.0.0
 	 */
-	private function isConsented(int $user_id): bool
+	public function getActorRecordForUser(?User $user, bool $createActor = false): ?ActorTable
 	{
-		// Virtual users are always consented by virtue of being created by an Administrator / Super User.
-		if ($user_id === 0)
+		static $table = null;
+
+		/** @var ActorTable $table */
+		$table = $table ?? call_user_func(
+			function () {
+				$app = method_exists($this, 'getApplication')
+					? $this->getApplication()
+					: (
+					property_exists($this, 'app')
+						? $this->app
+						: Factory::getApplication()
+					);
+
+				return ($this instanceof BaseDatabaseModel)
+					? $this->getTable('Actor', 'Administrator')
+					: $app->bootComponent('com_activitypub')->getMVCFactory()->createTable('Actor', 'Administrator');
+			}
+		);
+
+		if ($user === null)
 		{
-			return true;
+			return null;
 		}
 
-		// Get the user profile setting
-		/** @var DatabaseDriver $db */
-		$db    = $this->getDatabase();
-		$query = $db->getQuery(true)
-			->select($db->quoteName('user_id'))
-			->from($db->quoteName('#__user_profiles'))
-			->where(
-				[
-					$db->quoteName('profile_key') . ' = ' . $db->quote('webfinger.activitypub_enabled'),
-					$db->quoteName('profile_value') . ' = :profile_value',
-				]
-			)
-			->bind(':profile_value', $handle);
+		$loaded = $table->load($user->id <= 0 ? ['username' => $user->username] : ['user_id' => $user->id]);
 
-		try
+		// If we are not going to create a new Actor, or the user is not a concrete CMS user, return early.
+		if (!$createActor || $user->id <= 0)
 		{
-			$consent = $db->setQuery($query)->loadResult() ?: null;
-		}
-		catch (Exception $e)
-		{
-			$consent = null;
+			return $loaded ? $table : null;
 		}
 
-		// A NULL value is considered de facto consent (the feature is opt-out, not opt-in)
-		return $consent === null || $consent == 1;
+		if (!$loaded)
+		{
+			$table->reset();
+
+			$saved = $table->save([
+				'id'      => null,
+				'user_id' => $user->id,
+				'type'    => 'Person',
+			]);
+
+			return $saved ? $table : null;
+		}
+
+		return $table;
 	}
 
 	/**
 	 * Get a valid Actor user by their username (configured Actor username or Joomla username)
 	 *
-	 * @param   string  $username
+	 * @param   string|null  $username
 	 *
 	 * @return  User|null
 	 * @since   2.0.0
@@ -158,70 +174,12 @@ trait GetActorTrait
 	}
 
 	/**
-	 * Retrieve the actor record for the specified user.
+	 * Get the base path of the site application.
 	 *
-	 * If you set $createActor to true and this is a concrete Joomla user without an existing actor record, a new Actor
-	 * record will be created for that user.
-	 *
-	 * Note that no new actor will be created for non-concrete users (ID <= 0), i.e. those used internally for "virtual"
-	 * actors.
-	 *
-	 * @param   User|null  $user
-	 *
-	 * @return  object|null
+	 * @return  string
 	 * @since   2.0.0
+	 * @throws  Exception
 	 */
-	protected function getActorRecordForUser(?User $user, bool $createActor = false): ?ActorTable
-	{
-		static $table = null;
-
-		/** @var ActorTable $table */
-		$table = $table ?? call_user_func(
-			function()
-			{
-				$app = method_exists($this, 'getApplication')
-					? $this->getApplication()
-					: (
-					property_exists($this, 'app')
-						? $this->app
-						: Factory::getApplication()
-					);
-
-				return ($this instanceof BaseDatabaseModel)
-					? $this->getTable('Actor', 'Administrator')
-					: $app->bootComponent('com_activitypub')->getMVCFactory()->createTable('Actor', 'Administrator');
-			}
-		);
-
-		if ($user === null)
-		{
-			return null;
-		}
-
-		$loaded = $table->load($user->id <= 0 ? ['username' => $user->username] : ['user_id' => $user->id]);
-
-		// If we are not going to create a new Actor, or the user is not a concrete CMS user, return early.
-		if (!$createActor || $user->id <= 0)
-		{
-			return $loaded ? $table : null;
-		}
-
-		if (!$loaded)
-		{
-			$table->reset();
-
-			$saved = $table->save([
-				'id' => null,
-				'user_id' => $user->id,
-				'type' => 'Person'
-			]);
-
-			return $saved ? $table : null;
-		}
-
-		return $table;
-	}
-
 	protected function getFrontendBasePath(): string
 	{
 		static $basePath = null;
@@ -311,6 +269,51 @@ trait GetActorTrait
 			$path,
 			urlencode($user->username)
 		);
+	}
+
+	/**
+	 * Has the user consented to using ActivityPub?
+	 *
+	 * This works as an opt-out check. The default state in absence of an explicit setting is implied consent.
+	 *
+	 * @param   int  $user_id  The user ID to check
+	 *
+	 * @return  bool
+	 * @since   2.0.0
+	 */
+	private function isConsented(int $user_id): bool
+	{
+		// Virtual users are always consented by virtue of being created by an Administrator / Super User.
+		if ($user_id === 0)
+		{
+			return true;
+		}
+
+		// Get the user profile setting
+		/** @var DatabaseDriver $db */
+		$db    = $this->getDatabase();
+		$query = $db->getQuery(true)
+			->select($db->quoteName('user_id'))
+			->from($db->quoteName('#__user_profiles'))
+			->where(
+				[
+					$db->quoteName('profile_key') . ' = ' . $db->quote('webfinger.activitypub_enabled'),
+					$db->quoteName('profile_value') . ' = :profile_value',
+				]
+			)
+			->bind(':profile_value', $handle);
+
+		try
+		{
+			$consent = $db->setQuery($query)->loadResult() ?: null;
+		}
+		catch (Exception $e)
+		{
+			$consent = null;
+		}
+
+		// A NULL value is considered de facto consent (the feature is opt-out, not opt-in)
+		return $consent === null || $consent == 1;
 	}
 
 }
