@@ -25,6 +25,7 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\User;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
+use Joomla\Component\Tags\Site\Helper\RouteHelper as TagsRouteHelper;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseDriver;
@@ -37,16 +38,6 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 {
 	use DatabaseAwareTrait;
 	use GetActorTrait;
-
-	/**
-	 * The context of the Activity.
-	 *
-	 * This has no meaning in Joomla. It's only used to key ActivityPub items.
-	 *
-	 * @var    string
-	 * @since  2.0.0
-	 */
-	protected string $context = 'com_content.article';
 
 	/**
 	 * Maximum pixels in the largest image dimension to sample for BlurHash.
@@ -66,6 +57,16 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 	 * @since  2.0.0
 	 */
 	private static array $blurHashCache = [];
+
+	/**
+	 * The context of the Activity.
+	 *
+	 * This has no meaning in Joomla. It's only used to key ActivityPub items.
+	 *
+	 * @var    string
+	 * @since  2.0.0
+	 */
+	protected string $context = 'com_content.article';
 
 	/**
 	 * Returns an array of events this subscriber will listen to.
@@ -313,8 +314,10 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				$language => $content,
 			],
 			'attachment'       => [],
+			'tag'              => [],
 		];
 
+		// Get associated languages
 		if ($rawData->language !== '*')
 		{
 			foreach ($this->getAssociatedContent($rawData->id) as $langCode => $assocRawData)
@@ -329,14 +332,16 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			}
 		}
 
+		// Add the article title
 		if ($sourceObjectType === 'Article')
 		{
 			$sourceObject['name'] = $rawData->title;
 		}
 
+		// Attach images
 		if ($attachImages)
 		{
-			foreach ($this->attachImages($rawData->images, $sourceType) as $attachment)
+			foreach ($this->getImageAttachments($rawData->images, $sourceType) as $attachment)
 			{
 				if (empty($attachment))
 				{
@@ -347,6 +352,18 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			}
 		}
 
+		// Add tags as hashtags
+		foreach ($this->getTags($rawData->id) as $tag)
+		{
+			if (empty($tag))
+			{
+				continue;
+			}
+
+			$sourceObject['tag'][] = $tag;
+		}
+
+		// Create the activity
 		$attributes = [
 			'id'        => $activityId,
 			'actor'     => $actorUri,
@@ -465,7 +482,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 	 * @return  array
 	 * @since   2.0.0
 	 */
-	private function attachImages(string $imagesSource, string $sourceType): array
+	private function getImageAttachments(string $imagesSource, string $sourceType): array
 	{
 		$ret           = [];
 		$params        = new Registry($imagesSource);
@@ -581,7 +598,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			return self::$blurHashCache[$key] = '';
 		}
 
-		$image  = imagecreatefromstring($imageContents);
+		$image = imagecreatefromstring($imageContents);
 
 		if ($image === false)
 		{
@@ -629,5 +646,55 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$components_y = 3;
 
 		return self::$blurHashCache[$key] = Blurhash::encode($pixels, $components_x, $components_y);
+	}
+
+	private function getTags(int $id)
+	{
+		/** @var DatabaseDriver $db */
+		$db = $this->getDatabase();
+
+		$whereQuery = $db->getQuery(true)
+			->select([
+				$db->quoteName('m.tag_id'),
+			])
+			->from($db->quoteName('#__contentitem_tag_map', 'm'))
+			->where([
+				$db->quoteName('m.content_item_id') . ' = ' . $id,
+				$db->quoteName('m.type_alias') . '=' . $db->quote('com_content.article'),
+			]);
+
+		$query = $db->getQuery(true)
+			->select([
+				$db->quoteName('id'),
+				$db->quoteName('title'),
+				$db->quoteName('language'),
+			])->from($db->quoteName('#__tags', 't'))
+			->where($db->quoteName('published') . ' = 1')
+			->extendWhere('AND', [
+				$db->quoteName('t.publish_up') . ' IS NULL',
+				$db->quoteName('t.publish_up') . ' < NOW()',
+			], 'OR')
+			->extendWhere('AND', [
+				$db->quoteName('t.publish_down') . ' IS NULL',
+				$db->quoteName('t.publish_down') . ' > NOW()',
+			], 'OR')
+			->where($db->quoteName('id') . 'IN(' . $whereQuery . ')');
+
+		return array_map(
+			function ($info): ?array
+			{
+				return [
+					'type' => 'Hashtag',
+					'href' => Route::link(
+						'site',
+						TagsRouteHelper::getComponentTagRoute($info->id, $info->language),
+						false,
+						absolute: true
+					),
+					'name' => '#' . $info->title
+				];
+			},
+			$db->setQuery($query)->loadObjectList() ?: []
+		);
 	}
 }

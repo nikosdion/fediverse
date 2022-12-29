@@ -23,6 +23,9 @@
 		],
 		'Document|Image' => [
 			'blurhash', 'width', 'height'
+		],
+		'Hashtag' => [
+			'href', 'name'
 		]
 	]
 );
