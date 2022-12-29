@@ -11,6 +11,7 @@ namespace Joomla\Plugin\Content\ContentActivityPub\Extension;
 
 use ActivityPhp\Type;
 use ActivityPhp\Type\Extended\Activity\Create;
+use Algo26\IdnaConvert\ToIdn;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivityListQuery;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
@@ -25,6 +26,7 @@ use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
+use Joomla\Uri\Uri;
 use Joomla\Utilities\ArrayHelper;
 
 class ContentActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
@@ -218,11 +220,18 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			'metadesc' => $rawData->metadesc
 		};
 
-		$sourceType   = $sourceType === 'metadesc' ? 'Note' : 'Article';
-		$sourceObject = [
+		/**
+		 * Here's a fun one! The ActivityPhp URL validator uses PHP's filter_var which only supports URLs with ASCII
+		 * characters. Guess what happens when the URL contains UTF-8 characters? That's right, it throws an error. So,
+		 * we have to transliterate the URL.
+		 */
+		$url = $this->transliterateUrl($url);
+
+		$sourceObjectType = $sourceType === 'metadesc' ? 'Note' : 'Article';
+		$sourceObject     = [
 			'id'               => $activityId,
-			'type'             => $sourceType,
-			'summary'          => (empty($rawData->metadesc) || $sourceType === 'Note') ? null : $rawData->metadesc,
+			'type'             => $sourceObjectType,
+			'summary'          => (empty($rawData->metadesc) || $sourceObjectType === 'Note') ? null : $rawData->metadesc,
 			'inReplyTo'        => null,
 			'atomUri'          => $activityId,
 			'inReplyToAtomUri' => null,
@@ -242,7 +251,21 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			],
 		];
 
-		if ($sourceType === 'Article')
+		if ($rawData->language !== '*')
+		{
+			foreach ($this->getAssociatedContent($rawData->id) as $langCode => $assocRawData)
+			{
+				$sourceObject['contentMap'][$langCode] = match ($sourceType)
+				{
+					'introtext' => $assocRawData->introtext,
+					'fulltext' => $assocRawData->fulltext,
+					'both' => $assocRawData->introtext . '<hr/>' . $assocRawData->fulltext,
+					'metadesc' => $assocRawData->metadesc
+				};
+			}
+		}
+
+		if ($sourceObjectType === 'Article')
 		{
 			$sourceObject['name'] = $rawData->title;
 		}
@@ -267,5 +290,81 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		/** @noinspection PhpIncompatibleReturnTypeInspection */
 		return Type::create('Create', $attributes);
+	}
+
+	private function getAssociatedContent(int $articleId): array
+	{
+		/** @var DatabaseDriver $db */
+		$db = $this->getDatabase();
+
+		$existsQuery = $db->getQuery(true)
+			->select(1)
+			->from($db->quoteName('#__associations', 'a2'))
+			->where([
+				$db->quoteName('a2.context') . ' = ' . $db->quote('com_content.item'),
+				$db->quoteName('a2.id') . ' = ' . (int) $articleId,
+				$db->quoteName('a1.id') . ' != ' . (int) $articleId,
+				$db->quoteName('a1.key') . ' = ' . $db->quoteName('a2.key'),
+			]);
+
+		$innerQuery = $db->getQuery(true)
+			->select($db->quoteName('id'))
+			->from($db->quoteName('#__associations', 'a1'))
+			->where('EXISTS(' . $existsQuery . ')');
+
+		$query = $db->getQuery(true)
+			->select([
+				$db->quoteName('id'),
+				$db->quoteName('introtext'),
+				$db->quoteName('fulltext'),
+				$db->quoteName('metadesc'),
+				$db->quoteName('language'),
+			])
+			->from($db->quoteName('#__content'))
+			->where([
+				$db->quoteName('id') . ' IN(' . $innerQuery . ')',
+				$db->quoteName('language') . ' != ' . $db->quote('*'),
+			]);
+
+		return $db->setQuery($query)->loadObjectList('language') ?: [];
+	}
+
+	/**
+	 * Converts a UTF-8 URL into its IDN- and URL-encoded representation.
+	 *
+	 * @param   string  $url
+	 *
+	 * @return  string
+	 * @throws  \Algo26\IdnaConvert\Exception\AlreadyPunycodeException
+	 * @throws  \Algo26\IdnaConvert\Exception\InvalidCharacterException
+	 * @since   2.0.0
+	 * @see     https://en.wikipedia.org/wiki/Internationalized_domain_name for IDN encoding of hostnames
+	 * @see     https://en.wikipedia.org/wiki/Percent-encoding for URL encoding
+	 */
+	private function transliterateUrl(string $url): string
+	{
+		if (filter_var($url, FILTER_VALIDATE_URL))
+		{
+			return $url;
+		}
+
+		$uri = new Uri($url);
+
+		// Transliterate the host using IDNA
+		$uri->setHost((new ToIdn())->convert($uri->getHost()));
+
+		// Transliterate the path
+		$uri->setPath(implode('/', array_map('urlencode', explode('/', $uri->getPath()))));
+
+		// Transliterate any query string parameters
+		$vars = $uri->getQuery(true);
+		$vars = array_combine(
+			array_map('urlencode', array_keys($vars)),
+			array_map('urlencode', array_values($vars))
+		);
+		$uri->setQuery($vars);
+
+		// Return the transliterated whole
+		return $uri->toString();
 	}
 }

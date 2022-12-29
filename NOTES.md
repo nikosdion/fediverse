@@ -120,9 +120,11 @@ To be implemented. Required to provide followers.
 
 # Thoughts
 
-Check if articles have associated languages, add that to the content map (allows for sharing multilingual content).
+I probably need to run article content through content plugins :/
 
 Need to implement image attachments.
+
+Allow content filtering by language per actor.
 
 Must have an /activity endpoint to list a single activity, as seen in the Outbox
 
