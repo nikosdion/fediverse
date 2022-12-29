@@ -648,6 +648,15 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		return self::$blurHashCache[$key] = Blurhash::encode($pixels, $components_x, $components_y);
 	}
 
+	/**
+	 * Get the Joomla tags as Hashtag objects (as supported by Mastodon)
+	 *
+	 * @param   int  $id  The article ID
+	 *
+	 * @return  array  Array of associative arrays, each inner array is a Hashtag
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
 	private function getTags(int $id)
 	{
 		/** @var DatabaseDriver $db */
