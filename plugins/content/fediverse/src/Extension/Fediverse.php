@@ -7,7 +7,7 @@
 
 namespace Joomla\Plugin\Content\Fediverse\Extension;
 
-use Joomla\CMS\Date\Date;
+use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
@@ -224,7 +224,7 @@ class Fediverse extends CMSPlugin implements SubscriberInterface
 	{
 		if (is_string($referenceDateTime))
 		{
-			$referenceDateTime = Date::getInstance($referenceDateTime)->getTimestamp();
+			$referenceDateTime = (clone Factory::getDate($referenceDateTime))->getTimestamp();
 		}
 
 		$currentDateTime = time();

@@ -9,7 +9,6 @@ namespace Joomla\Module\FediverseFeed\Site\Dispatcher;
 
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
@@ -229,7 +228,7 @@ class Dispatcher extends AbstractModuleDispatcher
 	{
 		if (is_string($referenceDateTime))
 		{
-			$referenceDateTime = Date::getInstance($referenceDateTime)->getTimestamp();
+			$referenceDateTime = (clone Factory::getDate($referenceDateTime))->getTimestamp();
 		}
 
 		$currentDateTime = time();

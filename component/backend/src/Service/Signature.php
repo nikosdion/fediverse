@@ -12,6 +12,7 @@ use Dionysopoulos\Component\ActivityPub\Administrator\Traits\ActorUrlTrait;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Date\Date;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseAwareInterface;
@@ -124,7 +125,7 @@ class Signature implements DatabaseAwareInterface
 		$uri        = new Uri($url);
 		$host       = $uri->getHost();
 		$path       = $uri->getPath();
-		$date       = $date ?? Date::getInstance();
+		$date       = $date ?? clone Factory::getDate();
 
 		$signedString = sprintf(
 			"(request-target): post %s\nhost: %s\ndate: %s",
