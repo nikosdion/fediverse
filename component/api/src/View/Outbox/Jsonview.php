@@ -95,7 +95,7 @@ class Jsonview extends BaseJsonView implements DatabaseAwareInterface
 				'last'       => $lastPage,
 			];
 
-			echo Type::create('OrderedCollection', $attributes)
+			echo Type::create('OrderedCollectionPage', $attributes)
 				->toJson();
 
 			return;
@@ -132,9 +132,7 @@ class Jsonview extends BaseJsonView implements DatabaseAwareInterface
 			$attributes['next'] = $outboxUri->toString();
 		}
 
-		$collection = Type::create('OrderedCollection', $attributes);
-
-		echo Type::create('OrderedCollection', $attributes)
+		echo Type::create('OrderedCollectionPage', $attributes)
 			->toJson();
 	}
 }

@@ -141,7 +141,10 @@ class OutboxModel extends AbstractListModel
 			$activities = $event->getArgument('result');
 			$activities = is_array($activities) ? $activities : [];
 
-			$results = array_merge($results, $activities);
+			foreach($activities as $activityList)
+			{
+				$results = array_merge($results, $activityList);
+			}
 		}
 
 		// Convert the items list to activities using the above $results and return the result

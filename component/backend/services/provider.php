@@ -66,5 +66,7 @@ return new class implements ServiceProviderInterface {
 		}
 
 		JLoader::registerNamespace('ActivityPhp', realpath(__DIR__ . '/../src/ActivityPhp'));
+
+		require_once __DIR__ . '/dialect.php';
 	}
 };

@@ -117,3 +117,25 @@ Not implemented. Always returns the appropriate HTTP response.
 ## Posting to the inbox
 
 To be implemented. Required to provide followers.
+
+# Thoughts
+
+Check if articles have associated languages, add that to the content map (allows for sharing multilingual content).
+
+Need to implement image attachments.
+
+Must have an /activity endpoint to list a single activity, as seen in the Outbox
+
+Option to allow Followers. If this is disabled don't show a Followers collection in WebFinger, Actor, Outbox.
+
+I need a table to track Followers, including their sharedInbox and the original, cached document.
+
+I need to implement the Inbox. Reading will return 405. Writing should be allowed for follow requests — throw 405 if the user has opted out of being followed or following has been disabled.
+
+Content plugins need to detect when publishing an article would result in a new activity and add to a temp table of outbound activities.
+
+Notifying followers (requires a Scheduled Task):
+* Step 1, use the temp outbound activity and the followers (and their shared inboxes) to create N number of actionable sends
+* Step 2, start going through the actionable sends. Maybe use curl multi mode to send ~10 of them at a time
+
+Allowing replies will require integration with Engage. I have to think about how to best to that. Essentially, I'd need to allow writing non-follow requests to my Inbox and reply with 405 if nothing handles it. 

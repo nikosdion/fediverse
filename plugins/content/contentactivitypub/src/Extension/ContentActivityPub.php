@@ -17,6 +17,7 @@ use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\User\User;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
 use Joomla\Database\DatabaseAwareInterface;
@@ -200,7 +201,12 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$followersUri = $this->getApiUriForUser($user, 'followers');
 		$jPublished   = clone Factory::getDate($rawData->publish_up ?: $rawData->created, 'GMT');
 		$published    = $jPublished->format(DATE_ATOM);
-		$url          = RouteHelper::getArticleRoute($rawData->id, $rawData->catid, $rawData->language);
+		$url          = Route::link(
+			client: 'site',
+			url: RouteHelper::getArticleRoute($rawData->id, $rawData->catid, $rawData->language),
+			xhtml: false,
+			absolute: true
+		);
 		$language     = ($rawData->language === '*' || empty($rawData->language))
 			? $this->getApplication()->getLanguage()->getTag()
 			: $rawData->language;
