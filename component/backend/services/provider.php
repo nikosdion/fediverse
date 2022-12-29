@@ -28,6 +28,8 @@ return new class implements ServiceProviderInterface {
 	{
 		$this->activityPubAutoloader();
 
+		require_once __DIR__ . '/../vendor/autoload.php';
+
 		$container->registerServiceProvider(new MVCFactory('Dionysopoulos\\Component\\ActivityPub'));
 		$container->registerServiceProvider(new ComponentDispatcherFactory('Dionysopoulos\\Component\\ActivityPub'));
 

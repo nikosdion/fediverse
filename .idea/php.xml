@@ -11,8 +11,9 @@
   </component>
   <component name="PhpIncludePathManager">
     <include_path>
-      <path value="$PROJECT_DIR$/vendor/composer" />
       <path value="$PROJECT_DIR$/../../master/joomla4" />
+      <path value="$PROJECT_DIR$/component/backend/vendor/composer" />
+      <path value="$PROJECT_DIR$/component/backend/vendor/kornrunner/blurhash" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.0" />

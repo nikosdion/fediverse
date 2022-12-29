@@ -21,8 +21,8 @@
 		'Article|Note' => [
 			'atomUri', 'inReplyToAtomUri', 'sensitive'
 		],
-		'OrderedCollection' => [
-			'partOf'
+		'Document|Image' => [
+			'blurhash', 'width', 'height'
 		]
 	]
 );

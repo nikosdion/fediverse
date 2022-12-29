@@ -10,15 +10,19 @@ namespace Joomla\Plugin\Content\ContentActivityPub\Extension;
 \defined('_JEXEC') || die;
 
 use ActivityPhp\Type;
-use ActivityPhp\Type\Extended\Activity\Create;
+use ActivityPhp\Type\Core\AbstractActivity;
 use Algo26\IdnaConvert\ToIdn;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivityListQuery;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
+use Exception;
 use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Image\Image;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\User;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
 use Joomla\Database\DatabaseAwareInterface;
@@ -26,16 +30,50 @@ use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
-use Joomla\Uri\Uri;
 use Joomla\Utilities\ArrayHelper;
+use kornrunner\Blurhash\Blurhash;
 
 class ContentActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
 	use DatabaseAwareTrait;
 	use GetActorTrait;
 
+	/**
+	 * The context of the Activity.
+	 *
+	 * This has no meaning in Joomla. It's only used to key ActivityPub items.
+	 *
+	 * @var    string
+	 * @since  2.0.0
+	 */
 	protected string $context = 'com_content.article';
 
+	/**
+	 * Maximum pixels in the largest image dimension to sample for BlurHash.
+	 *
+	 * Smaller values are faster but the BlurHash is less accurate. Higher values are more accurate but far slower AND
+	 * use a lot of memory. Values between 32 and 128 work best, based on a subjective trial against a few dozen photos
+	 * and illustrations I had at hand.
+	 *
+	 * @since  2.0.0
+	 */
+	private const MAX_HASH_PIXELS = 64;
+
+	/**
+	 * Cache of BlurHash keyed by image location, to speed things up a smidge.
+	 *
+	 * @var    array
+	 * @since  2.0.0
+	 */
+	private static array $blurHashCache = [];
+
+	/**
+	 * Returns an array of events this subscriber will listen to.
+	 *
+	 * @return  array
+	 *
+	 * @since   2.0.0
+	 */
 	public static function getSubscribedEvents(): array
 	{
 		return [
@@ -44,6 +82,14 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		];
 	}
 
+	/**
+	 * Get the list query for the compact activity data (id, context, timestamp) for an Actor.
+	 *
+	 * @param   GetActivityListQuery  $event
+	 *
+	 * @return  void
+	 * @since   2.0.0.
+	 */
 	public function getListQuery(GetActivityListQuery $event): void
 	{
 		/** @var ActorTable $actor */
@@ -106,6 +152,14 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$event->addResult($query);
 	}
 
+	/**
+	 * Get the full Activity objects given a list of IDs, a context, and an Actor.
+	 *
+	 * @param   GetActivity  $event
+	 *
+	 * @return  void
+	 * @since   2.0.0
+	 */
 	public function getActivities(GetActivity $event): void
 	{
 		/** @var ActorTable $actor */
@@ -167,7 +221,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		{
 			$items = $db->setQuery($query)->loadObjectList('id') ?: [];
 		}
-		catch (\Exception $e)
+		catch (Exception $e)
 		{
 			return;
 		}
@@ -193,7 +247,16 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$event->addResult($results);
 	}
 
-	private function getActivityFromRawContent(object $rawData, User $user): Create
+	/**
+	 * Get an Activity object from the raw article data.
+	 *
+	 * @param   object  $rawData  The raw article data.
+	 * @param   User    $user     The user which the Activity is for.
+	 *
+	 * @return  AbstractActivity
+	 * @since   2.0.0
+	 */
+	private function getActivityFromRawContent(object $rawData, User $user): AbstractActivity
 	{
 		$sourceType   = $this->params->get('fulltext', 'introtext');
 		$attachImages = $this->params->get('images', '1') == 1;
@@ -249,6 +312,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			'contentMap'       => [
 				$language => $content,
 			],
+			'attachment'       => [],
 		];
 
 		if ($rawData->language !== '*')
@@ -272,7 +336,15 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		if ($attachImages)
 		{
-			// TODO Images as attachments
+			foreach ($this->attachImages($rawData->images, $sourceType) as $attachment)
+			{
+				if (empty($attachment))
+				{
+					continue;
+				}
+
+				$sourceObject['attachment'][] = $attachment;
+			}
 		}
 
 		$attributes = [
@@ -292,6 +364,22 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		return Type::create('Create', $attributes);
 	}
 
+	/**
+	 * Returns the content in different, associated languages.
+	 *
+	 * This only works if the original article has a language other than “All” (*) and you have set up Associations in
+	 * Joomla between it and its translations in other languages.
+	 *
+	 * Please note that this does not use core Joomla code. Joomla's Associations helpers only return URLs, not the
+	 * actual content. Moreover, Joomla is using extremely inefficient database queries with multiple JOINs. We use
+	 * WHERE clauses with the EXISTS keywords to let MySQL 8.0.15 and later perform "half-joins" which are far more
+	 * efficient.
+	 *
+	 * @param   int  $articleId  The ID of the original article
+	 *
+	 * @return  array  Associative array with languages as keys and the corresponding content as values.
+	 * @since   2.0.0
+	 */
 	private function getAssociatedContent(int $articleId): array
 	{
 		/** @var DatabaseDriver $db */
@@ -366,5 +454,180 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		// Return the transliterated whole
 		return $uri->toString();
+	}
+
+	/**
+	 * Attaches images to the source object
+	 *
+	 * @param   string  $imagesSource  The JSON-encoded information about the article's images
+	 * @param   string  $sourceType    Where does the Activity get the source of its content?
+	 *
+	 * @return  array
+	 * @since   2.0.0
+	 */
+	private function attachImages(string $imagesSource, string $sourceType): array
+	{
+		$ret           = [];
+		$params        = new Registry($imagesSource);
+		$introImage    = $params->get('image_intro');
+		$introAlt      = $params->get('image_intro_alt');
+		$fulltextImage = $params->get('image_filltext');
+		$fulltextAlt   = $params->get('image_filltext_alt');
+
+		if ($sourceType !== 'fulltext' && !empty($introImage))
+		{
+			$ret[] = $this->getImageAttachment($introImage, $introAlt);
+		}
+
+		if ($sourceType !== 'introtext' && !empty($fulltextImage))
+		{
+			$ret[] = $this->getImageAttachment($fulltextImage, $fulltextAlt);
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Get an array representing an Image object given some image data.
+	 *
+	 * @param   string|null  $imageSource  The Joomla image source.
+	 * @param   string|null  $altText      The alt text of the image.
+	 *
+	 * @return  array|null  The Image object; NULL if the image cannot be processed
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	private function getImageAttachment(?string $imageSource, ?string $altText): ?array
+	{
+		// No image?
+		if (empty($imageSource))
+		{
+			return null;
+		}
+
+		// Invalid image?
+		$info = HTMLHelper::cleanImageURL($imageSource);
+
+		try
+		{
+			$props = Image::getImageFileProperties($info->url);
+		}
+		catch (Exception $e)
+		{
+			$props = null;
+		}
+
+		try
+		{
+			$props = $props ?? Image::getImageFileProperties(JPATH_ROOT . '/' . ltrim($info->url, '/'));
+		}
+		catch (Exception $e)
+		{
+			return null;
+		}
+
+		$url = str_starts_with($info->url, 'http://') || str_starts_with($info->url, 'https://')
+			? $info->url
+			: ($this->getFrontendBasePath() . '/' . ltrim($info->url, '/'));
+
+		return [
+			'type'      => 'Image',
+			'mediaType' => $props->mime,
+			'url'       => $url,
+			'name'      => $altText ?? '',
+			'blurhash'  => $this->getBlurHash($info->url),
+			'width'     => $info->attributes['width'] ?? 0,
+			'height'    => $info->attributes['height'] ?? 0,
+		];
+	}
+
+	/**
+	 * Calculates the BlurHash of an image file
+	 *
+	 * @param   string  $file  The URL or path to the file
+	 *
+	 * @return  string  The BlurHash; empty string if it cannot be calculated.
+	 * @since   2.0.0
+	 */
+	private function getBlurHash(string $file): string
+	{
+		$key = md5($file);
+
+		if (isset(self::$blurHashCache[$key]))
+		{
+			return self::$blurHashCache[$key];
+		}
+
+		$path = str_starts_with($file, 'http://') || str_starts_with($file, 'https://')
+			? $file
+			: JPATH_ROOT . '/' . ltrim($file, '/');
+
+		if (
+			!function_exists('imagecreatefromstring')
+			|| !function_exists('imagesx')
+			|| !function_exists('imagesy')
+			|| !function_exists('imagecolorat')
+			|| !function_exists('imagecolorsforindex')
+			|| !function_exists('imagedestroy')
+		)
+		{
+			return self::$blurHashCache[$key] = '';
+		}
+
+		$imageContents = file_get_contents($path);
+
+		if ($imageContents === false)
+		{
+			return self::$blurHashCache[$key] = '';
+		}
+
+		$image  = imagecreatefromstring($imageContents);
+
+		if ($image === false)
+		{
+			return self::$blurHashCache[$key] = '';
+		}
+
+		$width  = imagesx($image);
+		$height = imagesy($image);
+		$pixels = [];
+
+		$aspectRatio = $width / $height;
+
+		if ($aspectRatio >= 1)
+		{
+			$maxWidth  = self::MAX_HASH_PIXELS;
+			$maxHeight = floor(self::MAX_HASH_PIXELS / $aspectRatio);
+		}
+		else
+		{
+			$maxWidth  = floor(self::MAX_HASH_PIXELS * $aspectRatio);
+			$maxHeight = self::MAX_HASH_PIXELS;
+		}
+
+		$stepsX = floor($width / $maxWidth);
+		$stepsY = floor($height / $maxHeight);
+
+		for ($y = 0; $y < $height; $y += $stepsY)
+		{
+			$row = [];
+
+			for ($x = 0; $x < $width; $x += $stepsX)
+			{
+				$index  = imagecolorat($image, $x, $y);
+				$colors = imagecolorsforindex($image, $index);
+
+				$row[] = [$colors['red'], $colors['green'], $colors['blue']];
+			}
+
+			$pixels[] = $row;
+		}
+
+		imagedestroy($image);
+
+		$components_x = 4;
+		$components_y = 3;
+
+		return self::$blurHashCache[$key] = Blurhash::encode($pixels, $components_x, $components_y);
 	}
 }

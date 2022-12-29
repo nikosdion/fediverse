@@ -1,6 +1,9 @@
 ### Node.js and Composer build dependencies
 /node_modules
+# This one is legacy. Left here to prevent issues switching branches.
 /vendor
+# This one is the current.
+/component/backend/vendor
 
 ### Release builds
 /release
