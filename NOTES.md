@@ -120,8 +120,6 @@ To be implemented. Required to provide followers.
 
 # Thoughts
 
-I probably need to run article content through content plugins :/
-
 Allow content filtering by language per actor.
 
 Must have an /activity endpoint to list a single activity, as seen in the Outbox

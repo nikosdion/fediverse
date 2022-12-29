@@ -284,6 +284,14 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			'metadesc' => $rawData->metadesc
 		};
 
+		try
+		{
+			$content = HTMLHelper::_('content.prepare', $content);
+		}
+		catch (Exception $e)
+		{
+		}
+
 		/**
 		 * Here's a fun one! The ActivityPhp URL validator uses PHP's filter_var which only supports URLs with ASCII
 		 * characters. Guess what happens when the URL contains UTF-8 characters? That's right, it throws an error. So,
@@ -322,13 +330,23 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		{
 			foreach ($this->getAssociatedContent($rawData->id) as $langCode => $assocRawData)
 			{
-				$sourceObject['contentMap'][$langCode] = match ($sourceType)
+				$altContent = match ($sourceType)
 				{
 					'introtext' => $assocRawData->introtext,
 					'fulltext' => $assocRawData->fulltext,
 					'both' => $assocRawData->introtext . '<hr/>' . $assocRawData->fulltext,
 					'metadesc' => $assocRawData->metadesc
 				};
+
+				try
+				{
+					$altContent = HTMLHelper::_('content.prepare', $altContent);
+				}
+				catch (Exception $e)
+				{
+				}
+
+				$sourceObject['contentMap'][$langCode] = $altContent;
 			}
 		}
 
@@ -690,8 +708,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			->where($db->quoteName('id') . 'IN(' . $whereQuery . ')');
 
 		return array_map(
-			function ($info): ?array
-			{
+			function ($info): ?array {
 				return [
 					'type' => 'Hashtag',
 					'href' => Route::link(
@@ -700,7 +717,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 						false,
 						absolute: true
 					),
-					'name' => '#' . $info->title
+					'name' => '#' . $info->title,
 				];
 			},
 			$db->setQuery($query)->loadObjectList() ?: []
