@@ -120,7 +120,7 @@ To be implemented. Required to provide followers.
 
 # Thoughts
 
-Must have an /activity endpoint to list a single activity, as seen in the Outbox
+Content should probably be filtered to remove forbidden HTML elements, e.g. scripts and embeds.
 
 Option to allow Followers. If this is disabled don't show a Followers collection in WebFinger, Actor, Outbox.
 
@@ -128,7 +128,9 @@ I need a table to track Followers, including their sharedInbox and the original,
 
 It should be possible to "fediblock", i.e. block followers and replies from entire domains. Good resource for this is https://joinfediverse.wiki/FediBlock
 
-I need to implement the Inbox. Reading will return 405. Writing should be allowed for follow requests — throw 405 if the user has opted out of being followed or following has been disabled.
+Follow activity: received in the Outbox
+
+I need to implement posting to the Outbox for the Follow activity, as well as Remove (only for Follow activities). Reading will return 405. Writing should be allowed for follow requests — throw 405 if the user has opted out of being followed or following has been disabled.
 
 Content plugins need to detect when publishing an article would result in a new activity and add to a temp table of outbound activities.
 

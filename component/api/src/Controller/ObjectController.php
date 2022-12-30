@@ -11,6 +11,7 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
+use Joomla\CMS\MVC\Controller\Exception\ResourceNotFound;
 use Joomla\CMS\MVC\View\JsonApiView;
 
 /**
@@ -18,11 +19,11 @@ use Joomla\CMS\MVC\View\JsonApiView;
  *
  * @since  2.0.0
  */
-class ActorController extends BaseController
+class ObjectController extends BaseController
 {
-	protected string $contentType = 'actor';
+	protected string $contentType = 'object';
 
-	protected string $stateKey = 'actor.username';
+	protected string $stateKey = 'object.username';
 
 	/**
 	 * Displays a single item
@@ -32,9 +33,19 @@ class ActorController extends BaseController
 	 * @return  $this
 	 * @since   2.0.0
 	 */
-	public function displayItem(?string $username = null)
+	public function displayItem(?string $username = null, ?string $objectId = null)
 	{
-		$username   = $username ?? $this->input->getRaw('username', '');
+		$username = $username ?? $this->input->getRaw('username', '');
+		$objectId = $objectId ?? $this->input->getRaw('id', '');
+
+		if (empty($username) || empty($objectId))
+		{
+			throw new ResourceNotFound(Text::_('COM_ACTIVITYPUB_OBJECT_ERR_NOT_FOUND'), 404);
+		}
+
+		[$extension, $contentType, $id] = explode('.', $objectId, 3);
+		$context = $extension . '.' . $contentType;
+
 		$document   = $this->app->getDocument();
 		$viewType   = $document->getType();
 		$viewName   = $this->input->get('view', $this->default_view);
@@ -55,15 +66,17 @@ class ActorController extends BaseController
 			throw new \RuntimeException($e->getMessage());
 		}
 
-		// Create the model, ignoring request data so we can safely set the state in the request from the controller
-		$model = $this->getModel('Actor', '', ['ignore_request' => true]);
+		// Create the model, ignoring request data, so we can safely set the state in the request from the controller
+		$model = $this->getModel('Object', '', ['ignore_request' => true]);
 
 		if (!$model)
 		{
 			throw new \RuntimeException(Text::_('JLIB_APPLICATION_ERROR_MODEL_CREATE'));
 		}
 
-		$model->setState($this->stateKey, $username);
+		$model->setState('object.username', $username);
+		$model->setState('object.context', $context);
+		$model->setState('object.id', $id);
 
 		// Push the model into the view (as default)
 		$view->setModel($model, true);

@@ -5,7 +5,7 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Dionysopoulos\Component\ActivityPub\Api\View\Actor;
+namespace Dionysopoulos\Component\ActivityPub\Api\View\Object;
 
 defined('_JEXEC') || die;
 
@@ -16,7 +16,7 @@ use Joomla\CMS\MVC\View\JsonView as BaseJsonView;
 class JsonView extends BaseJsonView
 {
 	/**
-	 * Display the Actor item
+	 * Display the Activity item
 	 *
 	 * @param   string|null  $tpl
 	 *
@@ -32,13 +32,13 @@ class JsonView extends BaseJsonView
 
 		/** @var ActorModel $model */
 		$model = $this->getModel();
-		$actor = $model->getItem();
+		$activity = $model->getItem();
 
-		if (empty($actor))
+		if (empty($activity))
 		{
-			throw new \RuntimeException(Text::_('COM_ACTIVITYPUB_ACTOR_ERR_NOT_FOUND'), 404);
+			throw new \RuntimeException(Text::_('COM_ACTIVITYPUB_OBJECT_ERR_NOT_FOUND'), 404);
 		}
 
-		echo $actor->toJson();
+		echo $activity->toJson();
 	}
 }

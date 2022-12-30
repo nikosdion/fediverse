@@ -271,7 +271,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$sourceType   = $this->params->get('fulltext', 'introtext');
 		$attachImages = $this->params->get('images', '1') == 1;
 
-		$activityId   = $this->getApiUriForUser($user, 'activity') . '/' . $this->context . '.' . $rawData->id;
+		$objectId     = $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id;
 		$actorUri     = $this->getApiUriForUser($user, 'actor');
 		$followersUri = $this->getApiUriForUser($user, 'followers');
 		$jPublished   = clone Factory::getDate($rawData->publish_up ?: $rawData->created, 'GMT');
@@ -310,11 +310,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		$sourceObjectType = $sourceType === 'metadesc' ? 'Note' : 'Article';
 		$sourceObject     = [
-			'id'               => $activityId,
+			'id'               => $objectId,
 			'type'             => $sourceObjectType,
 			'summary'          => (empty($rawData->metadesc) || $sourceObjectType === 'Note') ? null : $rawData->metadesc,
 			'inReplyTo'        => null,
-			'atomUri'          => $activityId,
+			'atomUri'          => $objectId,
 			'inReplyToAtomUri' => null,
 			'published'        => $published,
 			'url'              => $url,
@@ -392,7 +392,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		// Create the activity
 		$attributes = [
-			'id'        => $activityId,
+			'id'        => $objectId,
 			'actor'     => $actorUri,
 			'published' => $published,
 			'to'        => [

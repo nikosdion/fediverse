@@ -82,6 +82,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			'public'    => true,
 			// Custom accept headers
 			'format'    => [
+				'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
 				'application/activity+json',
 				'application/ld+json',
 				'application/vnd.api+json',
@@ -118,6 +119,28 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			'outbox.notImplemented',
 			[
 				'username' => '[^/]+',
+			],
+			$defaults
+		);
+
+		// Object -- Supports GET only.
+		$routes[] = new Route(
+			['GET'],
+			'v1/activitypub/object/:username/:id',
+			'object.displayItem',
+			[
+				'username' => '[^/]+',
+				'id' => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+'
+			],
+			$defaults
+		);
+		$routes[] = new Route(
+			['POST'],
+			'v1/activitypub/object/:username/:id',
+			'object.notImplemented',
+			[
+				'username' => '[^/]+',
+				'id' => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+'
 			],
 			$defaults
 		);
