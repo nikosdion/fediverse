@@ -692,13 +692,18 @@ trait WebFingerTrait
 	/**
 	 * Returns the WebFinger user profile options for the specified user ID.
 	 *
-	 * @param   int  $userId  The user ID to look up
+	 * @param   int|null  $userId  The user ID to look up
 	 *
 	 * @return  Registry
 	 * @since   2.0.0
 	 */
-	private function getUserProfileWebFingerPreferences(int $userId): Registry
+	private function getUserProfileWebFingerPreferences(?int $userId): Registry
 	{
+		if (empty($userId))
+		{
+			return new Registry();
+		}
+
 		/** @var DatabaseDriver $db */
 		$db    = $this->getDatabase();
 		$query = $db->getQuery(true)
