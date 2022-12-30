@@ -65,8 +65,8 @@ class ActorModel extends BaseDatabaseModel
 			$publicKeyPem = null;
 		}
 
-
-		$profileIcon = match ($actorParams->get('activitypub.icon_source'))
+		$iconSource  = $actorParams->get('activitypub.icon_source');
+		$profileIcon = match ($iconSource)
 		{
 			default => null,
 			'gravatar' => $user->email ? sprintf('https://www.gravatar.com/avatar/%s?s=%s', md5(strtolower(trim($user->email))), 256) : null,
@@ -76,7 +76,7 @@ class ActorModel extends BaseDatabaseModel
 				)->url
 		};
 
-		$mediaType = '';
+		$mediaType = $iconSource === 'gravatar' ? 'image/jpeg' : '';
 
 		if (str_ends_with(strtolower($profileIcon ?? ''), '.jpg'))
 		{

@@ -752,7 +752,7 @@ trait WebFingerTrait
 			{
 				return is_array($row) ? array_shift($row) : $row;
 			},
-			$customAliases = is_string($customAliases)
+			is_string($customAliases)
 				? (@json_decode($customAliases, true) ?: [])
 				: $customAliases
 		);
@@ -772,7 +772,7 @@ trait WebFingerTrait
 			];
 		}
 
-		if ($preferences->get('webfinger.show_gravatar', 0) && $this->isRel('http://webfinger.net/rel/avatar', $rel))
+		if ($preferences->get('webfinger.show_gravatar', 0) && $this->isRel('http://webfinger.net/rel/avatar', $rel) && !empty($user->email))
 		{
 			$resource['links'][] = [
 				'rel'  => 'http://webfinger.net/rel/avatar',
