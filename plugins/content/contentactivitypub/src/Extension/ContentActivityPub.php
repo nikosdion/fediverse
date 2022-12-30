@@ -107,6 +107,9 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$categories  = is_array($categories) ? $categories : [];
 		$accessLevel = $params->get('content.accesslevel', [1, 5]);
 		$accessLevel = is_array($accessLevel) ? $accessLevel : [1, 5];
+		$languages   = $params->get('content.language', []);
+		$languages   = is_array($languages) ? $languages : [1, 5];
+		$languages   = empty($languages) ? $languages : array_merge(['*'], $languages);
 
 		/** @var DatabaseDriver $db */
 		$db = $this->getDatabase();
@@ -148,6 +151,12 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		{
 			$accessLevel = array_map([$db, 'quote'], ArrayHelper::toInteger($accessLevel));
 			$query->where($db->quoteName('access') . ' IN (' . implode(',', $accessLevel) . ')');
+		}
+
+		if (!empty($languages))
+		{
+			$languages = array_map([$db, 'quote'], $languages);
+			$query->where($db->quoteName('language') . ' IN(' . implode(',', $languages) . ')');
 		}
 
 		$event->addResult($query);

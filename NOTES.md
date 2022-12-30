@@ -120,13 +120,13 @@ To be implemented. Required to provide followers.
 
 # Thoughts
 
-Allow content filtering by language per actor.
-
 Must have an /activity endpoint to list a single activity, as seen in the Outbox
 
 Option to allow Followers. If this is disabled don't show a Followers collection in WebFinger, Actor, Outbox.
 
 I need a table to track Followers, including their sharedInbox and the original, cached document.
+
+It should be possible to "fediblock", i.e. block followers and replies from entire domains. Good resource for this is https://joinfediverse.wiki/FediBlock
 
 I need to implement the Inbox. Reading will return 405. Writing should be allowed for follow requests — throw 405 if the user has opted out of being followed or following has been disabled.
 

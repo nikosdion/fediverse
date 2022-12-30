@@ -63,6 +63,7 @@ class ActorModel extends AdminModel
 
 		$this->addIntegrationParamsMapping('content_enable', 'content.enable', 1);
 		$this->addIntegrationParamsMapping('content_categories', 'content.categories', []);
+		$this->addIntegrationParamsMapping('content_language', 'content.language', []);
 		$this->addIntegrationParamsMapping('content_accesslevel', 'content.accesslevel', [1, 5]);
 		$this->addIntegrationParamsMapping('activitypub_summary', 'activitypub.summary', '');
 		$this->addIntegrationParamsMapping('activitypub_icon_source', 'activitypub.icon_source', 'gravatar');

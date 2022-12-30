@@ -86,9 +86,7 @@ class HtmlView extends BaseHtmlView
 	{
 		Factory::getApplication()->input->set('hidemainmenu', true);
 
-		$user   = $this->getCurrentUser();
-		$userId = $user->id;
-		$isNew  = ($this->item->id == 0);
+		$isNew = ($this->item->id == 0);
 
 		// Since we don't track these assets at the item level, use the category id.
 		$canDo = ContentHelper::getActions('com_activitypub');
@@ -122,6 +120,8 @@ class HtmlView extends BaseHtmlView
 		{
 			ToolbarHelper::cancel('actor.cancel', 'JTOOLBAR_CLOSE');
 		}
+
+		ToolbarHelper::inlinehelp();
 	}
 
 }

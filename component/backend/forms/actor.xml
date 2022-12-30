@@ -6,6 +6,9 @@
   -->
 
 <form addfieldprefix="Dionysopoulos\Component\ActivityPub\Administrator\Field">
+    <config>
+        <inlinehelp button="show"/>
+    </config>
     <fieldset name="main"
               label="JGLOBAL_FIELDSET_GLOBAL">
         <field
@@ -143,6 +146,17 @@
                 multiple="true"
                 layout="joomla.form.field.list-fancy-select"
                 default=""
+                showon="content_enable:1"
+        />
+
+        <field
+                name="content_language"
+                type="languages"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_LANGUAGE_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_LANGUAGE_DESC"
+                client="site"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
                 showon="content_enable:1"
         />
 
