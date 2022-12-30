@@ -75,7 +75,7 @@ class Jsonview extends BaseJsonView implements DatabaseAwareInterface
 
 		$firstPage = $outboxUri->toString();
 
-		if ($pagination->pagesTotal === 1)
+		if ($pagination->pagesTotal <= 1)
 		{
 			$lastPage = $firstPage;
 		}

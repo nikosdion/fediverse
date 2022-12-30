@@ -35,14 +35,13 @@ class OutboxController extends BaseController
 		// Pass parameters from the request into a new model state object
 		$username      = $this->input->getRaw('username', '');
 		$hasPagination = in_array(strtolower($this->input->getCmd('page', '')), ['1', 'true', 'yes']);
+		$limit         = max(1, min($this->input->getInt('limit', 20), 50));
+		$offset        = max(0, $this->input->getInt('offset', 0));
+		$hasPagination = $hasPagination || ($offset > 0) || ($limit > 0);
 
 		$modelState = new CMSObject();
 		$modelState->set('filter.username', $username);
 		$modelState->set('list.paginate', $hasPagination);
-
-		// Assemble pagination information
-		$limit         = max(1, min($this->input->getInt('limit', 20), 50));
-		$offset        = max(0, $this->input->getInt('offset', 0));
 
 		if ($hasPagination)
 		{
@@ -88,7 +87,7 @@ class OutboxController extends BaseController
 			$model->setState('list.start', $offset);
 		}
 
-		if (!$hasPagination && $offset > $model->getTotal())
+		if ($hasPagination && $offset > $model->getTotal())
 		{
 			throw new ResourceNotFound('Not Found', 404);
 		}
