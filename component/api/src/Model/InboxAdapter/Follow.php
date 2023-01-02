@@ -15,6 +15,7 @@ use ActivityPhp\Type\Extended\AbstractActor;
 use ActivityPhp\Type\Extended\Activity\Follow as FollowActivity;
 use ActivityPhp\Type\TypeConfiguration as Config;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
+use Dionysopoulos\Component\ActivityPub\Administrator\Service\Signature;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\FollowerTable;
 use Dionysopoulos\Component\ActivityPub\Api\Model\AbstractPostHandlerAdapter;
@@ -114,7 +115,17 @@ class Follow extends AbstractPostHandlerAdapter
 			$sharedInbox = null;
 		}
 
-		// TODO Handle signature
+		// Handle signature
+		$signatureService = new Signature(
+			$this->getDatabase(),
+			Factory::getContainer()->get(UserFactoryInterface::class),
+			Factory::getApplication()
+		);
+
+		if (!$signatureService->verify($remoteActor))
+		{
+			throw new \RuntimeException('Bad signature', 401);
+		}
 
 		// Load a possibly existing record
 		/** @var FollowerTable $follower */
@@ -132,7 +143,7 @@ class Follow extends AbstractPostHandlerAdapter
 
 		if ($isBlocked)
 		{
-			$this->sendRejectFollow($inbox, $activity, $myActor);
+			$this->sendRejectFollow($inbox, $activity, $myActor, $actor);
 
 			// Delete an existing follower record
 			if ($exists)
@@ -160,7 +171,7 @@ class Follow extends AbstractPostHandlerAdapter
 		}
 
 		// Send an Accept activity to the remote server
-		if (!$this->sendAcceptFollow($inbox, $activity, $myActor))
+		if (!$this->sendAcceptFollow($inbox, $activity, $myActor, $actor))
 		{
 			throw new \RuntimeException('The remote server did not acknowledge the follow request acceptance', 415);
 		}
@@ -221,7 +232,7 @@ class Follow extends AbstractPostHandlerAdapter
 	 * @throws Exception
 	 * @since  2.0.0
 	 */
-	private function sendAcceptFollow(string $remoteInbox, FollowActivity $followRequest, AbstractActor $myActor): bool
+	private function sendAcceptFollow(string $remoteInbox, FollowActivity $followRequest, AbstractActor $myActor, ActorTable $actor): bool
 	{
 		$acceptActivity = Type::create('Accept', [
 			'@context' => 'https://www.w3.org/ns/activitystreams',
@@ -229,15 +240,24 @@ class Follow extends AbstractPostHandlerAdapter
 			'object'   => $followRequest,
 		]);
 
-		// TODO Handle signature
+		// Create the headers, including the signature
+		$now              = Factory::getDate();
+		$signatureService = new Signature(
+			$this->getDatabase(),
+			Factory::getContainer()->get(UserFactoryInterface::class),
+			Factory::getApplication()
+		);
+		$headers          = [
+			'Accept'    => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+			'Date'      => $now->format(\DateTimeInterface::RFC7231, false, false),
+			'Signature' => $signatureService->sign($actor, $remoteInbox, $now),
+		];
 
 		$http     = $this->getHttpClient();
 		$response = $http->post(
 			$remoteInbox,
 			$acceptActivity->toJson(),
-			[
-				'Accept' => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-			],
+			$headers,
 			5
 		);
 
@@ -255,7 +275,7 @@ class Follow extends AbstractPostHandlerAdapter
 	 * @throws  Exception
 	 * @since   2.0.0
 	 */
-	private function sendRejectFollow(string $remoteInbox, FollowActivity $followRequest, AbstractActor $myActor): bool
+	private function sendRejectFollow(string $remoteInbox, FollowActivity $followRequest, AbstractActor $myActor, ActorTable $actor): bool
 	{
 		$acceptActivity = Type::create('Reject', [
 			'@context' => 'https://www.w3.org/ns/activitystreams',
@@ -263,15 +283,24 @@ class Follow extends AbstractPostHandlerAdapter
 			'object'   => $followRequest,
 		]);
 
-		// TODO Handle signature
+		// Create the headers, including the signature
+		$now              = Factory::getDate();
+		$signatureService = new Signature(
+			$this->getDatabase(),
+			Factory::getContainer()->get(UserFactoryInterface::class),
+			Factory::getApplication()
+		);
+		$headers          = [
+			'Accept'    => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+			'Date'      => $now->format(\DateTimeInterface::RFC7231, false, false),
+			'Signature' => $signatureService->sign($actor, $remoteInbox, $now),
+		];
 
 		$http     = $this->getHttpClient();
 		$response = $http->post(
 			$remoteInbox,
 			$acceptActivity->toJson(),
-			[
-				'Accept' => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-			],
+			$headers,
 			5
 		);
 
