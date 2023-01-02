@@ -126,12 +126,9 @@ class Signature implements DatabaseAwareInterface
 
 		$signature = null;
 
-		/** @var RSA\PrivateKey $rsa */
-		$rsa = RSA::createKey()
-			->loadPrivateKey($privateKey)
-			->withHash('sha256');
+		openssl_sign($plaintext, $signature, $privateKey, OPENSSL_ALGO_SHA256);
 
-		$signature = base64_encode($rsa->sign($plaintext));
+		$signature = base64_encode($signature);
 
 		$user = ($actorTable->user_id > 0)
 			? $this->userFactory->loadUserById($actorTable->user_id)
@@ -176,6 +173,11 @@ class Signature implements DatabaseAwareInterface
 			return false;
 		}
 
+		if ($parts['algorithm'] !== 'rsa-sha256')
+		{
+			return false;
+		}
+
 		try
 		{
 			$publicKeyPem = $actor->publicKey['publicKeyPem'] ?? null;
@@ -196,13 +198,9 @@ class Signature implements DatabaseAwareInterface
 			$allHeaders
 		);
 
-		// Verify that string using the public key and the original signature.
-		/** @var RSA\PublicKey $rsa */
-		$rsa = RSA::createKey()
-			->loadPublicKey($publicKeyPem)
-			->withHash('sha256');
+		$signatureValidity = openssl_verify($data, base64_decode($parts['signature']), $publicKeyPem, OPENSSL_ALGO_SHA256);
 
-		return $rsa->verify($data, base64_decode($parts['signature'], true));
+		return $signatureValidity === 1;
 	}
 
 	/**
@@ -238,6 +236,9 @@ class Signature implements DatabaseAwareInterface
 		// Headers are optional
 		$matches['headers'] ??= 'date';
 		$matches['headers'] = $matches['headers'] ?: 'date';
+
+		// Algorithm is optional
+		$matches['algorithm'] ??= 'rsa-sha256';
 
 		return array_filter($matches, function ($key) use ($allowedKeys) {
 			return !is_int($key) && in_array($key, $allowedKeys);
@@ -379,7 +380,8 @@ class Signature implements DatabaseAwareInterface
 		 * If we are behind a load balancer Uri::getInstance has the external hostname we were contacted on, whereas the
 		 * Host HTTP header has the internal hostname the load balancer contacted us on.
 		 */
-		$headers['host'] = Uri::getInstance()->getHost() . ':' . Uri::getInstance()->getPort();
+		//$headers['host'] = Uri::getInstance()->getHost() . ':' . Uri::getInstance()->getPort();
+		$headers['host'] = Uri::getInstance()->getHost();
 
 		/**
 		 * PHP returns the Content-Type and Content-Length header as CONTENT_TYPE and CONTENT_LENGTH because f**k you,
@@ -413,7 +415,7 @@ class Signature implements DatabaseAwareInterface
 
 		$strings   = [];
 		$strings[] = sprintf(
-			'(request-target) %s %s%s',
+			'(request-target): %s %s%s',
 			strtolower($this->application->input->getMethod()),
 			$uri->getPath(),
 			$uri->getQuery() ? ('?' . $uri->getQuery()) : ''

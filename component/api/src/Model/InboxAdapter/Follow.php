@@ -127,6 +127,8 @@ class Follow extends AbstractPostHandlerAdapter
 			throw new \RuntimeException('Bad signature', 401);
 		}
 
+		// TODO We also need to validate the Date (+/- 30 seconds)
+
 		// Load a possibly existing record
 		/** @var FollowerTable $follower */
 		$follower = $this->getMVCFactory()->createTable('Follower', 'Administrator');
@@ -247,16 +249,19 @@ class Follow extends AbstractPostHandlerAdapter
 			Factory::getContainer()->get(UserFactoryInterface::class),
 			Factory::getApplication()
 		);
+		$postBody         = $acceptActivity->toJson();
+		$digest           = $signatureService->digest($postBody);
 		$headers          = [
 			'Accept'    => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
 			'Date'      => $now->format(\DateTimeInterface::RFC7231, false, false),
-			'Signature' => $signatureService->sign($actor, $remoteInbox, $now),
+			'Digest'    => 'SHA-256=' . $digest,
+			'Signature' => $signatureService->sign($actor, $remoteInbox, $now, $digest),
 		];
 
 		$http     = $this->getHttpClient();
 		$response = $http->post(
 			$remoteInbox,
-			$acceptActivity->toJson(),
+			$postBody,
 			$headers,
 			5
 		);
@@ -277,7 +282,7 @@ class Follow extends AbstractPostHandlerAdapter
 	 */
 	private function sendRejectFollow(string $remoteInbox, FollowActivity $followRequest, AbstractActor $myActor, ActorTable $actor): bool
 	{
-		$acceptActivity = Type::create('Reject', [
+		$rejectActivity = Type::create('Reject', [
 			'@context' => 'https://www.w3.org/ns/activitystreams',
 			'actor'    => $myActor,
 			'object'   => $followRequest,
@@ -290,16 +295,19 @@ class Follow extends AbstractPostHandlerAdapter
 			Factory::getContainer()->get(UserFactoryInterface::class),
 			Factory::getApplication()
 		);
+		$postBody         = $rejectActivity->toJson();
+		$digest           = $signatureService->digest($postBody);
 		$headers          = [
 			'Accept'    => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
 			'Date'      => $now->format(\DateTimeInterface::RFC7231, false, false),
-			'Signature' => $signatureService->sign($actor, $remoteInbox, $now),
+			'Digest'    => 'SHA-256=' . $digest,
+			'Signature' => $signatureService->sign($actor, $remoteInbox, $now, $digest),
 		];
 
 		$http     = $this->getHttpClient();
 		$response = $http->post(
 			$remoteInbox,
-			$acceptActivity->toJson(),
+			$postBody,
 			$headers,
 			5
 		);
