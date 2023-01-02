@@ -8,5 +8,9 @@
       <option name="separateBefore" value="true" />
       <option name="lenBefore" value="1" />
     </LanguageOptions>
+    <LanguageOptions name="SQL">
+      <option name="fileTypeOverride" value="3" />
+      <option name="block" value="false" />
+    </LanguageOptions>
   </settings>
 </component>

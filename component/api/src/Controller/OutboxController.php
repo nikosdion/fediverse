@@ -9,7 +9,8 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Controller;
 
 \defined('_JEXEC') || die;
 
-use Dionysopoulos\Component\ActivityPub\Api\Controller\Mixin\NotImplementedTrait;
+use ActivityPhp\Type;
+use Dionysopoulos\Component\ActivityPub\Api\Model\OutboxModel;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\MVC\Controller\Exception\ResourceNotFound;
@@ -24,13 +25,29 @@ use Joomla\CMS\Object\CMSObject;
  */
 class OutboxController extends BaseController
 {
-	use NotImplementedTrait;
-
+	/**
+	 * The content type returned by this API controller
+	 *
+	 * @var   string
+	 * @since 2.0.0
+	 */
 	protected string $contentType = 'outbox';
 
+	/**
+	 * The prefix for the state variables set by this API controller
+	 *
+	 * @var   string
+	 * @since 2.0.0
+	 */
 	protected string $statePrefix = 'outbox';
 
-	public function displayList()
+	/**
+	 * Display a list of records upon a GET request
+	 *
+	 * @return $this
+	 * @since  2.0.0
+	 */
+	public function displayList(): self
 	{
 		// Pass parameters from the request into a new model state object
 		$username      = $this->input->getRaw('username', '');
@@ -99,4 +116,74 @@ class OutboxController extends BaseController
 
 		return $this;
 	}
+
+	/**
+	 * Handle a POST request
+	 *
+	 * @return self
+	 * @since  2.0.0
+	 */
+	public function receivePost(): self
+	{
+		// Make sure that we have a JSON document representing an activity posted to us
+		$jsonDocument = file_get_contents('php://input');
+		$username     = $this->input->post->getRaw('username', '');
+
+		try
+		{
+			$activity = Type::fromJson($jsonDocument);
+		}
+		catch (\Exception $e)
+		{
+			return $this->returnError(415, 'Invalid payload format');
+		}
+
+		// Get the model and ask it to handle the activity posted
+		/** @var OutboxModel $model */
+		$model = $this->getModel($this->contentType, '', ['ignore_request' => true]);
+
+		if (!$model)
+		{
+			return $this->returnError(500, Text::_('JLIB_APPLICATION_ERROR_MODEL_CREATE'));
+		}
+
+		try
+		{
+			$model->handlePost($username, $activity);
+		}
+		catch (\Exception $e)
+		{
+			$code = $e->getCode();
+
+			if ($code < 100 || $code > 599)
+			{
+				$code = 500;
+			}
+
+			return $this->returnError($code, $e->getMessage());
+		}
+
+		$this->app->setHeader('Status', 200);
+		$this->app->setHeader('Content-Type', 'application/json');
+
+		return $this;
+	}
+
+	private function returnError(int $status, string $message)
+	{
+		$app = $this->app;
+		$app->setHeader('Status', $status);
+		$app->setHeader('Content-Type', 'application/json');
+
+		$app->getDocument()->setBuffer(
+			json_encode([
+				'error'   => true,
+				'code'    => $status,
+				'message' => $message,
+			])
+		);
+
+		return $this;
+	}
+
 }

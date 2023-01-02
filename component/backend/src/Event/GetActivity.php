@@ -137,8 +137,6 @@ class GetActivity extends AbstractImmutableEvent implements ResultAwareInterface
 			throw new InvalidArgumentException(sprintf('Event %s only accepts Array results whose members are objects of the %s type or null, and its keys are in the format “CONTEXT.ID” where ID is one if the identifiers given in the ids argument.', $this->getName(), Activity::class));
 		}
 
-		// TODO This is probably wrong. $data will contain multiple arrays of Activities…
-
 		// Check keys
 		$context = $this->getArgument('context');
 		$keys    = array_keys($data);

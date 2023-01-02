@@ -12,6 +12,7 @@ defined('_JEXEC') || die;
 use Joomla\CMS\Application\ApiApplication;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\ApiRouter;
+use Joomla\CMS\Uri\Uri;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Router\Route;
@@ -103,7 +104,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			$defaults
 		);
 
-		// Outbox -- supports GET and POST. Well, actually the POST will simply return 405, but we MUST handle it either way.
+		// Outbox -- supports GET and POST.
 		$routes[] = new Route(
 			['GET'],
 			'v1/activitypub/outbox/:username',
@@ -116,7 +117,27 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 		$routes[] = new Route(
 			['POST'],
 			'v1/activitypub/outbox/:username',
-			'outbox.notImplemented',
+			'outbox.receivePost',
+			[
+				'username' => '[^/]+',
+			],
+			$defaults
+		);
+
+		// Inbox -- supports POST only.
+		$routes[] = new Route(
+			['GET'],
+			'v1/activitypub/inbox/:username',
+			'inbox.notImplemented',
+			[
+				'username' => '[^/]+',
+			],
+			$defaults
+		);
+		$routes[] = new Route(
+			['POST'],
+			'v1/activitypub/inbox/:username',
+			'inbox.receivePost',
 			[
 				'username' => '[^/]+',
 			],
@@ -145,7 +166,29 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			$defaults
 		);
 
-		// Finally, add the routes to the router.
+		// Add the routes to the router.
 		$router->addRoutes($routes);
+
+		/**
+		 * Conditionally fix missing Accept header.
+		 *
+		 * Mastodon and other ActivityPub clients don't set an Accept header on POST requests. However, the Joomla API
+		 * application cannot accept a NULL value for the Accept header; it will throw an HTTP 406 error. As a result,
+		 * I need to check if this is the case and set the Accept header manually.
+		 */
+		$path = Uri::getInstance()->getPath();
+		$basePath = Uri::base(true);
+
+		if (str_starts_with($path, $basePath))
+		{
+			$path = substr($path, strlen($basePath));
+		}
+
+		$acceptHeader = $this->getApplication()->input->server->getString('HTTP_ACCEPT');
+
+		if (str_starts_with($path, 'v1/activitypub/') && $acceptHeader === null && $this->getApplication()->input->getMethod() === 'POST')
+		{
+			$this->getApplication()->input->server->set('HTTP_ACCEPT', 'application/activity+json');
+		}
 	}
 }
