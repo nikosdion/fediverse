@@ -25,6 +25,7 @@ use Exception;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Http\Http;
 use Joomla\CMS\Http\HttpFactory;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserFactoryInterface;
 
@@ -55,6 +56,8 @@ class Follow extends AbstractPostHandlerAdapter
 			return false;
 		}
 
+		Log::add('Received follow request', Log::DEBUG, 'activitypub.api');
+
 		// Make sure all required properties exist
 		try
 		{
@@ -64,6 +67,8 @@ class Follow extends AbstractPostHandlerAdapter
 		}
 		catch (Exception $e)
 		{
+			Log::add('Malformed follow request: missing required properties', Log::ERROR, 'activitypub.api');
+
 			return false;
 		}
 
@@ -82,6 +87,8 @@ class Follow extends AbstractPostHandlerAdapter
 
 		if ($localUri->toString() !== $referenceActorId)
 		{
+			Log::add(sprintf('Unknown Actor %s', $localActorId), Log::ERROR, 'activitypub.api');
+
 			return false;
 		}
 
@@ -101,6 +108,8 @@ class Follow extends AbstractPostHandlerAdapter
 		}
 		catch (Exception $e)
 		{
+			Log::add(sprintf('Cannot fetch remote Actor %s', $remoteActorId), Log::ERROR, 'activitypub.api');
+
 			throw new \RuntimeException('The remote Actor cannot be found or has an invalid format', 415, $e);
 		}
 
@@ -124,6 +133,8 @@ class Follow extends AbstractPostHandlerAdapter
 
 		if (!$signatureService->verify($remoteActor))
 		{
+			Log::add('Signature verification failed', Log::ERROR, 'activitypub.api');
+
 			throw new \RuntimeException('Bad signature', 401);
 		}
 
@@ -145,6 +156,8 @@ class Follow extends AbstractPostHandlerAdapter
 
 		if ($isBlocked)
 		{
+			Log::add('Remote Actor or server is blocked, or the local Actor chose to not be followed.', Log::ERROR, 'activitypub.api');
+
 			$this->sendRejectFollow($inbox, $activity, $myActor, $actor);
 
 			// Delete an existing follower record
@@ -175,13 +188,19 @@ class Follow extends AbstractPostHandlerAdapter
 		// Send an Accept activity to the remote server
 		if (!$this->sendAcceptFollow($inbox, $activity, $myActor, $actor))
 		{
+			Log::add('Remote server did not acknowledge our Follow accept message.', Log::ERROR, 'activitypub.api');
+
 			throw new \RuntimeException('The remote server did not acknowledge the follow request acceptance', 415);
 		}
 
 		if (!$follower->store())
 		{
+			Log::add('Could not save the follower information in the database.', Log::ERROR, 'activitypub.api');
+
 			throw new \RuntimeException('Internal error processing the follow request', 500);
 		}
+
+		Log::add('The Follow request was accepted.', Log::DEBUG, 'activitypub.api');
 
 		return true;
 	}
