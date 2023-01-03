@@ -7,9 +7,9 @@
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\Content\Fediverse\Extension\Fediverse;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
-use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;
 
 /**
  * The variables are passed from the content plugin

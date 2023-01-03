@@ -5,8 +5,10 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Module\FediverseFeed\Site\Dispatcher;
+namespace Dionysopoulos\Module\FediverseFeed\Site\Dispatcher;
 
+use Dionysopoulos\Module\FediverseFeed\Site\Service\AccountLoader;
+use Dionysopoulos\Module\FediverseFeed\Site\Service\TootStreamLoader;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
@@ -16,8 +18,6 @@ use Joomla\CMS\Http\Http;
 use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
-use Joomla\Module\FediverseFeed\Site\Service\AccountLoader;
-use Joomla\Module\FediverseFeed\Site\Service\TootStreamLoader;
 use Joomla\Registry\Registry;
 
 class Dispatcher extends AbstractModuleDispatcher

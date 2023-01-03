@@ -7,13 +7,13 @@
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\System\WebFinger\Extension\WebFinger;
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\System\WebFinger\Extension\WebFinger;
 
 return new class implements ServiceProviderInterface {
 	/**

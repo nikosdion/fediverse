@@ -7,6 +7,7 @@
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\WebFinger\Mastodon\Extension\Mastodon;
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -14,7 +15,6 @@ use Joomla\Database\DatabaseDriver;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\WebFinger\Mastodon\Extension\Mastodon;
 
 return new class implements ServiceProviderInterface {
 	/**

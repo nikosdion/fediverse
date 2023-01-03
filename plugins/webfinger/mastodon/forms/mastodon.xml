@@ -8,7 +8,7 @@
 <form>
     <fields name="webfinger">
         <fieldset name="webfinger"
-                  addfieldprefix="Joomla\Plugin\System\WebFinger\Field"
+                  addfieldprefix="Dionysopoulos\Plugin\System\WebFinger\Field"
         >
 
             <field name="mastodon_handle"

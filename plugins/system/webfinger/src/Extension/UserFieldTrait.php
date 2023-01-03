@@ -5,8 +5,9 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Plugin\System\WebFinger\Extension;
+namespace Dionysopoulos\Plugin\System\WebFinger\Extension;
 
+use Dionysopoulos\Plugin\System\WebFinger\Event\LoadUserForm;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\HTML\HTMLHelper;
@@ -17,7 +18,6 @@ use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
-use Joomla\Plugin\System\WebFinger\Event\LoadUserForm;
 use Joomla\Utilities\ArrayHelper;
 
 trait UserFieldTrait

@@ -15,7 +15,6 @@ use ActivityPhp\Server;
 use ActivityPhp\Server\Actor;
 use ActivityPhp\Type;
 use ActivityPhp\Type\AbstractObject;
-use Exception;
 
 /**
  * A base class for server-side box

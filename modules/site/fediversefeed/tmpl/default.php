@@ -7,19 +7,19 @@
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Module\FediverseFeed\Site\Dispatcher\Dispatcher;
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Helper\ModuleHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Input\Input;
-use Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher;
 use Joomla\Registry\Registry;
 
 /**
  * These variables are extracted from the indexed array returned by the getLayoutData() method.
  *
- * @see \Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher::getLayoutData()
+ * @see \Dionysopoulos\Module\FediverseFeed\Site\Dispatcher\Dispatcher::getLayoutData()
  *
  * @var stdClass        $module          The module data loaded by Joomla
  * @var SiteApplication $app             The Joomla administrator application object
@@ -57,97 +57,97 @@ $webAssetManager->usePreset('mod_fediversefeed.custom');
 			<?php else: ?>
 			<span class="fediverse-feed-header-top-container">
 			<?php endif; ?>
-				<?php if ($hasImage): ?>
-				<span class="fediverse-feed-header-top-avatar-wrapper">
-					<img src="<?= $account->avatar ?>"
-						 alt="<?= htmlentities($self->parseEmojis($account->display_name, $account->emojis), ENT_COMPAT, 'UTF-8') ?>"
-						 class="fediverse-feed-header-top-avatar">
-				</span>
-				<?php endif ?>
-				<?php if ($hasTitle): ?>
-					<span class="fediverse-feed-header-top-title">
-					<?= $self->parseEmojis($account->display_name, $account->emojis) ?>
-				</span>
-				<?php endif ?>
+			<?php if ($hasImage): ?>
+			<span class="fediverse-feed-header-top-avatar-wrapper">
+				<img src="<?= $account->avatar ?>"
+					 alt="<?= htmlentities($self->parseEmojis($account->display_name, $account->emojis), ENT_COMPAT, 'UTF-8') ?>"
+					 class="fediverse-feed-header-top-avatar">
+			</span>
+			<?php endif ?>
+			<?php if ($hasTitle): ?>
+				<span class="fediverse-feed-header-top-title">
+				<?= $self->parseEmojis($account->display_name, $account->emojis) ?>
+			</span>
+			<?php endif ?>
 			<?php if ($isLinked): ?>
 			</a>
 			<?php else: ?>
 			</span>
 			<?php endif; ?>
 		</<?= $headerTag ?>>
-	<?php endif ?>
-	<?php if ($hasDescription): ?>
+		<?php endif ?>
+		<?php if ($hasDescription): ?>
 		<p class="fediverse-feed-header-description">
 			<?= $self->parseEmojis($account->note, $account->emojis ?? []) ?>
 		</p>
-	<?php endif ?>
-	<?php if ($hasDate): ?>
+		<?php endif ?>
+		<?php if ($hasDate): ?>
 		<p class="fediverse-feed-header-date">
 			<span class="fa fa-calendar" aria-hidden="true"></span>
 			<span class="visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_LAST_UPDATED_ON') ?></span>
 			<?= HTMLHelper::_('date', $lastDate, Text::_('DATE_FORMAT_LC5')) ?>
 		</p>
+		<?php endif ?>
+	</div>
 	<?php endif ?>
-</div>
-<?php endif ?>
 
-<ul class="fediverse-toots">
-	<?php foreach ($toots as $toot): ?>
-	<?php
-		$currentToot = $toot;
-		$reblog      = false;
-
-		if ($toot->reblog ?? null)
-		{
-			$reblog      = true;
-			$currentToot = $toot->reblog;
-		}
-		?>
-	<li class="fediverse-toot fediverse-toot-<?= $self->langToWritingSystemClass($currentToot->language) ?>">
-		<?php if ($reblog): ?>
-		<div class="fediverse-reblog-info">
-			<span class="fa fa-retweet"
-				  aria-hidden="true"></span>
-			<span class="fediverse-visually-hidden">
-				<?= Text::sprintf(
-					'MOD_FEDIVERSEFEED_REBLOGGED',
-					$self->parseEmojis($currentToot->account->display_name, $currentToot->account->emojis)
-				) ?>
-			</span>
-			<a href="<?= $currentToot->account->url ?>">
-				@<?= $currentToot->account->acct ?>
-			</a>
-		</div>
-		<div class="fediverse-reblog-content">
-		<?php endif; ?>
-
-		<?php require ModuleHelper::getLayoutPath($module->module, 'default_toot') ?>
-
-		<?php if ($reblog): ?>
-		</div>
-		<?php endif; ?>
-
+	<ul class="fediverse-toots">
+		<?php foreach ($toots as $toot): ?>
 		<?php
-			$title = HTMLHelper::_('date', $toot->created_at ?? 'now', Text::_('DATE_FORMAT_LC2'));
-		?>
+			$currentToot = $toot;
+			$reblog      = false;
 
-		<div class="fediverse-toot-permalink fediverse-toot-permalink-<?= $direction ?>">
-			<span class="fa fa-clock"
-				  title="<?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?>"
-				  aria-hidden="true"></span>
-			<span class="fediverse-visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?></span>
-			<?php if (!empty($uri)) : ?>
+			if ($toot->reblog ?? null)
+			{
+				$reblog      = true;
+				$currentToot = $toot->reblog;
+			}
+			?>
+		<li class="fediverse-toot fediverse-toot-<?= $self->langToWritingSystemClass($currentToot->language) ?>">
+			<?php if ($reblog): ?>
+			<div class="fediverse-reblog-info">
+				<span class="fa fa-retweet"
+					  aria-hidden="true"></span>
+				<span class="fediverse-visually-hidden">
+					<?= Text::sprintf(
+						'MOD_FEDIVERSEFEED_REBLOGGED',
+						$self->parseEmojis($currentToot->account->display_name, $currentToot->account->emojis)
+					) ?>
+				</span>
+				<a href="<?= $currentToot->account->url ?>">
+					@<?= $currentToot->account->acct ?>
+				</a>
+			</div>
+			<div class="fediverse-reblog-content">
+			<?php endif; ?>
+
+			<?php require ModuleHelper::getLayoutPath($module->module, 'default_toot') ?>
+
+			<?php if ($reblog): ?>
+			</div>
+			<?php endif; ?>
+
+			<?php
+				$title = HTMLHelper::_('date', $toot->created_at ?? 'now', Text::_('DATE_FORMAT_LC2'));
+			?>
+
+			<div class="fediverse-toot-permalink fediverse-toot-permalink-<?= $direction ?>">
+				<span class="fa fa-clock"
+					  title="<?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?>"
+					  aria-hidden="true"></span>
+				<span class="fediverse-visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_TOOTED_ON') ?></span>
+				<?php if (!empty($uri)) : ?>
 				<span class="fediverse-toot-link">
 					<a href="<?= htmlspecialchars($uri, ENT_COMPAT, 'UTF-8') ?>"
 					   target="_blank" rel="noopener">
 						<?= trim($title) ?>
 					</a>
 				</span>
-			<?php else : ?>
-			<span class="fediverse-toot-link"><?= trim($title) ?></span>
-			<?php endif; ?>
-		</div>
-	</li>
-	<?php endforeach; ?>
-</ul>
+				<?php else : ?>
+				<span class="fediverse-toot-link"><?= trim($title) ?></span>
+				<?php endif; ?>
+			</div>
+		</li>
+		<?php endforeach; ?>
+	</ul>
 </div>

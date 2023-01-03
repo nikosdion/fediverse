@@ -12,10 +12,9 @@
 namespace ActivityPhp\Server\Http;
 
 use ActivityPhp\Server;
-use ActivityPhp\Type\Util;
 use Joomla\CMS\Uri\Uri;
-use Psr\Http\Message\RequestInterface;
 use phpseclib3\Crypt\RSA;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * HTTP signatures tool

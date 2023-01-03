@@ -23,7 +23,6 @@ use Joomla\Database\DatabaseDriver;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Database\ParameterType;
 use Joomla\Registry\Registry;
-use phpseclib3\Crypt\RSA;
 
 /**
  * ActivityPub signature service

@@ -5,7 +5,7 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Plugin\Content\ContentActivityPub\Extension;
+namespace Dionysopoulos\Plugin\Content\ContentActivityPub\Extension;
 
 \defined('_JEXEC') || die;
 

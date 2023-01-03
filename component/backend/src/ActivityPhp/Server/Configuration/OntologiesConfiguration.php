@@ -12,7 +12,6 @@
 namespace ActivityPhp\Server\Configuration;
 
 use ActivityPhp\Type\Ontology;
-use Exception;
 
 /**
  * Ontologies configuration stack

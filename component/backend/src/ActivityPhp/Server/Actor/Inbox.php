@@ -18,8 +18,8 @@ use ActivityPhp\Server\Http\HttpSignature;
 use ActivityPhp\Type;
 use ActivityPhp\Type\Util;
 use Exception;
-use Psr\Http\Message\RequestInterface;
 use Joomla\Http\Response;
+use Psr\Http\Message\RequestInterface;
 
 /**
  * A server-side inbox

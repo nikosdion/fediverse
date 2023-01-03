@@ -15,7 +15,7 @@
     <creationDate>2022-12-18</creationDate>
     <version>1.0.1</version>
     <description>PLG_SYSTEM_WEBFINGER_XML_DESCRIPTION</description>
-    <namespace path="src">Joomla\Plugin\System\WebFinger</namespace>
+    <namespace path="src">Dionysopoulos\Plugin\System\WebFinger</namespace>
 
     <files>
         <folder>forms</folder>

@@ -9,9 +9,6 @@ defined('_JEXEC') || die;
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\WebAsset\WebAssetManager;
-use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;
 
 /**
  * @var object $currentToot    The toot we are processing

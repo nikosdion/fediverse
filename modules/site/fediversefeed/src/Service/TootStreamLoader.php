@@ -5,7 +5,7 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Module\FediverseFeed\Site\Service;
+namespace Dionysopoulos\Module\FediverseFeed\Site\Service;
 
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Http\Http;

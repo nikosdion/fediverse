@@ -15,7 +15,7 @@
     <creationDate>2022-12-18</creationDate>
     <version>1.0.1</version>
     <description>PLG_WEBSERVICES_ACTIVITYPUB_XML_DESCRIPTION</description>
-    <namespace path="src">Joomla\Plugin\WebServices\ActivityPub</namespace>
+    <namespace path="src">Dionysopoulos\Plugin\WebServices\ActivityPub</namespace>
 
     <files>
         <folder>services</folder>

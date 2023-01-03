@@ -5,12 +5,11 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Plugin\WebServices\ActivityPub\Extension;
+namespace Dionysopoulos\Plugin\WebServices\ActivityPub\Extension;
 
 defined('_JEXEC') || die;
 
 use Joomla\CMS\Application\ApiApplication;
-use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\ApiRouter;
 use Joomla\CMS\Uri\Uri;

@@ -15,7 +15,7 @@
     <creationDate>2022-12-18</creationDate>
     <version>1.0.1</version>
     <description>PLG_WEBFINGER_ACTIVITYPUB_XML_DESCRIPTION</description>
-    <namespace path="src">Joomla\Plugin\WebFinger\ActivityPub</namespace>
+    <namespace path="src">Dionysopoulos\Plugin\WebFinger\ActivityPub</namespace>
 
     <files>
         <folder>forms</folder>

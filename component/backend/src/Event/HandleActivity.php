@@ -9,7 +9,6 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Event;
 
 \defined('_JEXEC') || die;
 
-use ActivityPhp\Server\Actor;
 use ActivityPhp\Type\AbstractObject;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Joomla\CMS\Event\AbstractImmutableEvent;

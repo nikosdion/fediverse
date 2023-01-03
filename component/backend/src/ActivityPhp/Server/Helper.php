@@ -12,10 +12,7 @@
 namespace ActivityPhp\Server;
 
 use ActivityPhp\Server\Http\Request as HttpRequest;
-use ActivityPhp\Type;
 use ActivityPhp\Type\Util;
-use DateInterval;
-use DateTime;
 use Exception;
 
 /**

@@ -5,10 +5,15 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Plugin\WebFinger\Mastodon\Extension;
+namespace Dionysopoulos\Plugin\WebFinger\Mastodon\Extension;
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\System\WebFinger\Event\GetResource;
+use Dionysopoulos\Plugin\System\WebFinger\Event\LoadUserForm;
+use Dionysopoulos\Plugin\System\WebFinger\Event\ResolveResource;
+use Dionysopoulos\Plugin\System\WebFinger\Extension\UserFilterTrait;
+use Dionysopoulos\Plugin\System\WebFinger\Extension\WebFingerTrait;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\Plugin\CMSPlugin;
@@ -18,11 +23,6 @@ use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Event\SubscriberInterface;
-use Joomla\Plugin\System\WebFinger\Event\GetResource;
-use Joomla\Plugin\System\WebFinger\Event\LoadUserForm;
-use Joomla\Plugin\System\WebFinger\Event\ResolveResource;
-use Joomla\Plugin\System\WebFinger\Extension\UserFilterTrait;
-use Joomla\Plugin\System\WebFinger\Extension\WebFingerTrait;
 
 /**
  * Add links to your Mastodon profile in the WebFinger results.

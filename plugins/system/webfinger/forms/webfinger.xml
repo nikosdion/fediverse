@@ -9,7 +9,7 @@
     <fields name="webfinger">
         <fieldset name="webfinger"
                   label="PLG_SYSTEM_WEBFINGER_PROFILE_WEBFINGER_LABEL"
-                  addfieldprefix="Joomla\Plugin\System\WebFinger\Field"
+                  addfieldprefix="Dionysopoulos\Plugin\System\WebFinger\Field"
         >
             <field name="webfingerNote"
                    type="WebFingerInfo"

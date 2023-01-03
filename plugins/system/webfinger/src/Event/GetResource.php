@@ -5,7 +5,7 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Plugin\System\WebFinger\Event;
+namespace Dionysopoulos\Plugin\System\WebFinger\Event;
 
 defined('_JEXEC') || die;
 

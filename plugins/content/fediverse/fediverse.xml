@@ -15,7 +15,7 @@
 	<creationDate>2022-11-17</creationDate>
 	<version>1.0.1</version>
 	<description>PLG_CONTENT_FEDIVERSE_XML_DESCRIPTION</description>
-	<namespace path="src">Joomla\Plugin\Content\Fediverse</namespace>
+	<namespace path="src">Dionysopoulos\Plugin\Content\Fediverse</namespace>
 
 	<files>
 		<folder>services</folder>

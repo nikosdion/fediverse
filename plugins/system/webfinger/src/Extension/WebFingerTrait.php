@@ -5,10 +5,13 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Plugin\System\WebFinger\Extension;
+namespace Dionysopoulos\Plugin\System\WebFinger\Extension;
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\System\WebFinger\Event\GetResource;
+use Dionysopoulos\Plugin\System\WebFinger\Event\ResolveResource;
+use Dionysopoulos\Plugin\System\WebFinger\Exception\GenericWebFingerException;
 use JetBrains\PhpStorm\NoReturn;
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Factory;
@@ -20,9 +23,6 @@ use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
-use Joomla\Plugin\System\WebFinger\Event\GetResource;
-use Joomla\Plugin\System\WebFinger\Event\ResolveResource;
-use Joomla\Plugin\System\WebFinger\Exception\GenericWebFingerException;
 use Joomla\Registry\Registry;
 use Throwable;
 
@@ -325,7 +325,6 @@ trait WebFingerTrait
 		 * "property identifiers") and whose values are strings or null.
 		 */
 		$resource['properties'] = $resource['properties'] ?? [];
-		/** @noinspection PhpConditionAlreadyCheckedInspection */
 		$resource['properties'] = is_array($resource['properties']) ? $resource['properties'] : [];
 		$resource['properties'] = array_filter(
 			$resource['properties'],
@@ -351,7 +350,6 @@ trait WebFingerTrait
 		 *   identifiers") and whose values are strings or null.
 		 */
 		$resource['links'] = $resource['links'] ?? [];
-		/** @noinspection PhpConditionAlreadyCheckedInspection */
 		$resource['links'] = is_array($resource['links']) ? $resource['links'] : [];
 		$resource['links'] = array_filter(
 			array_values($resource['links']),

@@ -7,19 +7,19 @@
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Module\FediverseFeed\Site\Dispatcher\Dispatcher;
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Helper\ModuleHelper;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Input\Input;
-use Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher;
 use Joomla\Registry\Registry;
 
 /**
  * These variables are extracted from the indexed array returned by the getLayoutData() method.
  *
- * @see \Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher::getLayoutData()
+ * @see \Dionysopoulos\Module\FediverseFeed\Site\Dispatcher\Dispatcher::getLayoutData()
  *
  * @var stdClass        $module          The module data loaded by Joomla
  * @var SiteApplication $app             The Joomla administrator application object
@@ -48,13 +48,13 @@ $title          = HTMLHelper::_('date', $currentToot->created_at ?? 'now', Text:
 <?php if (!empty($contentWarning)): ?>
 <details class="mb-2">
 	<summary>
-		<div class="fediverse-cw-badge">
+		<span class="fediverse-cw-badge">
 			<span class="fa fa-exclamation-triangle"
 			      title="<?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING') ?> <?= htmlspecialchars($contentWarning, ENT_COMPAT, 'UTF-8') ?>"
 			      aria-hidden="true"></span>
 			<span class="fediverse-visually-hidden"><?= Text::_('MOD_FEDIVERSEFEED_CONTENT_WARNING') ?></span>
 			<strong><?= strip_tags($contentWarning) ?></strong>
-		</div>
+		</span>
 	</summary>
 	<?php endif; ?>
 

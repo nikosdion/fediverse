@@ -7,6 +7,8 @@
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\Content\Fediverse\Extension\Fediverse;
+use Dionysopoulos\Plugin\Content\Fediverse\Service\TootLoader;
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Http\HttpFactory;
@@ -14,8 +16,6 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;
-use Joomla\Plugin\Content\Fediverse\Service\TootLoader;
 use Joomla\Registry\Registry;
 
 return new class implements ServiceProviderInterface {

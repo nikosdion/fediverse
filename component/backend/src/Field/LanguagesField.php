@@ -9,8 +9,6 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Field;
 
 \defined('_JEXEC') || die;
 
-use Joomla\CMS\Component\ComponentHelper;
-use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Field\ListField;
 use Joomla\CMS\Language\LanguageHelper;
 

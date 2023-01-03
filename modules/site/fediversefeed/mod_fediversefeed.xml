@@ -15,7 +15,7 @@
     <authorUrl>www.dionysopoulos.me</authorUrl>
     <version>1.0.1</version>
     <description>MOD_FEDIVERSEFEED_XML_DESCRIPTION</description>
-    <namespace path="src">Joomla\Module\FediverseFeed</namespace>
+    <namespace path="src">Dionysopoulos\Module\FediverseFeed</namespace>
 
     <files>
         <folder>services</folder>
