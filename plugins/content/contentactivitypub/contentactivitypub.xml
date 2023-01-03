@@ -20,7 +20,6 @@
     <files>
         <folder>services</folder>
         <folder plugin="contentactivitypub">src</folder>
-        <folder>tmpl</folder>
     </files>
 
     <languages folder="language">
