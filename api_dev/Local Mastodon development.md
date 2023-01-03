@@ -258,6 +258,8 @@ update-ca-certificates
 # Hit CTRL-D to exit
 ```
 
+Now run `docker exec -u root -it mastodon_sidekiq_1 bash` to get a root console in the Sidekiq container instance of the Mastodon installation and carry out the instructions above once again.
+
 ## At long last!
 
 You can now look for `youruser@activitypub.local.web` in your Mastodon installation, where `youruser` is an Actor username you have defined in the ActivityPub component of your `activitypub.local.web` local Joomla installation.
