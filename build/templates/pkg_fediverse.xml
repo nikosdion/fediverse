@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   FediverseForJoomla
-  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
   ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
   -->
 
@@ -16,7 +16,7 @@
     <url>https://www.dionysopoulos.me</url>
     <packager>Nicholas K. Dionysopoulos</packager>
     <packagerurl>https://www.dionysopoulos.me</packagerurl>
-    <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
+    <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
     <description>PKG_FEDIVERSE_XML_DESCRIPTION</description>
 
