@@ -10,6 +10,7 @@ namespace Joomla\Plugin\WebServices\ActivityPub\Extension;
 defined('_JEXEC') || die;
 
 use Joomla\CMS\Application\ApiApplication;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\ApiRouter;
 use Joomla\CMS\Uri\Uri;
@@ -151,7 +152,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			'object.displayItem',
 			[
 				'username' => '[^/]+',
-				'id' => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+'
+				'id'       => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+',
 			],
 			$defaults
 		);
@@ -161,7 +162,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			'object.notImplemented',
 			[
 				'username' => '[^/]+',
-				'id' => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+'
+				'id'       => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+',
 			],
 			$defaults
 		);
@@ -176,7 +177,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 		 * application cannot accept a NULL value for the Accept header; it will throw an HTTP 406 error. As a result,
 		 * I need to check if this is the case and set the Accept header manually.
 		 */
-		$path = Uri::getInstance()->getPath();
+		$path     = Uri::getInstance()->getPath();
 		$basePath = Uri::base(true);
 
 		if (str_starts_with($path, $basePath))
@@ -184,6 +185,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			$path = substr($path, strlen($basePath));
 		}
 
+		$path         = trim($path, '/');
 		$acceptHeader = $this->getApplication()->input->server->getString('HTTP_ACCEPT');
 
 		if (str_starts_with($path, 'v1/activitypub/') && $acceptHeader === null && $this->getApplication()->input->getMethod() === 'POST')
