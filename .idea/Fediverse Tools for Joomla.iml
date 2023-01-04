@@ -19,6 +19,7 @@
       <sourceFolder url="file://$MODULE_DIR$/plugins/content/contentactivitypub/src" packagePrefix="Dionysopoulos\Plugin\Content\ContentActivityPub\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/content/fediverse/src" packagePrefix="Dionysopoulos\Plugin\Content\Fediverse\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/system/webfinger/src" packagePrefix="Dionysopoulos\Plugin\System\WebFinger\" isTestSource="false"/>
+      <sourceFolder url="file://$MODULE_DIR$/plugins/task/activitypub/src" packagePrefix="Dionysopoulos\Plugin\Task\ActivityPub\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/webfinger/activitypub/src" packagePrefix="Dionysopoulos\Plugin\WebFinger\ActivityPub\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/webfinger/mastodon/src" packagePrefix="Dionysopoulos\Plugin\WebFinger\Mastodon\" isTestSource="false"/>
       <sourceFolder url="file://$MODULE_DIR$/plugins/webservices/activitypub/src" packagePrefix="Dionysopoulos\Plugin\WebServices\ActivityPub\" isTestSource="false"/>

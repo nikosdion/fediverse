@@ -9,6 +9,8 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Table;
 
 \defined('_JEXEC') || die;
 
+use Dionysopoulos\Component\ActivityPub\Administrator\Table\Mixin\AssertActorExistsTrait;
+use Exception;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Table\Table;
@@ -22,6 +24,8 @@ use Joomla\Database\ParameterType;
  */
 class QueueTable extends Table
 {
+	use AssertActorExistsTrait;
+
 	/**
 	 * Auto-incrementing ID
 	 *
@@ -45,6 +49,17 @@ class QueueTable extends Table
 	 * @since 2.0.0
 	 */
 	public ?string $inbox = null;
+
+	/**
+	 * The actor ID sending this queued action.
+	 *
+	 * This is a cascading foreign key. If our actor is removed before we deliver the activity, the queued activity
+	 * will be automatically removed so the notification does not take place.
+	 *
+	 * @var   int|null
+	 * @since 2.0.0
+	 */
+	public ?int $actor_id = null;
 
 	/**
 	 * The corresponding follower ID for this queued action.
@@ -105,12 +120,13 @@ class QueueTable extends Table
 	 */
 	public function check()
 	{
-		// The follower_id must correspond to an existing Follower
+		// The actor_id must be an existing actor; the follower_id must correspond to an existing Follower
 		try
 		{
+			$this->assertActorExists($this->actor_id);
 			$this->followerExists();
 		}
-		catch (\Exception $e)
+		catch (Exception $e)
 		{
 			$this->setError($e->getMessage());
 
@@ -141,6 +157,32 @@ class QueueTable extends Table
 		}
 
 		return parent::check();
+	}
+
+	/**
+	 * Bump the retry count.
+	 *
+	 * If the request has been tried 10 times it returns false. This should indicate that the request needs to be taken
+	 * off the queue.
+	 *
+	 * @return  bool  Can the retry count be bumped?
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	public function bumpRetryCount(): bool
+	{
+		if ($this->retry_count >= 10)
+		{
+			return false;
+		}
+
+		$this->retry_count++;
+
+		$this->next_try = Factory::getDate($this->next_try ?? 'now')
+			->add(new \DateInterval('PT' . (3 ** $this->retry_count) . 'S'))
+			->toSql();
+
+		return true;
 	}
 
 	/**

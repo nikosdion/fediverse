@@ -36,9 +36,11 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_queue`
     `id` SERIAL,
     `activity` MEDIUMTEXT,
     `inbox` MEDIUMTEXT,
+    `actor_id` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
     `follower_id` BIGINT(20) UNSIGNED NULL DEFAULT NULL,
     `retry_count` INT(2) NOT NULL DEFAULT 0,
     `next_try` DATETIME NOT NULL DEFAULT NOW(),
+    FOREIGN KEY `#__activitypub_queue_actor_id` (`actor_id`) REFERENCES `#__activitypub_actors`(`id`) ON DELETE CASCADE,
     FOREIGN KEY `#__activitypub_queue_follower_id` (`follower_id`) REFERENCES `#__activitypub_followers`(`id`) ON DELETE CASCADE
 ) ENGINE InnoDB DEFAULT COLLATE utf8mb4_unicode_ci;
 

@@ -32,6 +32,7 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 		['plugin', 'fediverse', 1, 'content'],
 		['plugin', 'plg_content_contentactivitypub', 1, 'content'],
 		['plugin', 'webfinger', 1, 'system'],
+		['plugin', 'activitypub', 1, 'task'],
 		['plugin', 'activitypub', 1, 'webfinger'],
 		['plugin', 'activitypub', 1, 'webservices'],
 	];

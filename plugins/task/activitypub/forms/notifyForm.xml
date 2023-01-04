@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<form>
+    <fields name="params">
+        <fieldset name="task_params">
+
+            <field name="time_limit_cli"
+                   type="number"
+                   default="60"
+                   label="PLG_TASK_ACtIVITYPUB_LBL_TIME_LIMIT_CLI_LABEL"
+                   description="PLG_TASK_ACtIVITYPUB_LBL_TIME_LIMIT_CLI_DESC"
+                   min="5"
+                   max="3600"
+            />
+
+            <field name="time_limit_web"
+                   type="number"
+                   default="15"
+                   label="PLG_TASK_ACtIVITYPUB_LBL_TIME_LIMIT_WEB_LABEL"
+                   description="PLG_TASK_ACtIVITYPUB_LBL_TIME_LIMIT_WEB_DESC"
+                   min="5"
+                   max="100"
+            />
+
+        </fieldset>
+    </fields>
+</form>
