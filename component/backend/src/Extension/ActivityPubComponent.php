@@ -8,14 +8,11 @@
 namespace Dionysopoulos\Component\ActivityPub\Administrator\Extension;
 
 use Joomla\CMS\Extension\BootableExtensionInterface;
-use Joomla\CMS\Extension\Component;
-use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
+use Joomla\CMS\Extension\MVCComponent;
 use Psr\Container\ContainerInterface;
 
-class ActivityPubComponent extends Component implements BootableExtensionInterface
+class ActivityPubComponent extends MVCComponent implements BootableExtensionInterface
 {
-	use MVCFactoryAwareTrait;
-
 	public function boot(ContainerInterface $container)
 	{
 		// TODO: Implement boot() method.

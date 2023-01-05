@@ -17,7 +17,8 @@ use Dionysopoulos\Plugin\Task\ActivityPub\Library\DataShape\Request;
 use Dionysopoulos\Plugin\Task\ActivityPub\Library\MultiRequest;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
-use Joomla\CMS\MVC\Factory\MVCFactoryServiceInterface;
+use Joomla\CMS\Filter\InputFilter;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Component\Scheduler\Administrator\Event\ExecuteTaskEvent;
@@ -27,6 +28,7 @@ use Joomla\Component\Scheduler\Administrator\Traits\TaskPluginTrait;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\SubscriberInterface;
+use Throwable;
 
 class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
@@ -41,7 +43,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 	private const TASKS_MAP = [
 		'activitypub.notify' => [
 			'langConstPrefix' => 'PLG_TASK_ACTIVITYPUB_TASK_NOTIFY',
-			'method'          => 'scan',
+			'method'          => 'activityPubNotify',
 			'form'            => 'notifyForm',
 		],
 	];
@@ -71,7 +73,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		];
 	}
 
-	private function notifyForm(ExecuteTaskEvent $event): int
+	private function activityPubNotify(ExecuteTaskEvent $event): int
 	{
 		// Get some basic information about the task at hand.
 		/** @var Task $task */
@@ -84,22 +86,50 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		$timeLimit    = max(5, $timeLimit);
 		$bailoutLimit = max($timeLimit / 5, 2.0);
 
+		$this->registerFileLogger('task.activitypub');
+
 		// Make sure ActivityPub is installed and enabled.
 		$component = ComponentHelper::isEnabled('com_activitypub')
 			? Factory::getApplication()->bootComponent('com_activitypub')
 			: null;
 
-		if (!($component instanceof MVCFactoryServiceInterface))
+		if ($component === null)
 		{
-			throw new \RuntimeException('The ActivityPub component is not installed or has been disabled.');
+			Log::add('The ActivityPub component is not installed or has been disabled.', Log::DEBUG, 'task.activitypub');
+
+			return Status::OK;
 		}
 
-		/** @var QueueModel $queueModel */
-		$queueModel = $component->getMVCFactory()
-			->createModel('Queue', 'Administrator', ['ignore_request' => true]);
-		/** @var ActorTable $actorTable */
-		$actorTable = $component->getMVCFactory()
-			->createTable('Actor', 'Administrator');
+		try
+		{
+			/** @var QueueModel $queueModel */
+			$queueModel = $component->getMVCFactory()
+				->createModel('Queue', 'Administrator', ['ignore_request' => true]);
+			/** @var ActorTable $actorTable */
+			$actorTable = $component->getMVCFactory()
+				->createTable('Actor', 'Administrator');
+		}
+		catch (Throwable $e)
+		{
+			Log::add(
+				sprintf(
+					'Error getting the models [%s:%d]: %s',
+					$e->getFile(),
+					$e->getLine(),
+					$e->getMessage()
+				),
+				Log::ERROR,
+				'task.activitypub'
+			);
+
+			throw $e;
+		}
+
+		Log::add(
+			sprintf('Begin processing ActivityPub notifications, batch size %s', $requestLimit),
+			Log::INFO,
+			'task.activitypub'
+		);
 
 		$startTime = microtime(true);
 		$db        = $this->getDatabase();
@@ -107,6 +137,12 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		// Keep churning activity notifications until we are out of time or have no more pending items
 		while ((microtime(true) - $startTime) > $bailoutLimit)
 		{
+			Log::add(
+				sprintf("Getting up to %d record(s)", $requestLimit),
+				Log::DEBUG,
+				'task.activitypub'
+			);
+
 			// Lock table to maintain consistency while reading
 			$db->lockTable('#__activitypub_queue');
 
@@ -116,10 +152,22 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 			// If there are no requests do a fast task exit: return Status::OK
 			if (empty($pendingQueueItems))
 			{
+				Log::add(
+					'No records found.',
+					Log::DEBUG,
+					'task.activitypub'
+				);
+
 				$db->unlockTables();
 
 				return Status::OK;
 			}
+
+			Log::add(
+				'Temporarily removing activities from the queue',
+				Log::DEBUG,
+				'task.activitypub'
+			);
 
 			/**
 			 * Remove the activities from the pool.
@@ -147,6 +195,12 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 
 			try
 			{
+				Log::add(
+					sprintf('Preparing to send %d notification request(s)', count($pendingQueueItems)),
+					Log::INFO,
+					'task.activitypub'
+				);
+
 				$multiRequest = new MultiRequest(
 					maxRequests: $requestLimit,
 					headers: [
@@ -164,14 +218,32 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 						// If the request finished successfully we remove it from the pending queue
 						if ($requestInfo['result'] === CURLE_OK && $httpCode === 200)
 						{
+							Log::add(
+								sprintf('Request %d finished successfully', $queueItem->id),
+								Log::DEBUG,
+								'task.activitypub'
+							);
+
 							$pendingQueueItems[$queueItem->id] = null;
 
 							return;
 						}
 
 						// Try to bump the retry count. If we have already tried too many times, remove from the queue.
+						Log::add(
+							sprintf('Request %d failed. Bumping retry count.', $queueItem->id),
+							Log::DEBUG,
+							'task.activitypub'
+						);
+
 						if (!$queueItem->bumpRetryCount())
 						{
+							Log::add(
+								sprintf('Request %d failed more than 10 consecutive times; removing from the pool.', $queueItem->id),
+								Log::NOTICE,
+								'task.activitypub'
+							);
+
 							$pendingQueueItems[$queueItem->id] = null;
 
 							return;
@@ -197,6 +269,12 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 						continue;
 					}
 
+					Log::add(
+						sprintf('Adding request %d to the queue', $queueItem->id),
+						Log::DEBUG,
+						'task.activitypub'
+					);
+
 					$multiRequest->enqueue(
 						url: $queueItem->inbox,
 						postData: $postBody,
@@ -211,9 +289,16 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 				// Execute the multirequest
 				$multiRequest->execute();
 			}
-			catch (\Throwable $e)
+			catch (Throwable $e)
 			{
-				// Suppress the exception so we can throw it after persisting the failed items into the database.
+				Log::add(
+					'Received error processing the queue.',
+					Log::ERROR,
+					'task.activitypub'
+				);
+
+
+				// Suppress the exception, so we can throw it after persisting the failed items into the database.
 				$exception = $e;
 			}
 
@@ -222,6 +307,12 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 
 			if (!empty($pendingQueueItems))
 			{
+				Log::add(
+					sprintf('There are %d requests to put back into the queue', count($pendingQueueItems)),
+					Log::DEBUG,
+					'task.activitypub'
+				);
+
 				$db->transactionStart();
 
 				foreach ($pendingQueueItems as $queueItem)
@@ -243,11 +334,105 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 			// So, we had a Throwable. Throw it back so the task saves a Knockout status for this execution.
 			if (isset($exception))
 			{
+				Log::add(
+					sprintf(
+						'Delayed error is now thrown [%s:%d]: %s',
+						$exception->getFile(),
+						$exception->getLine(),
+						$exception->getMessage(),
+					),
+					Log::CRITICAL,
+					'task.activitypub'
+				);
+
+
 				throw $exception;
 			}
 		}
 
+		Log::add(
+			'Batch processing done.',
+			Log::DEBUG,
+			'task.activitypub'
+		);
+
 		// Indicate we finished successfully
 		return Status::OK;
 	}
+
+	/**
+	 * Register a file logger for the given context if we have not already done so.
+	 *
+	 * If no file is specified a log file will be created, named after the context. For example, the context 'foo.bar'
+	 * is logged to the file 'foo_bar.php' in Joomla's configured `logs` directory.
+	 *
+	 * The minimum log level to write to the file is determined by Joomla's debug flag. If you have enabled Site Debug
+	 * the log level is JLog::All which log everything, including debug information. If Site Debug is disabled the
+	 * log level is JLog::INFO which logs everything *except* debug information.
+	 *
+	 * @param   string       $context  The context to register
+	 * @param   string|null  $file     The file to use for this context
+	 *
+	 * @return  void
+	 *
+	 * @since   2.0.0
+	 */
+	private function registerFileLogger(string $context, ?string $file = null): void
+	{
+		static $registeredLoggers = [];
+
+		// Make sure we are not double-registering a logger
+		$sig = md5($context . '.file');
+
+		if (in_array($sig, $registeredLoggers))
+		{
+			return;
+		}
+
+		$registeredLoggers[] = $sig;
+
+		/**
+		 * If no file is specified we will create a filename based on the context.
+		 *
+		 * For example the context 'ats.cron' results in the log filename 'ats_cron.php'
+		 */
+		if (is_null($file))
+		{
+			$filter          = InputFilter::getInstance();
+			$filteredContext = $filter->clean($context, 'cmd');
+			$file            = str_replace('.', '_', $filteredContext) . '.php';
+		}
+
+		// Register the file logger
+		$logLevel = $this->getJoomlaDebug() ? Log::ALL : Log::INFO;
+
+		Log::addLogger(['text_file' => $file], $logLevel, [$context]);
+	}
+
+	/**
+	 * Get Joomla's debug flag
+	 *
+	 * @return  bool
+	 *
+	 * @since   2.0.0
+	 */
+	private function getJoomlaDebug(): bool
+	{
+		// If the JDEBUG constant is defined return its value cast as a boolean
+		if (defined('JDEBUG'))
+		{
+			return (bool) JDEBUG;
+		}
+
+		// Joomla 3 & 4 – go through the application object to get the application configuration value
+		try
+		{
+			return (bool) (Factory::getApplication()->get('debug', 0));
+		}
+		catch (Throwable $e)
+		{
+			return false;
+		}
+	}
+
 }
