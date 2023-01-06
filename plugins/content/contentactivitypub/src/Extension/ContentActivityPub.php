@@ -216,6 +216,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				$db->quoteName('created'),
 				$db->quoteName('publish_up'),
 				$db->quoteName('publish_down'),
+				$db->quoteName('modified'),
 				$db->quoteName('state'),
 				$db->quoteName('metadesc'),
 				$db->quoteName('language'),
@@ -408,11 +409,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 					$activity = Type::create(
 						'Delete',
 						[
-							'@context'     => [
+							'@context' => [
 								'https://www.w3.org/ns/activitystreams',
 							],
-							'actor'  => $this->getApiUriForUser($user, 'actor'),
-							'object' => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $article->id,
+							'actor'    => $this->getApiUriForUser($user, 'actor'),
+							'object'   => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $article->id,
 						]
 					);
 				}
@@ -593,11 +594,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 					$activity = Type::create(
 						'Update',
 						[
-							'@context'     => [
+							'@context' => [
 								'https://www.w3.org/ns/activitystreams',
 							],
-							'actor'  => $activity->actor,
-							'object' => $this->getObjectFromRawContent($article, $user),
+							'actor'    => $activity->actor,
+							'object'   => $this->getObjectFromRawContent($article, $user),
 						]
 					);
 				}
@@ -680,11 +681,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			$activity = Type::create(
 				'Delete',
 				[
-					'@context'     => [
+					'@context' => [
 						'https://www.w3.org/ns/activitystreams',
 					],
-					'actor'  => $this->getApiUriForUser($user, 'actor'),
-					'object' => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $article->id,
+					'actor'    => $this->getApiUriForUser($user, 'actor'),
+					'object'   => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $article->id,
 				]
 			);
 
@@ -736,12 +737,15 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$followersUri = $this->getApiUriForUser($user, 'followers');
 		$jPublished   = clone Factory::getDate($rawData->publish_up ?: $rawData->created, 'GMT');
 		$published    = $jPublished->format(DATE_ATOM);
+		$jUpdated     = clone Factory::getDate($rawData->modified ?: $rawData->created, 'GMT');
+		$updated      = $jUpdated->format(DATE_ATOM);
 
 		$sourceObject = [
 			'inReplyTo'        => null,
 			'atomUri'          => $objectId,
 			'inReplyToAtomUri' => null,
 			'published'        => $published,
+			'updated'          => $updated,
 			'attributedTo'     => $actorUri,
 			'to'               => [
 				'https://www.w3.org/ns/activitystreams#Public',
@@ -807,10 +811,10 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		if (str_contains($language, '-'))
 		{
-			[$language, ] = explode('-', $language, 2);
+			[$language,] = explode('-', $language, 2);
 		}
 
-		$content  = match ($sourceType)
+		$content = match ($sourceType)
 		{
 			'introtext' => $rawData->introtext,
 			'fulltext' => $rawData->fulltext,
@@ -856,7 +860,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 				if (str_contains($langCode, '-'))
 				{
-					[$langCode, ] = explode('-', $langCode, 2);
+					[$langCode,] = explode('-', $langCode, 2);
 				}
 
 				$sourceObject['contentMap'][$langCode] = $altContent;
@@ -903,11 +907,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			return Type::create(
 				'Delete',
 				[
-					'@context'     => [
+					'@context' => [
 						'https://www.w3.org/ns/activitystreams',
 					],
-					'actor'  => $this->getApiUriForUser($user, 'actor'),
-					'object' => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id,
+					'actor'    => $this->getApiUriForUser($user, 'actor'),
+					'object'   => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id,
 				]
 			);
 		}
@@ -918,7 +922,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		return Type::create(
 			'Create',
 			[
-				'@context'     => [
+				'@context'  => [
 					'https://www.w3.org/ns/activitystreams',
 					[
 						"ostatus"          => "http://ostatus.org#",
@@ -1502,7 +1506,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 	private function getArticleVersionIdByVersionCounter(int $articleId, int $versionCounter): ?int
 	{
 		$itemId = sprintf('com_content.article.%d', $articleId);
-		$db = $this->getDatabase();
+		$db     = $this->getDatabase();
 
 		// Try to get the exact record very fast using a JSON database query
 		$query = $db->getQuery($db)
@@ -1510,7 +1514,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			->from($db->quoteName('#__history'))
 			->where([
 				$db->quoteName('item_id') . ' = :itemId',
-				'JSON_EXTRACT(' . $db->quoteName('version_data') . ', \'$.version\') = :counter'
+				'JSON_EXTRACT(' . $db->quoteName('version_data') . ', \'$.version\') = :counter',
 			])
 			->bind(':itemId', $itemId)
 			->bind(':counter', $versionCounter);
