@@ -13,6 +13,7 @@ use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Application\ConsoleApplication;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
@@ -58,9 +59,9 @@ class Signature implements DatabaseAwareInterface
 	 * @since   2.0.0
 	 */
 	public function __construct(
-		DatabaseInterface            $db,
-		private UserFactoryInterface $userFactory,
-		private CMSApplication       $application,
+		DatabaseInterface                         $db,
+		private UserFactoryInterface              $userFactory,
+		private CMSApplication|ConsoleApplication $application,
 	)
 	{
 		$this->setDatabase($db);
@@ -129,7 +130,7 @@ class Signature implements DatabaseAwareInterface
 
 		$signature = base64_encode($signature);
 
-		$user = ($actorTable->user_id > 0)
+		$user   = ($actorTable->user_id > 0)
 			? $this->userFactory->loadUserById($actorTable->user_id)
 			: $this->getUserFromUsername($actorTable->username);
 		$key_id = $this->getApiUriForUser($user) . '#main-key';
@@ -357,13 +358,13 @@ class Signature implements DatabaseAwareInterface
 	 */
 	private function getAllHeaders(): array
 	{
-		$serverInput      = Factory::getApplication()->input->server;
-		$allHeaders = array_filter(
+		$serverInput = Factory::getApplication()->input->server;
+		$allHeaders  = array_filter(
 			$serverInput->getArray(),
 			fn($x) => str_starts_with($x, 'HTTP_'),
 			ARRAY_FILTER_USE_KEY
 		);
-		$allHeaders = array_combine(
+		$allHeaders  = array_combine(
 			array_map(
 				fn($x) => str_starts_with($x, 'HTTP_')
 					? str_replace('_', '-', substr($x, 5))

@@ -342,12 +342,15 @@ class Follow extends AbstractPostHandlerAdapter
 	 */
 	private function getHttpClient(): Http
 	{
-		return HttpFactory::getHttp([
-			'transport.curl' => [
+		$options = (defined('JDEBUG') && JDEBUG)
+			? [
 				CURLOPT_SSL_VERIFYHOST   => 0,
 				CURLOPT_SSL_VERIFYPEER   => 0,
 				CURLOPT_SSL_VERIFYSTATUS => 0,
-			],
+			] : [];
+
+		return HttpFactory::getHttp([
+			'transport.curl' => $options,
 		]);
 	}
 }

@@ -14,26 +14,31 @@
     >
 
         <field
-            name="arbitrary_users"
-            type="list"
-            label="COM_ACTIVITYPUB_CONFIG_USERS_LABEL"
-            description="COM_ACTIVITYPUB_CONFIG_USERS_DESC"
-            default="0"
-            >
+                name="arbitrary_users"
+                type="list"
+                label="COM_ACTIVITYPUB_CONFIG_USERS_LABEL"
+                description="COM_ACTIVITYPUB_CONFIG_USERS_DESC"
+                default="0"
+        >
             <option value="0">COM_ACTIVITYPUB_CONFIG_USERS_CONFIGURED</option>
             <option value="1">COM_ACTIVITYPUB_CONFIG_USERS_ARBITRARY</option>
         </field>
 
         <field
-            name="allowed_groups"
-            type="Usergrouplist"
-            label="COM_ACTIVITYPUB_CONFIG_ALLOWED_GROUPS_LABEL"
-            description="COM_ACTIVITYPUB_CONFIG_ALLOWED_GROUPS_DESC"
-            checksuperusergroup="0"
-            multiple="true"
-            layout="joomla.form.field.list-fancy-select"
-            default="1"
-            showon="arbitrary_users:1"
+                name="allowed_groups"
+                type="Usergrouplist"
+                label="COM_ACTIVITYPUB_CONFIG_ALLOWED_GROUPS_LABEL"
+                description="COM_ACTIVITYPUB_CONFIG_ALLOWED_GROUPS_DESC"
+                checksuperusergroup="0"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                default="1"
+                showon="arbitrary_users:1"
+        />
+
+        <field
+                name="siteurl"
+                type="hidden"
         />
 
     </fieldset>

@@ -10,25 +10,38 @@ namespace Dionysopoulos\Plugin\Content\ContentActivityPub\Extension;
 \defined('_JEXEC') || die;
 
 use ActivityPhp\Type;
+use ActivityPhp\Type\AbstractObject;
 use ActivityPhp\Type\Core\AbstractActivity;
+use ActivityPhp\Type\Extended\Object\Tombstone;
+use Algo26\IdnaConvert\Exception\AlreadyPunycodeException;
+use Algo26\IdnaConvert\Exception\InvalidCharacterException;
 use Algo26\IdnaConvert\ToIdn;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivityListQuery;
+use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetObject;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
+use Dionysopoulos\Component\ActivityPub\Administrator\Model\QueueModel;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Exception;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Image\Image;
+use Joomla\CMS\MVC\Factory\MVCFactory;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\Route;
+use Joomla\CMS\Table\Table;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\User;
+use Joomla\CMS\User\UserFactoryInterface;
+use Joomla\Component\Content\Administrator\Model\ArticleModel;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
 use Joomla\Component\Content\Site\Helper\RouteHelper;
 use Joomla\Component\Tags\Site\Helper\RouteHelper as TagsRouteHelper;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseDriver;
+use Joomla\Database\DatabaseIterator;
+use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
@@ -80,6 +93,10 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		return [
 			'onActivityPubGetActivityListQuery' => 'getListQuery',
 			'onActivityPubGetActivity'          => 'getActivities',
+			'onActivityPubGetObject'            => 'getObject',
+			'onContentChangeState'              => 'onContentChangeState',
+			'onContentAfterDelete'              => 'onContentAfterDelete',
+			'onContentAfterSave'                => 'onContentAfterSave',
 		];
 	}
 
@@ -197,6 +214,8 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				$db->quoteName('catid'),
 				$db->quoteName('created'),
 				$db->quoteName('publish_up'),
+				$db->quoteName('publish_down'),
+				$db->quoteName('state'),
 				$db->quoteName('metadesc'),
 				$db->quoteName('language'),
 			])
@@ -257,35 +276,533 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$event->addResult($results);
 	}
 
+	public function getObject(GetObject $event)
+	{
+		if ($event->getArgument('context') !== $this->context)
+		{
+			return;
+		}
+
+		/** @var ActorTable $actorTable */
+		$actorTable = $event->getArgument('actor');
+		$id         = (int) $event->getArgument('id');
+
+		/** @var MVCFactory $comContentFactory */
+		$comContentFactory = $this->getApplication()
+			->bootComponent('com_content')
+			->getMVCFactory();
+		/** @var ArticleTable $article */
+		$article = $comContentFactory->createTable('Article', 'Administrator');
+
+		if (!$article->load($id))
+		{
+			return;
+		}
+
+		$user = empty($actorTable->username)
+			? Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($actorTable->user_id)
+			: $this->getUserFromUsername($actorTable->username);
+
+		$object = $this->getObjectFromRawContent($article, $user);
+
+		$event->addResult($object);
+	}
+
+	/**
+	 * Gets triggered when a content item changes state (published, unpublished, trashed).
+	 *
+	 * We send a "Create" activity on publish and a "Delete" on unpublish.
+	 *
+	 * @param   Event  $event  The onContentChangeState event
+	 *
+	 * @return  void
+	 * @throws  AlreadyPunycodeException
+	 * @throws  InvalidCharacterException
+	 * @since   2.0.0
+	 */
+	public function onContentChangeState(Event $event): void
+	{
+		/**
+		 * @var string $context The context of the state change
+		 * @var array  $pks     The primary keys of the content whose state is being changed
+		 * @var int    $value   The new publishing state
+		 */
+		[$context, $pks, $value] = $event->getArguments();
+
+		// We only concern ourselves with core content (articles)
+		if ($context !== 'com_content.article')
+		{
+			return;
+		}
+
+		/** @var MVCFactory $comContentFactory */
+		$comContentFactory = $this->getApplication()
+			->bootComponent('com_content')
+			->getMVCFactory();
+		/** @var ArticleTable $article */
+		$article = $comContentFactory->createTable('Article', 'Administrator');
+
+		foreach ($pks as $id)
+		{
+			// Get the article
+			$article->reset();
+
+			if (!$article->load($id))
+			{
+				continue;
+			}
+
+			// Get the Activity type (we only do Delete and Create, there is no “Unpublish”)
+			$type = match ($value)
+			{
+				0, 2 => 'Delete',
+				1 => 'Create',
+				default => null
+			};
+
+			if (empty($type))
+			{
+				continue;
+			}
+
+			// Find which Actors apply to this content
+			try
+			{
+				$applicableActors = $this->getActorsForContent($article);
+			}
+			catch (Exception $e)
+			{
+				$applicableActors = [];
+			}
+
+			if (empty($applicableActors))
+			{
+				continue;
+			}
+
+			// For each Actor, get an Activity and notify its followers
+			foreach ($applicableActors as $actorTable)
+			{
+				// Get the activity
+				$user = empty($actorTable->username)
+					? Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($actorTable->user_id)
+					: $this->getUserFromUsername($actorTable->username);
+
+				if ($type === 'Create')
+				{
+					$activity = $this->getActivityFromRawContent($article, $user);
+				}
+				else
+				{
+					$activity = Type::create(
+						'Delete',
+						[
+							'@context'     => [
+								'https://www.w3.org/ns/activitystreams',
+							],
+							'actor'  => $this->getApiUriForUser($user, 'actor'),
+							'object' => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $article->id,
+						]
+					);
+				}
+
+				// Notify followers
+				/** @var QueueModel $queueModel */
+				$queueModel = $this->getApplication()
+					->bootComponent('com_activitypub')
+					->getMVCFactory()
+					->createModel('Queue', 'Administrator');
+
+				$queueModel->notifyFollowers($actorTable, $activity);
+			}
+		}
+	}
+
+	/**
+	 * Gets triggered when a content items is saved.
+	 *
+	 * We will send a "Create" activity on publish (or new, published content creation), "Delete" on unpublish, or an
+	 * "Update" if a published content is edited. The latter is only possible when you have Versions enabled in Joomla.
+	 *
+	 * N.B.: If Versions are disabled in Joomla we can't tell how an article was modified.
+	 *
+	 * @param   Event  $event  The onContentAfterSave event
+	 *
+	 * @return  void
+	 * @throws  AlreadyPunycodeException
+	 * @throws  InvalidCharacterException
+	 *
+	 * @since   2.0.0
+	 */
+	public function onContentAfterSave(Event $event)
+	{
+		/**
+		 * @var string             $context The context of the item being saved
+		 * @var Table|ArticleTable $article The table object just saved
+		 * @var int|bool           $isNew   Is this a new item?
+		 * @var object|array       $data    Raw data sent to the model
+		 */
+		[$context, $article, $isNew, $data] = $event->getArguments();
+
+		// We only concern ourselves with core content (articles)
+		if ($context !== 'com_content.article')
+		{
+			return;
+		}
+
+		// Is the item published?
+		$isPublished = $article->state == 1;
+
+		if (!empty($article->publish_up) && $article->publish_up != $this->getDatabase()->getNullDate())
+		{
+			$isPublished = $isPublished && Factory::getDate($article->publish_up) <= Factory::getDate();
+		}
+
+		if (!empty($article->publish_down) && $article->publish_down != $this->getDatabase()->getNullDate())
+		{
+			$isPublished = $isPublished && Factory::getDate($article->publish_down) >= Factory::getDate();
+		}
+
+		// If it's a new item I only care if it's published
+		if ($isNew && !$isPublished)
+		{
+			return;
+		}
+
+		// Find which Actors apply to this content
+		try
+		{
+			$applicableActors = $this->getActorsForContent($article);
+		}
+		catch (Exception $e)
+		{
+			$applicableActors = [];
+		}
+
+		if (empty($applicableActors))
+		{
+			return;
+		}
+
+		/**
+		 * Get the article's previous version and determine its publishing state.
+		 *
+		 * Joomla only fires plugin events AFTER binding the new data to the table. As a result I cannot normally tell
+		 * how the article was edited.
+		 *
+		 * I am going through Joomla's Versions (article version history) to find the previous state of the article and
+		 * determine if it was published or not. If the previous versions have been removed OR Versions are disabled in
+		 * Joomla I cannot know how the article has changed, period.
+		 */
+		$previousVersion = $isNew ? null : $this->getPreviousVersion($article);
+
+		if (!empty($previousVersion))
+		{
+			$wasPublished = $previousVersion->state == 1;
+
+			if (!empty($previousVersion->publish_up) && $previousVersion->publish_up != $this->getDatabase()->getNullDate())
+			{
+				$wasPublished = $wasPublished && Factory::getDate($previousVersion->publish_up) <= Factory::getDate();
+			}
+
+			if (!empty($previousVersion->publish_down) && $previousVersion->publish_down != $this->getDatabase()->getNullDate())
+			{
+				$wasPublished = $wasPublished && Factory::getDate($previousVersion->publish_down) >= Factory::getDate();
+			}
+		}
+
+		// For each Actor, get an Activity and notify its followers
+		foreach ($applicableActors as $actorTable)
+		{
+			// Get the activity
+			$user = empty($actorTable->username)
+				? Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($actorTable->user_id)
+				: $this->getUserFromUsername($actorTable->username);
+
+			/**
+			 * Get the activity.
+			 *
+			 * If this is a new article I will always send a Create activity — as I have already checked that it's both
+			 * a new article, and published.
+			 *
+			 * If I was able to get the previous version of the article I have its current and its previous publishing
+			 * state. As a result, I can have a detailed approach to which activity to issue:
+			 *
+			 * - **An unpublished article remained unpublished**. No notification is necessary. I had already sent a
+			 *   Delete activity when the article was first unpublished.
+			 * - **An unpublished article got published**. Send a Create activity. Handled by getActivityFromRawContent.
+			 * - **A published article got unpublished**. Send a Delete activity. Handled by getActivityFromRawContent.
+			 * - **A published article remained published**. Send an Update activity.
+			 *
+			 * If I could not get the previous version of the article I only have its _current_ state — but not its
+			 * previous publishing state. As a result I can only send a Create or Delete activity:
+			 *
+			 * - **The article is now published**. Send a Create activity.
+			 * - **The article is now unpublished**. Send a Delete activity.
+			 *
+			 * If the publishing state has changed saving the article this is not a problem. However, if the publishing
+			 * state didn't change I am sending something confusing to the federated server. If an article remained
+			 * published I am sending a "Create" activity for content the remote server has already seen me creating. If
+			 * the article remained unpublished I am sending a Delete activity for content the remote server has already
+			 * seen me delete (if a published item got unpublished in the past) or, worse, it sees me deleting content
+			 * which it's never seen me create (if I had created an unpublished item and kept editing and saving it as
+			 * an unpublished item). Yeah, this is problematic.
+			 *
+			 * Ideally, Joomla should give me a copy of the table data _before_ the new data was bound to it. Of course
+			 * this requires core developers actually understanding the plethora of use cases where this is necessary,
+			 * and I'm not talking just about ActivityPub. Having the before and after state would allow developers to
+			 * find the way content changed and enable smart actions. For example, updating just the publish up / down
+			 * dates on a content category listing events could be used to update an events calendar — but if these
+			 * fields are never changed no such time-consuming change would be necessary. Updating the title or images
+			 * of an article could mean that a social sharing card needs to be regenerated — but if none of that is
+			 * changed there's no need to waste server resources on this time-consuming process. These are just two
+			 * examples of things I have had to do in the recent past. But I digress.
+			 */
+			$activity = $this->getActivityFromRawContent($article, $user);
+
+			if (!empty($previousVersion))
+			{
+				/**
+				 * An unpublished article remained unpublished.
+				 *
+				 * No notification is necessary.
+				 */
+				if (!$isPublished && !$wasPublished)
+				{
+					return;
+				}
+
+				/**
+				 * A published article was edited.
+				 *
+				 * Return an Update activity
+				 */
+				if ($isPublished && $wasPublished)
+				{
+					$activity = Type::create(
+						'Update',
+						[
+							'@context'     => [
+								'https://www.w3.org/ns/activitystreams',
+							],
+							'actor'  => $activity->actor,
+							'object' => $activity->id,
+						]
+					);
+				}
+			}
+
+			// Notify followers
+			/** @var QueueModel $queueModel */
+			$queueModel = $this->getApplication()
+				->bootComponent('com_activitypub')
+				->getMVCFactory()
+				->createModel('Queue', 'Administrator');
+
+			$queueModel->notifyFollowers($actorTable, $activity);
+		}
+	}
+
+	/**
+	 * Gets triggered when a content item is deleted.
+	 *
+	 * If a published item is deleted we send a Delete activity. When an unpublished item gets deleted we do nothing;
+	 * we had already sent a Delete activity when the content was unpublished.
+	 *
+	 * @param   Event  $event
+	 *
+	 * @return  void
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	public function onContentAfterDelete(Event $event)
+	{
+		/**
+		 * @var string             $context The context of the item being saved
+		 * @var Table|ArticleTable $article The table object just saved
+		 */
+		[$context, $article] = $event->getArguments();
+
+		// We only concern ourselves with core content (articles)
+		if ($context !== 'com_content.article')
+		{
+			return;
+		}
+
+		// Was the item published before being deleted?
+		$isPublished = $article->state == 1;
+
+		if (!empty($article->publish_up) && $article->publish_up != $this->getDatabase()->getNullDate())
+		{
+			$isPublished = $isPublished && Factory::getDate($article->publish_up) <= Factory::getDate();
+		}
+
+		if (!empty($article->publish_down) && $article->publish_down != $this->getDatabase()->getNullDate())
+		{
+			$isPublished = $isPublished && Factory::getDate($article->publish_down) >= Factory::getDate();
+		}
+
+		if (!$isPublished)
+		{
+			/**
+			 * Deleting an unpublished article does not require a notification to be sent; unpublishing an article has
+			 * already sent a Delete activity notification.
+			 */
+			return;
+		}
+
+		// Find which Actors apply to this content
+		try
+		{
+			$applicableActors = $this->getActorsForContent($article);
+		}
+		catch (Exception $e)
+		{
+			$applicableActors = [];
+		}
+
+		if (empty($applicableActors))
+		{
+			return;
+		}
+
+		// For each Actor, get an Activity and notify its followers
+		foreach ($applicableActors as $actorTable)
+		{
+			// Get the activity
+			$user = empty($actorTable->username)
+				? Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($actorTable->user_id)
+				: $this->getUserFromUsername($actorTable->username);
+
+			/** @var Type\Extended\Activity\Delete $activity */
+			$activity = Type::create(
+				'Delete',
+				[
+					'@context'     => [
+						'https://www.w3.org/ns/activitystreams',
+					],
+					'actor'  => $this->getApiUriForUser($user, 'actor'),
+					'object' => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $article->id,
+				]
+			);
+
+			// Notify followers
+			/** @var QueueModel $queueModel */
+			$queueModel = $this->getApplication()
+				->bootComponent('com_activitypub')
+				->getMVCFactory()
+				->createModel('Queue', 'Administrator');
+
+			$queueModel->notifyFollowers($actorTable, $activity);
+		}
+	}
+
 	/**
 	 * Get an Activity object from the raw article data.
 	 *
 	 * @param   object  $rawData  The raw article data.
 	 * @param   User    $user     The user which the Activity is for.
 	 *
-	 * @return  AbstractActivity
+	 * @return  AbstractObject
+	 * @throws  AlreadyPunycodeException
+	 * @throws  InvalidCharacterException
 	 * @since   2.0.0
 	 */
-	private function getActivityFromRawContent(object $rawData, User $user): AbstractActivity
+	private function getObjectFromRawContent(object $rawData, User $user): AbstractObject
 	{
 		$sourceType   = $this->params->get('fulltext', 'introtext');
 		$attachImages = $this->params->get('images', '1') == 1;
 
-		$objectId     = $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id;
-		$actorUri     = $this->getApiUriForUser($user, 'actor');
+		// Is the item published?
+		$isPublished = $rawData->state == 1;
+
+		if (!empty($rawData->publish_up) && $rawData->publish_up != $this->getDatabase()->getNullDate())
+		{
+			$isPublished = $isPublished && Factory::getDate($rawData->publish_up) <= Factory::getDate();
+		}
+
+		if (!empty($rawData->publish_down) && $rawData->publish_down != $this->getDatabase()->getNullDate())
+		{
+			$isPublished = $isPublished && Factory::getDate($rawData->publish_down) >= Factory::getDate();
+		}
+
+		// Get the basic information about the article
+		$objectId         = $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id;
+		$actorUri         = $this->getApiUriForUser($user, 'actor');
+		$sourceObjectType = $sourceType === 'metadesc' ? 'Note' : 'Article';
+
 		$followersUri = $this->getApiUriForUser($user, 'followers');
 		$jPublished   = clone Factory::getDate($rawData->publish_up ?: $rawData->created, 'GMT');
 		$published    = $jPublished->format(DATE_ATOM);
-		$url          = Route::link(
-			client: 'site',
-			url: RouteHelper::getArticleRoute($rawData->id, $rawData->catid, $rawData->language),
-			xhtml: false,
-			absolute: true
+
+		$sourceObject = [
+			'inReplyTo'        => null,
+			'atomUri'          => $objectId,
+			'inReplyToAtomUri' => null,
+			'published'        => $published,
+			'attributedTo'     => $actorUri,
+			'to'               => [
+				'https://www.w3.org/ns/activitystreams#Public',
+			],
+			'cc'               => [
+				$followersUri,
+			],
+			'sensitive'        => false,
+			'attachment'       => [],
+			'tag'              => [],
+		];
+
+		// If the item is not published anymore return a Tombstone
+		if (!$isPublished)
+		{
+			$sourceObject['formerType'] = $sourceObjectType;
+			$sourceObject['deleted']    = Factory::getDate(
+				$rawData->publish_down ?: $rawData->modified ?: $rawData->created,
+				'GMT'
+			)
+				->format(DATE_ATOM);
+
+			/** @noinspection PhpIncompatibleReturnTypeInspection */
+			return Type::create('Tombstone', $sourceObject);
+		}
+
+		/**
+		 * Add the article URL
+		 *
+		 * Here's a fun one! The ActivityPhp URL validator uses PHP's filter_var which only supports URLs with ASCII
+		 * characters. Guess what happens when the URL contains UTF-8 characters? That's right, it throws an error. So,
+		 * we have to transliterate the URL.
+		 */
+		$sourceObject['url'] = $this->transliterateUrl(
+			Route::link(
+				client: 'site',
+				url: RouteHelper::getArticleRoute($rawData->id, $rawData->catid, $rawData->language),
+				xhtml: false,
+				absolute: true
+			)
 		);
-		$language     = ($rawData->language === '*' || empty($rawData->language))
+
+		// Add the article title
+		if ($sourceObjectType === 'Article')
+		{
+			$sourceObject['name'] = $rawData->title;
+		}
+
+		// Add tags as hashtags
+		foreach ($this->getTags($rawData->id) as $tag)
+		{
+			if (empty($tag))
+			{
+				continue;
+			}
+
+			$sourceObject['tag'][] = $tag;
+		}
+
+		$language = ($rawData->language === '*' || empty($rawData->language))
 			? $this->getApplication()->getLanguage()->getTag()
 			: $rawData->language;
-		$content      = match ($sourceType)
+		$content  = match ($sourceType)
 		{
 			'introtext' => $rawData->introtext,
 			'fulltext' => $rawData->fulltext,
@@ -301,37 +818,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		{
 		}
 
-		/**
-		 * Here's a fun one! The ActivityPhp URL validator uses PHP's filter_var which only supports URLs with ASCII
-		 * characters. Guess what happens when the URL contains UTF-8 characters? That's right, it throws an error. So,
-		 * we have to transliterate the URL.
-		 */
-		$url = $this->transliterateUrl($url);
-
-		$sourceObjectType = $sourceType === 'metadesc' ? 'Note' : 'Article';
-		$sourceObject     = [
-			'id'               => $objectId,
-			'type'             => $sourceObjectType,
-			'summary'          => (empty($rawData->metadesc) || $sourceObjectType === 'Note') ? null : $rawData->metadesc,
-			'inReplyTo'        => null,
-			'atomUri'          => $objectId,
-			'inReplyToAtomUri' => null,
-			'published'        => $published,
-			'url'              => $url,
-			'attributedTo'     => $actorUri,
-			'to'               => [
-				'https://www.w3.org/ns/activitystreams#Public',
-			],
-			'cc'               => [
-				$followersUri,
-			],
-			'sensitive'        => false,
-			'content'          => $content,
-			'contentMap'       => [
-				$language => $content,
-			],
-			'attachment'       => [],
-			'tag'              => [],
+		$sourceObject['id']         = $objectId;
+		$sourceObject['summary']    = (empty($rawData->metadesc) || $sourceObjectType === 'Note') ? null : $rawData->metadesc;
+		$sourceObject['content']    = $content;
+		$sourceObject['contentMap'] = [
+			$language => $content,
 		];
 
 		// Get associated languages
@@ -359,12 +850,6 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			}
 		}
 
-		// Add the article title
-		if ($sourceObjectType === 'Article')
-		{
-			$sourceObject['name'] = $rawData->title;
-		}
-
 		// Attach images
 		if ($attachImages)
 		{
@@ -379,33 +864,74 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			}
 		}
 
-		// Add tags as hashtags
-		foreach ($this->getTags($rawData->id) as $tag)
-		{
-			if (empty($tag))
-			{
-				continue;
-			}
+		return Type::create($sourceObjectType, $sourceObject);
+	}
 
-			$sourceObject['tag'][] = $tag;
+	/**
+	 * Get an Activity object from the raw article data.
+	 *
+	 * @param   object  $rawData  The raw article data.
+	 * @param   User    $user     The user which the Activity is for.
+	 *
+	 * @return  AbstractActivity
+	 * @throws AlreadyPunycodeException
+	 * @throws InvalidCharacterException
+	 * @since   2.0.0
+	 */
+	private function getActivityFromRawContent(object $rawData, User $user): AbstractActivity
+	{
+		// Get the source object
+		$sourceObject = $this->getObjectFromRawContent($rawData, $user);
+
+		// If the object is unpublished, return a "Delete" activity
+		if ($sourceObject instanceof Tombstone)
+		{
+			/** @noinspection PhpIncompatibleReturnTypeInspection */
+			return Type::create(
+				'Delete',
+				[
+					'@context'     => [
+						'https://www.w3.org/ns/activitystreams',
+					],
+					'actor'  => $this->getApiUriForUser($user, 'actor'),
+					'object' => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id,
+				]
+			);
 		}
 
-		// Create the activity
-		$attributes = [
-			'id'        => $objectId,
-			'actor'     => $actorUri,
-			'published' => $published,
-			'to'        => [
-				'https://www.w3.org/ns/activitystreams#Public',
-			],
-			'cc'        => [
-				$followersUri,
-			],
-			'object'    => $sourceObject,
-		];
+		// If the object is published, return a "Create" activity
 
 		/** @noinspection PhpIncompatibleReturnTypeInspection */
-		return Type::create('Create', $attributes);
+		return Type::create(
+			'Create',
+			[
+				'@context'     => [
+					'https://www.w3.org/ns/activitystreams',
+					[
+						"ostatus"          => "http://ostatus.org#",
+						"atomUri"          => "ostatus:atomUri",
+						"inReplyToAtomUri" => "ostatus:inReplyToAtomUri",
+						'sensitive'        => 'as:sensitive',
+						'toot'             => 'http://joinmastodon.org/ns#',
+						'blurhash'         => 'toot:blurhash',
+					],
+				],
+				'id'        => $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id,
+				'actor'     => $this->getApiUriForUser($user, 'actor'),
+				'published' => (clone Factory::getDate(
+					$rawData->publish_up ?: $rawData->created,
+					'GMT'
+				))
+					->format(DATE_ATOM),
+				'to'        => [
+					'https://www.w3.org/ns/activitystreams#Public',
+				],
+				'cc'        => [
+					$this->getApiUriForUser($user, 'followers'),
+				],
+				'object'    => $sourceObject,
+			]
+		);
 	}
 
 	/**
@@ -731,5 +1257,199 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			},
 			$db->setQuery($query)->loadObjectList() ?: []
 		);
+	}
+
+	/**
+	 * Get a list of the applicable actors for this piece of content.
+	 *
+	 * There are two methods we try:
+	 *
+	 * * **Using the MySQL JSON extensions**. This is lightning fast, but relies on a database feature which might not
+	 *   be enabled on most commercial hosts.
+	 * * **Using plain old PHP to inspect the JSON**. This is excruciatingly slow, but does not rely on any database
+	 *   features Joomla itself does not use.
+	 *
+	 * Note that either way only actors who have a non-zero follow count are queried for performance reasons.
+	 *
+	 * @param   ArticleTable  $article  The article to filter for
+	 *
+	 * @return  ActorTable[]
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	private function getActorsForContent(ArticleTable $article): array
+	{
+		return $this->getActorsForContentUsingMySQLJSON($article)
+			?? $this->getActorsForContentUsingPHP($article)
+			?? [];
+	}
+
+	/**
+	 * Get a list of applicable actors using the MySQL JSON extensions.
+	 *
+	 * This is **very** fast, but it's not always available on commercial hosts.
+	 *
+	 * Note that only actors who have a non-zero follow count are queried for performance reasons.
+	 *
+	 * @param   ArticleTable  $article  The article to filter for
+	 *
+	 * @return  ActorTable[]|null
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	private function getActorsForContentUsingMySQLJSON(ArticleTable $article): ?array
+	{
+		$db = $this->getDatabase();
+
+		$existsQuery = $db->getQuery(true)
+			->select('1')
+			->from($db->quoteName('#__activitypub_followers', 'f'))
+			->where(
+				$db->quoteName('f.actor_id') . ' = ' . $db->quoteName('a.id')
+			);
+
+		$query = $db->getQuery(true)
+			->select('*')
+			->from($db->quoteName('#__activitypub_actors', 'a'))
+			->where([
+				'EXISTS(' . $existsQuery . ')',
+				'JSON_EXTRACT(' . $db->quoteName('params') . ', \'$.content.enable\') = 1',
+				'JSON_CONTAINS(' . $db->quoteName('params') . ', \'["' . (int) $article->catid . '"]\', \'$.content.categories\')',
+				'JSON_CONTAINS(' . $db->quoteName('params') . ', \'["' . (int) $article->access . '"]\', \'$.content.accesslevel\')',
+			]);
+		try
+		{
+			$actors = $db->setQuery($query)->loadObjectList('id');
+		}
+		catch (Exception $e)
+		{
+			return null;
+		}
+
+		/** @var MVCFactory $mvcFactory */
+		$mvcFactory = $this->getApplication()
+			->bootComponent('com_activitypub')
+			->getMVCFactory();
+
+		return array_map(
+			function ($rawActor) use ($mvcFactory) {
+				$table = $mvcFactory->createTable('Actor', 'Administrator');
+				$table->bind((array) $rawActor);
+
+				return $table;
+			},
+			$actors
+		);
+	}
+
+	/**
+	 * Get a list of the applicable actors using plain old PHP.
+	 *
+	 * This is excruciatingly slow. It is only used as a fallback, in case the MySQL JSON extensions are not enabled on
+	 * the server.
+	 *
+	 * Note that only actors who have a non-zero follow count are queried for performance reasons.
+	 *
+	 * @param   ArticleTable  $article  The article to filter for
+	 *
+	 * @return  ActorTable[]|null
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	private function getActorsForContentUsingPHP(ArticleTable $article): ?array
+	{
+		$db = $this->getDatabase();
+
+		$existsQuery = $db->getQuery(true)
+			->select('1')
+			->from($db->quoteName('#__activitypub_followers', 'f'))
+			->where(
+				$db->quoteName('f.actor_id') . ' = ' . $db->quoteName('a.id')
+			);
+
+		$query = $db->getQuery(true)
+			->select('*')
+			->from($db->quoteName('#__activitypub_actors', 'a'))
+			->where([
+				'EXISTS(' . $existsQuery . ')',
+			]);
+
+		try
+		{
+			/** @var DatabaseIterator $iterator */
+			$iterator = $db->setQuery($query)->getIterator();
+		}
+		catch (Exception $e)
+		{
+			return null;
+		}
+
+		if (count($iterator) === 0)
+		{
+			$iterator = null;
+
+			return [];
+		}
+
+		/** @var MVCFactory $mvcFactory */
+		$mvcFactory = $this->getApplication()
+			->bootComponent('com_activitypub')
+			->getMVCFactory();
+		$results    = [];
+
+		foreach ($iterator as $actorData)
+		{
+			$params      = new Registry($actorData->params);
+			$categories  = $params->get('content.categories', []);
+			$accessLevel = $params->get('content.accesslevel', [1, 5]);
+
+			if ($params->get('content.enable', 1) == 0 || empty($categories) || empty($accessLevel))
+			{
+				continue;
+			}
+
+			if (!in_array($article->catid, $categories) || !in_array($article->access, $accessLevel))
+			{
+				continue;
+			}
+
+			$actorTable = $mvcFactory->createTable('Actor', 'Administrator');
+			$actorTable->bind((array) $actorData);
+			$results[] = $actorTable;
+		}
+
+		return $results;
+	}
+
+	/**
+	 * Get the previous version of an article
+	 *
+	 * @param   ArticleTable  $article
+	 *
+	 * @return  ArticleTable|null The previous version of the article. NULL if there is none, or Versions are disabled.
+	 * @throws  Exception
+	 * @since   2.0.0
+	 */
+	private function getPreviousVersion(ArticleTable $article): ?ArticleTable
+	{
+		/** @var MVCFactory $comContentFactory */
+		$comContentFactory = $this->getApplication()
+			->bootComponent('com_content')
+			->getMVCFactory();
+		/** @var ArticleModel $articleModel */
+		$articleModel = $comContentFactory->createModel('Article', 'Administrator');
+
+		$version = $article->version;
+		$table   = clone $article;
+
+		while ($version > 0)
+		{
+			if ($articleModel->loadHistory(--$version, $table))
+			{
+				return $table;
+			}
+		}
+
+		return null;
 	}
 }

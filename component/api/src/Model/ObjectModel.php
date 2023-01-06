@@ -12,6 +12,7 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Model;
 use ActivityPhp\Type\AbstractObject;
 use ActivityPhp\Type\Extended\Activity\Create;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivity;
+use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetObject;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Exception;
@@ -47,38 +48,18 @@ class ObjectModel extends BaseDatabaseModel
 		PluginHelper::importPlugin('content');
 
 		$dispatcher = Factory::getApplication()->getDispatcher();
-		$results    = [];
 
-		$event = new GetActivity($actorTable, $context, [$id]);
+		$event = new GetObject($actorTable, $context, $id);
 		$dispatcher->dispatch($event->getName(), $event);
-		$activities = $event->getArgument('result');
-		$activities = is_array($activities) ? $activities : [];
+		$objects = $event->getArgument('result');
+		$objects = is_array($objects) ? $objects : [];
 
-		foreach ($activities as $activityList)
-		{
-			$results = array_merge($results, $activityList);
-		}
-
-		if (empty($results))
+		if (empty($objects))
 		{
 			throw new ResourceNotFound(Text::_('COM_ACTIVITYPUB_OBJECT_ERR_NOT_FOUND'), 404);
 		}
 
-		/** @var Create $activity */
-		$activity = array_shift($results);
-
-		return $activity->object
-			->set('@context', [
-				'https://www.w3.org/ns/activitystreams',
-				[
-					"ostatus"          => "http://ostatus.org#",
-					"atomUri"          => "ostatus:atomUri",
-					"inReplyToAtomUri" => "ostatus:inReplyToAtomUri",
-					'sensitive'        => 'as:sensitive',
-					'toot'             => 'http://joinmastodon.org/ns#',
-					'blurhash'         => 'toot:blurhash',
-				],
-			]);
+		return array_shift($objects);
 	}
 
 	/**

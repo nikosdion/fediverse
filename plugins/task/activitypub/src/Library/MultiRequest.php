@@ -8,6 +8,7 @@
 namespace Dionysopoulos\Plugin\Task\ActivityPub\Library;
 
 use Composer\CaBundle\CaBundle;
+use CurlHandle;
 use CurlMultiHandle;
 use Dionysopoulos\Plugin\Task\ActivityPub\Library\DataShape\Request;
 use Exception;
@@ -69,6 +70,8 @@ class MultiRequest
 	 */
 	private $callback = null;
 
+	private $currentIndex = -1;
+
 	/**
 	 * Public constructor
 	 *
@@ -117,17 +120,17 @@ class MultiRequest
 		array|string|null $postData = null,
 		?callable         $callback = null,
 		mixed             $userData = null,
-		?array            $options = null,
-		?array            $headers = null
+		array             $options = [],
+		array             $headers = []
 	): void
 	{
-		$this->requests[] = new Request(
+		$this->requests[++$this->currentIndex] = new Request(
 			url: $url,
 			postData: $postData,
 			callback: $callback ?? $this->callback,
 			userData: $userData,
 			options: $options,
-			headers: $headers
+			headers: $headers,
 		);
 	}
 
@@ -139,44 +142,48 @@ class MultiRequest
 	 */
 	public function execute(): void
 	{
-		// The request map that maps the request queue to request curl handles
-		$requestsMap = [];
 		$multiHandle = curl_multi_init();
+		$curlHandles = [];
 
 		/** @var Request|null $request */
 		foreach ($this->requests as $i => $request)
 		{
 			if ($request !== null)
 			{
-				$this->enqueueCurlRequest($i, $multiHandle, $requestsMap);
+				$curlHandles[] = $this->enqueueCurlRequest($i, $multiHandle);
 			}
 		}
 
 		do
 		{
-			do
-			{
-				$mhStatus = curl_multi_exec($multiHandle, $active);
-			} while ($mhStatus == CURLM_CALL_MULTI_PERFORM);
+			$mhStatus = curl_multi_exec($multiHandle, $active);
 
-			if ($mhStatus != CURLM_OK)
+			if ($active)
 			{
-				break;
+				curl_multi_select($multiHandle);
 			}
 
-			// A request is just completed, find out which one
-			while ($completed = curl_multi_info_read($multiHandle))
+			while (($info = curl_multi_info_read($multiHandle)) !== false)
 			{
-				$this->processRequest($completed, $multiHandle, $requestsMap);
+				if ($info['msg'] !== CURLMSG_DONE)
+				{
+					continue;
+				}
+
+				$this->processRequest($info['handle'], $info['result']);
 			}
+		} while ($active && $mhStatus == CURLM_OK);
 
-			// Save CPU cycles, prevent continuous checking
-			usleep(500);
-		} while ($active || count($requestsMap));
+		foreach ($curlHandles as $ch)
+		{
+			curl_multi_remove_handle($multiHandle, $ch);
 
-		$this->reset();
+			curl_close($ch);
+		}
 
 		curl_multi_close($multiHandle);
+
+		$this->reset();
 	}
 
 	/**
@@ -187,8 +194,9 @@ class MultiRequest
 	 */
 	private function reset(): void
 	{
-		$length         = count($this->requests);
-		$this->requests = new SplFixedArray($length);
+		$length             = count($this->requests);
+		$this->requests     = new SplFixedArray($length);
+		$this->currentIndex = -1;
 	}
 
 	/**
@@ -223,8 +231,8 @@ class MultiRequest
 		$overrideOptions = $request->options ?? [];
 		$overrideHeaders = $request->headers ?? [];
 
-		$options = array_merge_recursive($this->options, $overrideOptions);
-		$headers = array_merge_recursive($this->headers, $overrideHeaders);
+		$options = array_replace_recursive($this->options, $overrideOptions);
+		$headers = array_replace_recursive($this->headers, $overrideHeaders);
 
 		$headers = array_combine(
 			array_map('strtolower', array_keys($headers)),
@@ -291,14 +299,13 @@ class MultiRequest
 	/**
 	 * Initialise a request and add it to the cURL Multi handle.
 	 *
-	 * @param   int                       $requestNumber  The numeric ID of the request in $this->requests
-	 * @param   resource|CurlMultiHandle  $multiHandle    The cURL Multi handle
-	 * @param   array                     $requestsMap    The map of cURL handles to numeric request IDs
+	 * @param   int              $requestNumber  The numeric ID of the request in $this->requests
+	 * @param   CurlMultiHandle  $multiHandle    The cURL Multi handle
 	 *
-	 * @return  void
+	 * @return  CurlHandle
 	 * @since   2.0.0
 	 */
-	private function enqueueCurlRequest(int $requestNumber, mixed $multiHandle, array &$requestsMap): void
+	private function enqueueCurlRequest(int $requestNumber, CurlMultiHandle $multiHandle): CurlHandle
 	{
 		/** @var Request|null $request */
 		$request = $this->requests[$requestNumber];
@@ -307,7 +314,8 @@ class MultiRequest
 		$ch                  = curl_init();
 		$options             = $this->getCurlOptions($request);
 		$request->optionsSet = $options;
-		$hasSetOptions       = curl_setopt_array($ch, $options);
+
+		$hasSetOptions = curl_setopt_array($ch, $options);
 
 		if (!$hasSetOptions)
 		{
@@ -317,42 +325,38 @@ class MultiRequest
 		curl_multi_add_handle($multiHandle, $ch);
 
 		// Add curl handle of a new request to the request map
-		$ch_hash               = (string) $ch;
-		$requestsMap[$ch_hash] = $requestNumber;
+		curl_setopt($ch, CURLOPT_PRIVATE, $requestNumber);
+
+		return $ch;
 	}
 
 	/**
 	 * Handle a completed request.
 	 *
-	 * @param   array                     $completed    An array describing the completed request
-	 * @param   resource|CurlMultiHandle  $multiHandle  The cURL Multi handle
-	 * @param   array                     $requestsMap  The map of cURL handles to numeric request IDs
+	 * @param   CurlHandle  $ch
+	 * @param   int         $result
 	 *
 	 * @return  void
 	 * @since   2.0.0
 	 */
-	private function processRequest(array $completed, mixed $multiHandle, array &$requestsMap): void
+	private function processRequest(CurlHandle $ch, int $result): void
 	{
 		/** @var Request|null $request */
-		$ch      = $completed['handle'];
-		$chHash  = (string) $ch;
-		$request = $this->requests[$requestsMap[$chHash]];
+		$requestNumber = curl_getinfo($ch, CURLINFO_PRIVATE);
+		$request       = $this->requests[$requestNumber] ?? null;
+
+		if ($request === null)
+		{
+			return;
+		}
 
 		$request->stopTimer();
 
 		$requestInfo            = curl_getinfo($ch);
 		$requestInfo['request'] = $request;
-		$requestInfo['result']  = $completed['result'];
 		$requestInfo['handle']  = $ch;
-
-		if (curl_errno($ch) !== 0 || intval($requestInfo['http_code']) !== 200)
-		{
-			$response = false;
-		}
-		else
-		{
-			$response = curl_multi_getcontent($ch);
-		}
+		$requestInfo['result']  = $result;
+		$response               = curl_errno($ch) !== 0 ? false : curl_multi_getcontent($ch);
 
 		// Get the request info
 		$callback = $request->callback;
@@ -365,19 +369,11 @@ class MultiRequest
 			$response                      = substr($response, $k);
 		}
 
-		// Remove the completed request and its cURL handle
-		unset($requestsMap[$chHash]);
-
-		curl_multi_remove_handle($multiHandle, $ch);
-
 		// Call the callback function and pass request info and user data to it
 		if ($callback)
 		{
 			call_user_func($callback, $response, $requestInfo);
 		}
-
-		// Mark memory for garbage collection
-		$request = null;
 	}
 
 	/**
@@ -395,7 +391,8 @@ class MultiRequest
 		 *
 		 * @see https://web.archive.org/web/20141112193700/http://the-stickman.com/web-development/php-and-curl-disabling-100-continue-header/
 		 */
-		$headers['Expect'] ??= '';
+		$headers['Expect']     ??= '';
+		$headers['User-Agent'] ??= (new Version())->getUserAgent('Joomla', true, false);
 
 		$this->headers = $headers;
 	}
@@ -412,14 +409,8 @@ class MultiRequest
 	 */
 	private function setDefaultOptions(array $options, int $timeout = 5000, ?int $connectTimeout = null): void
 	{
-		$options = array_merge_recursive(
-			[
-				CURLOPT_USERAGENT         => (new Version())->getUserAgent('Joomla', true, false),
-				CURLOPT_CONNECTTIMEOUT_MS => $connectTimeout ?? $timeout,
-				CURLOPT_TIMEOUT_MS        => $timeout,
-			],
-			$options
-		);
+		$options[CURLOPT_CONNECTTIMEOUT_MS] ??= $connectTimeout ?? $timeout;
+		$options[CURLOPT_TIMEOUT_MS]        ??= $timeout;
 
 		// Allow timeout options to be overridden with values measured in seconds instead of milliseconds
 		if (isset($options[CURLOPT_CONNECTTIMEOUT_MS]) && isset($options[CURLOPT_CONNECTTIMEOUT]))

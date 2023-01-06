@@ -18,8 +18,12 @@ use Dionysopoulos\Plugin\Task\ActivityPub\Library\MultiRequest;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filter\InputFilter;
+use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Router\Router;
+use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Component\Scheduler\Administrator\Event\ExecuteTaskEvent;
 use Joomla\Component\Scheduler\Administrator\Task\Status;
@@ -28,6 +32,7 @@ use Joomla\Component\Scheduler\Administrator\Traits\TaskPluginTrait;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\SubscriberInterface;
+use ReflectionClass;
 use Throwable;
 
 class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
@@ -73,8 +78,153 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		];
 	}
 
+	/**
+	 * Initialise the site URL and routing under the CLI application
+	 *
+	 * @return  void
+	 * @since   2.0.0
+	 */
+	private function initCliRouting(): void
+	{
+		$app = $this->getApplication();
+
+		if (!$app->isClient('cli'))
+		{
+			return;
+		}
+
+		$cParams = ComponentHelper::getParams('com_activitypub');
+		$siteURL = $cParams->get('siteurl', null) ?: $app->set('live_site', null);
+
+		if (empty($siteURL) || $siteURL === 'https://joomla.invalid/set/by/console/application')
+		{
+			throw new \RuntimeException('You need to visit the ActivityPub component\'s Actors page before using this task in CLI');
+		}
+
+		$app->set('live_site', $siteURL);
+
+		// Set up the base site URL in JUri
+		$uri                    = Uri::getInstance($siteURL);
+		$_SERVER['HTTP_HOST']   = $uri->toString(['host', 'port']);
+		$_SERVER['REQUEST_URI'] = $uri->getPath();
+		$_SERVER['HTTPS']       = $uri->getScheme() === 'https' ? 'on' : 'off';
+
+		$refClass     = new ReflectionClass(Uri::class);
+		$refInstances = $refClass->getProperty('instances');
+		$refInstances->setAccessible(true);
+		$instances           = $refInstances->getValue();
+		$instances['SERVER'] = $uri;
+		$refInstances->setValue($instances);
+
+		$base = [
+			'prefix' => $uri->toString(['scheme', 'host', 'port']),
+			'path'   => rtrim($uri->toString(['path']), '/\\'),
+		];
+
+		$refBase = $refClass->getProperty('base');
+		$refBase->setAccessible(true);
+		$refBase->setValue($base);
+	}
+
+	private function __activityPubNotify(ExecuteTaskEvent $event): int
+	{
+		// Initialise the site URL in case we're under CLI
+		$this->initCliRouting();
+
+		// Get some basic information about the task at hand.
+		/** @var Task $task */
+		$requestLimit = 10;
+
+		// Make sure ActivityPub is installed and enabled.
+		$component = ComponentHelper::isEnabled('com_activitypub')
+			? Factory::getApplication()->bootComponent('com_activitypub')
+			: null;
+
+		/** @var QueueModel $queueModel */
+		$queueModel = $component->getMVCFactory()
+			->createModel('Queue', 'Administrator', ['ignore_request' => true]);
+		/** @var ActorTable $actorTable */
+		$actorTable = $component->getMVCFactory()
+			->createTable('Actor', 'Administrator');
+
+		$db         = $this->getDatabase();
+
+		$db->lockTable('#__activitypub_queue');
+
+		$pendingQueueItems = $queueModel->getPending($requestLimit);
+
+		if (empty($pendingQueueItems))
+		{
+			echo "No records\n";
+
+			$db->unlockTables();
+
+			return Status::OK;
+		}
+
+		// Unlock the queue table
+		$db->unlockTables();
+
+		$now              = Factory::getDate();
+		$signatureService = new Signature(
+			$this->getDatabase(),
+			Factory::getContainer()->get(UserFactoryInterface::class),
+			Factory::getApplication()
+		);
+
+		/** @var QueueTable $queueItem */
+		foreach ($pendingQueueItems as $queueItem)
+		{
+			$options = [
+				'userAgent'      => 'Derp/1.0',
+				'transport.curl' =>
+					[
+						CURLOPT_SSL_VERIFYHOST   => 0,
+						CURLOPT_SSL_VERIFYPEER   => 0,
+						CURLOPT_SSL_VERIFYSTATUS => 0,
+					],
+			];
+
+			$http = HttpFactory::getHttp($options);
+
+			$postBody = $queueItem->activity;
+			$digest   = $signatureService->digest($postBody);
+
+			$actorTable->reset();
+			$actorTable->id = null;
+
+			if (!$actorTable->load($queueItem->actor_id))
+			{
+				continue;
+			}
+
+			$headers = [
+				'Accept'       => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+				'Content-Type' => 'application/activity+json',
+				'Date'         => $now->format(\DateTimeInterface::RFC7231, false, false),
+				'Digest'    => 'SHA-256=' . $digest,
+				'Signature' => $signatureService->sign($actorTable, $queueItem->inbox, $now, $digest),
+			];
+
+			$response = $http->post($queueItem->inbox, $postBody, $headers, 5);
+
+			var_dump(
+				$response->code,
+				$response->headers,
+				$response->body,
+			);
+		}
+
+		// Indicate we finished successfully
+		return Status::OK;
+	}
+
+
 	private function activityPubNotify(ExecuteTaskEvent $event): int
 	{
+		// Initialise the site URL in case we're under CLI
+		$this->initCliRouting();
+
 		// Get some basic information about the task at hand.
 		/** @var Task $task */
 		$task         = $event->getArgument('subject');
@@ -135,7 +285,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		$db        = $this->getDatabase();
 
 		// Keep churning activity notifications until we are out of time or have no more pending items
-		while ((microtime(true) - $startTime) > $bailoutLimit)
+		while ((microtime(true) - $startTime) < $bailoutLimit)
 		{
 			Log::add(
 				sprintf("Getting up to %d record(s)", $requestLimit),
@@ -201,6 +351,13 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 					'task.activitypub'
 				);
 
+				$options = (defined('JDEBUG') && JDEBUG)
+					? [
+						CURLOPT_SSL_VERIFYHOST   => 0,
+						CURLOPT_SSL_VERIFYPEER   => 0,
+						CURLOPT_SSL_VERIFYSTATUS => 0,
+					] : [];
+
 				$multiRequest = new MultiRequest(
 					maxRequests: $requestLimit,
 					headers: [
@@ -208,7 +365,8 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 						'Content-Type' => 'application/activity+json',
 						'Date'         => $now->format(\DateTimeInterface::RFC7231, false, false),
 					],
-					callback: function (string $response, array $requestInfo) use (&$pendingQueueItems) {
+					options: $options,
+					callback: function (?string $response, array $requestInfo) use (&$pendingQueueItems) {
 						/** @var Request $requestDeclaration */
 						$requestDeclaration = $requestInfo['request'];
 						/** @var QueueTable $queueItem */
@@ -216,7 +374,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 						$httpCode  = (int) ($requestInfo['http_code'] ?? 500);
 
 						// If the request finished successfully we remove it from the pending queue
-						if ($requestInfo['result'] === CURLE_OK && $httpCode === 200)
+						if ($requestInfo['result'] === CURLE_OK && in_array($httpCode, [200, 201, 202]))
 						{
 							Log::add(
 								sprintf('Request %d finished successfully', $queueItem->id),
@@ -229,9 +387,28 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 							return;
 						}
 
+						if ($httpCode > 0 && $httpCode != 200)
+						{
+							$errorReason = sprintf('HTTP status %s', $httpCode);
+						}
+						else
+						{
+							$errNo = curl_errno($requestInfo['handle']);
+							$error = curl_error($requestInfo['handle']);
+
+							$errorReason = sprintf(
+								'cURL error #%d: %s',
+								$errNo, $error
+							);
+						}
+
 						// Try to bump the retry count. If we have already tried too many times, remove from the queue.
 						Log::add(
-							sprintf('Request %d failed. Bumping retry count.', $queueItem->id),
+							sprintf(
+								'Request %d failed (%s). Bumping retry count.',
+								$queueItem->id,
+								$errorReason
+							),
 							Log::DEBUG,
 							'task.activitypub'
 						);
@@ -257,9 +434,6 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 				/** @var QueueTable $queueItem */
 				foreach ($pendingQueueItems as $queueItem)
 				{
-					$postBody = $queueItem->activity;
-					$digest   = $signatureService->digest($postBody);
-
 					$actorTable->reset();
 					$actorTable->id = null;
 
@@ -268,6 +442,9 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 						// Pending items with an invalid actor are silently discarded
 						continue;
 					}
+
+					$postBody = $queueItem->activity;
+					$digest   = $signatureService->digest($postBody);
 
 					Log::add(
 						sprintf('Adding request %d to the queue', $queueItem->id),
@@ -319,6 +496,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 				{
 					try
 					{
+						$queueItem->id = null;
 						$queueItem->store();
 					}
 					catch (\Exception $e)
@@ -329,7 +507,6 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 
 				$db->transactionCommit();
 			}
-
 
 			// So, we had a Throwable. Throw it back so the task saves a Knockout status for this execution.
 			if (isset($exception))
@@ -344,7 +521,6 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 					Log::CRITICAL,
 					'task.activitypub'
 				);
-
 
 				throw $exception;
 			}

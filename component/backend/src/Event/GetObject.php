@@ -9,36 +9,41 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Event;
 
 \defined('_JEXEC') || die;
 
-use ActivityPhp\Server\Actor;
-use ActivityPhp\Type\Core\Activity;
+use ActivityPhp\Type\AbstractObject;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use InvalidArgumentException;
 use Joomla\CMS\Event\AbstractImmutableEvent;
 use Joomla\CMS\Event\Result\ResultAware;
 use Joomla\CMS\Event\Result\ResultAwareInterface;
+use Joomla\CMS\Event\Result\ResultTypeObjectAware;
 
-class GetActivity extends AbstractImmutableEvent implements ResultAwareInterface
+class GetObject extends AbstractImmutableEvent implements ResultAwareInterface
 {
 	use ResultAware;
+	use ResultTypeObjectAware;
 
 	/**
 	 * Public constructor.
 	 *
 	 * @param   ActorTable  $actor    The ActorTable object for which Activities are returned
 	 * @param   string      $context  The context, format extension.subType, e.g. com_content.article
-	 * @param   array       $ids      The list of IDs of activities to return
+	 * @param   string      $id       The ID of the object to get within the context
 	 *
 	 * @since   2.0.0
 	 */
-	public function __construct(ActorTable $actor, string $context, array $ids)
+	public function __construct(ActorTable $actor, string $context, string $id)
 	{
 		$arguments = [
 			'actor'   => $actor,
 			'context' => $context,
-			'ids'     => $ids,
+			'id'      => $id,
 		];
 
-		parent::__construct('onActivityPubGetActivity', $arguments);
+		$this->resultAcceptableClasses = [
+			AbstractObject::class
+		];
+
+		parent::__construct('onActivityPubGetObject', $arguments);
 	}
 
 	/**
@@ -112,52 +117,13 @@ class GetActivity extends AbstractImmutableEvent implements ResultAwareInterface
 	/**
 	 * Validator for the `ids` argument
 	 *
-	 * @param   array  $ids  The value to validate
+	 * @param   string  $id
 	 *
-	 * @return  array
+	 * @return  string
 	 * @since   2.0.0
 	 */
-	public function setIds(array $ids): array
+	public function setId(string $id): string
 	{
-		return $ids;
+		return $id;
 	}
-
-	/**
-	 * Validator for the `result` argument (event return).
-	 *
-	 * @param   mixed  $data  The value of the result argument.
-	 *
-	 * @return  void
-	 * @since   2.0.0
-	 */
-	public function typeCheckResult($data): void
-	{
-		if (!is_array($data))
-		{
-			throw new InvalidArgumentException(sprintf('Event %s only accepts Array results whose members are objects of the %s type or null, and its keys are in the format “CONTEXT.ID” where ID is one if the identifiers given in the ids argument.', $this->getName(), Activity::class));
-		}
-
-		// Check keys
-		$context = $this->getArgument('context');
-		$keys    = array_keys($data);
-		$isValid = array_reduce(
-			$keys,
-			fn($carry, $item) => $carry && str_starts_with($item, $context . '.') && in_array(substr($item, strlen($context) + 1), $this->getArgument('ids')),
-			true
-		);
-
-		// Check value types
-		$isValid = $isValid && array_reduce(
-				$data,
-				fn($carry, $item) => $carry && ($item instanceof Activity || $item === null),
-				true
-			);
-
-		if (!$isValid)
-		{
-			throw new InvalidArgumentException(sprintf('Event %s only accepts Array results whose members are objects of the %s type or null, and its keys are in the format “CONTEXT.ID” where ID is one if the identifiers given in the ids argument.', $this->getName(), Activity::class));
-		}
-	}
-
-
 }

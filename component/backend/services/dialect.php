@@ -18,7 +18,7 @@
 \ActivityPhp\Type\Dialect::add(
 	'fediverse',
 	[
-		'Article|Note' => [
+		'Article|Note|Tombstone' => [
 			'atomUri', 'inReplyToAtomUri', 'sensitive'
 		],
 		'Document|Image' => [

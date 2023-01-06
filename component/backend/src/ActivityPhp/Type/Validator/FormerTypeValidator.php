@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace ActivityPhp\Type\Validator;
 
 use ActivityPhp\Type\Extended\Object\Tombstone;
+use ActivityPhp\Type\TypeResolver;
 use ActivityPhp\Type\Util;
 use ActivityPhp\Type\ValidatorInterface;
 
@@ -34,11 +35,12 @@ class FormerTypeValidator implements ValidatorInterface
         // Validate that container has an Tombstone type
         Util::subclassOf($container, Tombstone::class, true);
 
-        if (is_array($value)) {
-            $value = Util::arrayToType($value);
-        }
+		if(!is_string($value))
+		{
+			return false;
+		}
 
         // MUST be a valid Object type
-        return Util::isObjectType($value);
+        return TypeResolver::exists($value);
     }
 }
