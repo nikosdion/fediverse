@@ -46,6 +46,7 @@ use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use kornrunner\Blurhash\Blurhash;
+use RangeException;
 
 class ContentActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwareInterface
 {
@@ -276,6 +277,16 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$event->addResult($results);
 	}
 
+	/**
+	 * Get the object given an object identifier.
+	 *
+	 * @param   GetObject  $event
+	 *
+	 * @return  void
+	 * @throws  AlreadyPunycodeException
+	 * @throws  InvalidCharacterException
+	 * @since   2.0.0
+	 */
 	public function getObject(GetObject $event)
 	{
 		if ($event->getArgument('context') !== $this->context)
@@ -586,7 +597,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 								'https://www.w3.org/ns/activitystreams',
 							],
 							'actor'  => $activity->actor,
-							'object' => $activity->id,
+							'object' => $this->getObjectFromRawContent($article, $user),
 						]
 					);
 				}
@@ -640,15 +651,6 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		if (!empty($article->publish_down) && $article->publish_down != $this->getDatabase()->getNullDate())
 		{
 			$isPublished = $isPublished && Factory::getDate($article->publish_down) >= Factory::getDate();
-		}
-
-		if (!$isPublished)
-		{
-			/**
-			 * Deleting an unpublished article does not require a notification to be sent; unpublishing an article has
-			 * already sent a Delete activity notification.
-			 */
-			return;
 		}
 
 		// Find which Actors apply to this content
@@ -802,6 +804,12 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		$language = ($rawData->language === '*' || empty($rawData->language))
 			? $this->getApplication()->getLanguage()->getTag()
 			: $rawData->language;
+
+		if (str_contains($language, '-'))
+		{
+			[$language, ] = explode('-', $language, 2);
+		}
+
 		$content  = match ($sourceType)
 		{
 			'introtext' => $rawData->introtext,
@@ -844,6 +852,11 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				}
 				catch (Exception $e)
 				{
+				}
+
+				if (str_contains($langCode, '-'))
+				{
+					[$langCode, ] = explode('-', $langCode, 2);
 				}
 
 				$sourceObject['contentMap'][$langCode] = $altContent;
@@ -1444,12 +1457,116 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 
 		while ($version > 0)
 		{
-			if ($articleModel->loadHistory(--$version, $table))
+			try
+			{
+				$versionId = $this->getArticleVersionIdByVersionCounter($article->id, --$version);
+			}
+			catch (RangeException $e)
+			{
+				// Ah, yes, we found out this article has no versions. Get the heck outta here.
+				return null;
+			}
+
+			if (empty($versionId))
+			{
+				continue;
+			}
+
+			if ($articleModel->loadHistory($versionId, $table))
 			{
 				return $table;
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Try to find the ACTUAL version ID for an article given the useless version counter Joomla stores.
+	 *
+	 * Joomla stores a version _counter_ in the `#__content` table. This is basically useless. The
+	 * \Joomla\CMS\Versioning\VersionableModelTrait::loadHistory() method needs the version_id key in the `#__history`
+	 * table which has sod all to do with the version counter. The version_counter is stored in the `version_data` of
+	 * the `#__history` table... inside a JSON document. We have to query the `#__history` table to find the actual
+	 * `version_id`.
+	 *
+	 * I try some shortcuts to make sure this does not take forever and a bazillion queries. We MIGHT miss a version,
+	 * but frankly that's a small risk I am willing to take.
+	 *
+	 * @param   int  $articleId
+	 * @param   int  $versionCounter
+	 *
+	 * @return  int|null
+	 * @since   2.0.0
+	 */
+	private function getArticleVersionIdByVersionCounter(int $articleId, int $versionCounter): ?int
+	{
+		$itemId = sprintf('com_content.article.%d', $articleId);
+		$db = $this->getDatabase();
+
+		// Try to get the exact record very fast using a JSON database query
+		$query = $db->getQuery($db)
+			->select($db->quoteName('version_id'))
+			->from($db->quoteName('#__history'))
+			->where([
+				$db->quoteName('item_id') . ' = :itemId',
+				'JSON_EXTRACT(' . $db->quoteName('version_data') . ', \'$.version\') = :counter'
+			])
+			->bind(':itemId', $itemId)
+			->bind(':counter', $versionCounter);
+
+		try
+		{
+			return $db->setQuery($query)->loadResult() ?: null;
+		}
+		catch (Exception $e)
+		{
+			// Fall through to the next attempt.
+		}
+
+		// Just try to get the past 10 versions and figure out which one to use.
+		$query = $db->getQuery($db)
+			->select([
+				$db->quoteName('version_id'),
+				$db->quoteName('version_data'),
+			])
+			->from($db->quoteName('#__history'))
+			->where([
+				$db->quoteName('item_id') . ' = :itemId',
+			])
+			->bind(':itemId', $itemId)
+			->order($db->quoteName('version_id') . ' DESC');
+
+		try
+		{
+			$objectsList = $db->setQuery($query, 0, 10)->loadObjectList() ?: [];
+		}
+		catch (Exception $e)
+		{
+			$objectsList = [];
+		}
+
+		if (empty($objectsList))
+		{
+			// In this case I need to communicate that you wil never find ANY version whatsoever. Throw an exception!
+			throw new RangeException('This article has no versions, LOL!');
+		}
+
+		/**
+		 * Okay, listen. I am trying to find the previous version of an article, right? So look for any version counter
+		 * which is less than or equal to what I am looking for, so I can save some time.
+		 */
+		foreach ($objectsList as $item)
+		{
+			$params = json_decode($item->version_data);
+
+			if ($params?->version <= $versionCounter)
+			{
+				return $item->version_id;
+			}
+		}
+
+		// If we didn't find what we're looking for in the past 10 versions we'll never find it. Bye-bye!
+		throw new RangeException('This article has no versions, LOL!');
 	}
 }
