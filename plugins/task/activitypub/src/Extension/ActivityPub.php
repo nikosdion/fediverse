@@ -126,100 +126,17 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		$refBase->setValue($base);
 	}
 
-	private function __activityPubNotify(ExecuteTaskEvent $event): int
-	{
-		// Initialise the site URL in case we're under CLI
-		$this->initCliRouting();
-
-		// Get some basic information about the task at hand.
-		/** @var Task $task */
-		$requestLimit = 10;
-
-		// Make sure ActivityPub is installed and enabled.
-		$component = ComponentHelper::isEnabled('com_activitypub')
-			? Factory::getApplication()->bootComponent('com_activitypub')
-			: null;
-
-		/** @var QueueModel $queueModel */
-		$queueModel = $component->getMVCFactory()
-			->createModel('Queue', 'Administrator', ['ignore_request' => true]);
-		/** @var ActorTable $actorTable */
-		$actorTable = $component->getMVCFactory()
-			->createTable('Actor', 'Administrator');
-
-		$db         = $this->getDatabase();
-
-		$db->lockTable('#__activitypub_queue');
-
-		$pendingQueueItems = $queueModel->getPending($requestLimit);
-
-		if (empty($pendingQueueItems))
-		{
-			echo "No records\n";
-
-			$db->unlockTables();
-
-			return Status::OK;
-		}
-
-		// Unlock the queue table
-		$db->unlockTables();
-
-		$now              = Factory::getDate();
-		$signatureService = new Signature(
-			$this->getDatabase(),
-			Factory::getContainer()->get(UserFactoryInterface::class),
-			Factory::getApplication()
-		);
-
-		/** @var QueueTable $queueItem */
-		foreach ($pendingQueueItems as $queueItem)
-		{
-			$options = [
-				'userAgent'      => 'Derp/1.0',
-				'transport.curl' =>
-					[
-						CURLOPT_SSL_VERIFYHOST   => 0,
-						CURLOPT_SSL_VERIFYPEER   => 0,
-						CURLOPT_SSL_VERIFYSTATUS => 0,
-					],
-			];
-
-			$http = HttpFactory::getHttp($options);
-
-			$postBody = $queueItem->activity;
-			$digest   = $signatureService->digest($postBody);
-
-			$actorTable->reset();
-			$actorTable->id = null;
-
-			if (!$actorTable->load($queueItem->actor_id))
-			{
-				continue;
-			}
-
-			$headers = [
-				'Accept'       => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-				'Content-Type' => 'application/activity+json',
-				'Date'         => $now->format(\DateTimeInterface::RFC7231, false, false),
-				'Digest'    => 'SHA-256=' . $digest,
-				'Signature' => $signatureService->sign($actorTable, $queueItem->inbox, $now, $digest),
-			];
-
-			$response = $http->post($queueItem->inbox, $postBody, $headers, 5);
-
-			var_dump(
-				$response->code,
-				$response->headers,
-				$response->body,
-			);
-		}
-
-		// Indicate we finished successfully
-		return Status::OK;
-	}
-
-
+	/**
+	 * Send a batch of notifications to remote servers
+	 *
+	 * @param   ExecuteTaskEvent  $event
+	 *
+	 * @return  int
+	 * @throws  Throwable
+	 *
+	 * @since        2.0.0
+	 * @noinspection PhpUnusedPrivateMethodInspection
+	 */
 	private function activityPubNotify(ExecuteTaskEvent $event): int
 	{
 		// Initialise the site URL in case we're under CLI
