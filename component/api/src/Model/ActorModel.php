@@ -148,13 +148,20 @@ class ActorModel extends BaseDatabaseModel
 				'owner'        => $this->getApiUriForUser($user),
 				'publicKeyPem' => $publicKeyPem,
 			],
+			'published' => Factory::getDate($actorTable->created ?? 'now')->format(DATE_ATOM),
 			'summary'           => $actorParams->get('activitypub.summary', '') ?? '',
 			'icon'              => [
 				'type'      => 'Image',
 				'mediaType' => $mediaType,
 				'url'       => $profileIcon,
 			],
-		];
+			// TODO: Profile header image, same format as 'icon'
+			// 'image' => null,
+			// TODO: Public profile URL
+			// 'url' => null,
+			// TODO: Profile fields, see https://docs.joinmastodon.org/spec/activitypub/#PropertyValue
+			'attachment' => [],
+ 		];
 
 		if (empty($publicKeyPem))
 		{

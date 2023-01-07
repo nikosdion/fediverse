@@ -10,6 +10,7 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Table;
 defined('_JEXEC') || die;
 
 use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\KeyPair;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Table\Table;
 use Joomla\Database\DatabaseDriver;
@@ -80,6 +81,22 @@ class ActorTable extends Table
 	public ?string $params = '';
 
 	/**
+	 * When was the Actor created (DATETIME)
+	 *
+	 * @var   string|null
+	 * @since 2.0.0
+	 */
+	public ?string $created = null;
+
+	/**
+	 * Who was the Actor created by
+	 *
+	 * @var   int|null
+	 * @since 2.0.0
+	 */
+	public ?int $created_by = null;
+
+	/**
 	 * Constructor
 	 *
 	 * @param   DatabaseDriver  $db  Database connector object
@@ -147,6 +164,19 @@ class ActorTable extends Table
 
 		// The params must be empty, or a JSON-encoded string
 		$this->params = $registry->toString();
+
+		// Make sure the created and created_by fields are populated.
+		$this->created ??= Factory::getDate()->toSql();
+
+		try
+		{
+			$this->created_by ??= Factory::getApplication()->getIdentity()->id ?: 0;
+		}
+		catch (\Exception $e)
+		{
+			/** @noinspection PhpConditionAlreadyCheckedInspection */
+			$this->created_by ??= 0;
+		}
 
 		return parent::check();
 	}

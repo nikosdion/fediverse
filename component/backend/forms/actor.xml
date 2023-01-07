@@ -60,6 +60,23 @@
             <option value="Service">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_SERVICE</option>
         </field>
 
+        <field name="created"
+               type="calendar"
+               label="JGLOBAL_CREATED_DATE"
+               translateformat="true"
+               showtime="true"
+               size="22"
+               filter="user_utc"
+        />
+
+        <field name="created_by"
+               type="user"
+               label="JGLOBAL_CREATED"
+               validate="UserId"
+               class="readonly"
+               readonly="true"
+        />
+
     </fieldset>
 
     <fieldset name="params"

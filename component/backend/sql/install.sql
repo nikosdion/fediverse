@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_actors`
     `name` VARCHAR(255) NOT NULL DEFAULT '',
     `username` VARCHAR(255) NOT NULL DEFAULT '',
     `params` TEXT NULL DEFAULT NULL,
+    'created' DATETIME NULL DEFAULT NULL,
+    'created_by' BIGINT(20) UNSIGNED NULL DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `#__activitypub_actors_username` (`username`(100))
 ) ENGINE=InnoDB DEFAULT COLLATE utf8mb4_unicode_ci;
