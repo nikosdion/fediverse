@@ -26,6 +26,7 @@ use Exception;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Image\Image;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Factory\MVCFactory;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\Route;
@@ -713,8 +714,12 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 	 */
 	private function getObjectFromRawContent(object $rawData, User $user): AbstractObject
 	{
-		$sourceType   = $this->params->get('fulltext', 'introtext');
-		$attachImages = $this->params->get('images', '1') == 1;
+		$this->loadLanguage('com_content', JPATH_SITE);
+
+		$sourceType          = $this->params->get('fulltext', 'introtext');
+		$attachImages        = $this->params->get('images', '1') == 1;
+		$preferredObjectType = $this->params->get('object_type', 'Note') ?: 'Note';
+		$urlBehaviour        = $this->params->get('url', 'both') ?: 'both';
 
 		// Is the item published?
 		$isPublished = $rawData->state == 1;
@@ -732,13 +737,20 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		// Get the basic information about the article
 		$objectId         = $this->getApiUriForUser($user, 'object') . '/' . $this->context . '.' . $rawData->id;
 		$actorUri         = $this->getApiUriForUser($user, 'actor');
-		$sourceObjectType = $sourceType === 'metadesc' ? 'Note' : 'Article';
+		$sourceObjectType = $sourceType === 'metadesc' ? 'Note' : $preferredObjectType;
 
 		$followersUri = $this->getApiUriForUser($user, 'followers');
 		$jPublished   = clone Factory::getDate($rawData->publish_up ?: $rawData->created, 'GMT');
 		$published    = $jPublished->format(DATE_ATOM);
 		$jUpdated     = clone Factory::getDate($rawData->modified ?: $rawData->created, 'GMT');
 		$updated      = $jUpdated->format(DATE_ATOM);
+
+		$rawUrl = Route::link(
+			client: 'site',
+			url: RouteHelper::getArticleRoute($rawData->id, $rawData->catid, $rawData->language),
+			xhtml: false,
+			absolute: true
+		);
 
 		$sourceObject = [
 			'inReplyTo'        => null,
@@ -779,14 +791,10 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		 * characters. Guess what happens when the URL contains UTF-8 characters? That's right, it throws an error. So,
 		 * we have to transliterate the URL.
 		 */
-		$sourceObject['url'] = $this->transliterateUrl(
-			Route::link(
-				client: 'site',
-				url: RouteHelper::getArticleRoute($rawData->id, $rawData->catid, $rawData->language),
-				xhtml: false,
-				absolute: true
-			)
-		);
+		if (in_array($urlBehaviour, ['url', 'both']))
+		{
+			$sourceObject['url'] = $this->transliterateUrl($rawUrl);
+		}
 
 		// Add the article title
 		if ($sourceObjectType === 'Article')
@@ -819,7 +827,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			'introtext' => $rawData->introtext,
 			'fulltext' => $rawData->fulltext,
 			'both' => $rawData->introtext . '<hr/>' . $rawData->fulltext,
-			'metadesc' => $rawData->metadesc
+			'metadesc' => '<p>' . htmlentities($rawData->metadesc) . '</p>'
 		};
 
 		try
@@ -828,6 +836,15 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 		}
 		catch (Exception $e)
 		{
+		}
+
+		if (in_array($urlBehaviour, ['link', 'both']))
+		{
+			$content .= sprintf(
+				'<p><a href="%s">%s</a></p>',
+				$rawUrl,
+				Text::_('COM_CONTENT_READ_MORE')
+			);
 		}
 
 		$sourceObject['id']         = $objectId;
@@ -856,6 +873,15 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				}
 				catch (Exception $e)
 				{
+				}
+
+				if (in_array($urlBehaviour, ['link', 'both']))
+				{
+					$altContent .= sprintf(
+						'<p><a href="%s">%s</a></p>',
+						$rawUrl,
+						Text::_('COM_CONTENT_READ_MORE')
+					);
 				}
 
 				if (str_contains($langCode, '-'))

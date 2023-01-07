@@ -44,6 +44,30 @@
 					<option value="metadesc">PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_OPT_METADESC</option>
 				</field>
 
+                <field name="object_type"
+                       type="list"
+                       default="Note"
+                       label="PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_LABEL"
+                       description="PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_DESC"
+                       validate="options"
+                       showon="fulltext!:metadesc"
+                >
+                    <option value="Note">PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_NOTE</option>
+                    <option value="Article">PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_ARTICLE</option>
+                </field>
+
+                <field name="url"
+                       type="list"
+                       default="both"
+                       label="PLG_CONTENT_CONTENTACTIVITYPUB_URL_LABEL"
+                       description="PLG_CONTENT_CONTENTACTIVITYPUB_URL_DESC"
+               >
+                    <option value="none">PLG_CONTENT_CONTENTACTIVITYPUB_URL_NONE</option>
+                    <option value="url" >PLG_CONTENT_CONTENTACTIVITYPUB_URL_URL</option>
+                    <option value="link">PLG_CONTENT_CONTENTACTIVITYPUB_URL_LINK</option>
+                    <option value="both">PLG_CONTENT_CONTENTACTIVITYPUB_URL_BOTH</option>
+                </field>
+
 				<field name="images"
 					   type="radio"
 					   layout="joomla.form.field.radio.switcher"
