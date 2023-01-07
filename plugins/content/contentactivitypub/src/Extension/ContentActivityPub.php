@@ -714,7 +714,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 	 */
 	private function getObjectFromRawContent(object $rawData, User $user): AbstractObject
 	{
-		$this->loadLanguage('com_content', JPATH_SITE);
+		$this->loadLanguage('plg_content_contentactivitypub', JPATH_ADMINISTRATOR);
 
 		$sourceType          = $this->params->get('fulltext', 'introtext');
 		$attachImages        = $this->params->get('images', '1') == 1;
@@ -843,7 +843,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			$content .= sprintf(
 				'<p><a href="%s">%s</a></p>',
 				$rawUrl,
-				Text::_('COM_CONTENT_READ_MORE')
+				Text::sprintf('PLG_CONTENT_CONTENTACTIVITYPUB_READMORE', Factory::getApplication()->get('sitename'))
 			);
 		}
 
@@ -880,7 +880,7 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 					$altContent .= sprintf(
 						'<p><a href="%s">%s</a></p>',
 						$rawUrl,
-						Text::_('COM_CONTENT_READ_MORE')
+						Text::sprintf('PLG_CONTENT_CONTENTACTIVITYPUB_READMORE', Factory::getApplication()->get('sitename'))
 					);
 				}
 
