@@ -14,6 +14,7 @@
       <path value="$PROJECT_DIR$/../../master/joomla4" />
       <path value="$PROJECT_DIR$/component/backend/vendor/composer" />
       <path value="$PROJECT_DIR$/component/backend/vendor/kornrunner/blurhash" />
+      <path value="$USER_HOME$/Sites/boot4/configuration.php" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.0" />

@@ -10,8 +10,6 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Model;
 \defined('_JEXEC') || die;
 
 use ActivityPhp\Type\AbstractObject;
-use ActivityPhp\Type\Extended\Activity\Create;
-use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\GetObject;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
@@ -25,6 +23,12 @@ use Joomla\CMS\Plugin\PluginHelper;
 class ObjectModel extends BaseDatabaseModel
 {
 	use GetActorTrait;
+
+	public function getTable($name = 'Object', $prefix = 'Administrator', $options = [])
+	{
+		return parent::getTable($name, $prefix, $options);
+	}
+
 
 	/**
 	 * Get an activity's object

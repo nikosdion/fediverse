@@ -151,7 +151,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			'object.displayItem',
 			[
 				'username' => '[^/]+',
-				'id'       => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+',
+				'id'       => '[^/]+',
 			],
 			$defaults
 		);
@@ -161,7 +161,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 			'object.notImplemented',
 			[
 				'username' => '[^/]+',
-				'id'       => '(plg_|com_|mod_|tpl_|pkg_|lib_|files_|file_)[a-zA-Z0-9_\-.]+\.[a-zA-Z0-9_\-.]+\.[^/]+',
+				'id'       => '[^/]+',
 			],
 			$defaults
 		);

@@ -52,9 +52,11 @@ class OutboxController extends BaseController
 		// Pass parameters from the request into a new model state object
 		$username      = $this->input->getRaw('username', '');
 		$hasPagination = in_array(strtolower($this->input->getCmd('page', '')), ['1', 'true', 'yes']);
-		$limit         = max(1, min($this->input->getInt('limit', 20), 50));
-		$offset        = max(0, $this->input->getInt('offset', 0));
-		$hasPagination = $hasPagination || ($offset > 0) || ($limit > 0);
+		$reqLimit      = $this->input->getInt('limit', null);
+		$reqOffset     = $this->input->getInt('offset', null);
+		$limit         = max(1, min($reqLimit ?? null, 50));
+		$offset        = max(0, $reqOffset ?? null);
+		$hasPagination = $hasPagination || ($reqLimit !== null) || ($reqLimit !== null);
 
 		$modelState = new CMSObject();
 		$modelState->set('filter.username', $username);

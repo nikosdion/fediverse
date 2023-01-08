@@ -221,3 +221,11 @@ Allowing replies will require integration with Engage. I have to think about how
 I need a frontend (site) feed view which will act as the user's homepage
 
 This needs to be linked in their WebFinger and Actor.
+
+# Rolling To-Do
+
+* [X] Convert to using the outbox table
+* [ ] Backend Fediblock management
+* [ ] Backend block management
+* [ ] Frontend per-user profile page
+* [ ] Frontend per-user block management

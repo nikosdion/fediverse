@@ -18,6 +18,7 @@ use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Service\Signature;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\FollowerTable;
+use Dionysopoulos\Component\ActivityPub\Administrator\Table\OutboxTable;
 use Dionysopoulos\Component\ActivityPub\Api\Model\AbstractPostHandlerAdapter;
 use Dionysopoulos\Component\ActivityPub\Api\Model\ActorModel;
 use Dionysopoulos\Component\ActivityPub\Api\Model\Mixin\IsBlockedFromFollowingTrait;
@@ -261,6 +262,9 @@ class Follow extends AbstractPostHandlerAdapter
 			'object'   => $followRequest,
 		]);
 
+		$outboxTable = OutboxTable::fromActivity($actor->id, $acceptActivity);
+		$outboxTable->store();
+
 		// Create the headers, including the signature
 		$now              = Factory::getDate();
 		$signatureService = new Signature(
@@ -306,6 +310,9 @@ class Follow extends AbstractPostHandlerAdapter
 			'actor'    => $myActor,
 			'object'   => $followRequest,
 		]);
+
+		$outboxTable = OutboxTable::fromActivity($actor->id, $rejectActivity);
+		$outboxTable->store();
 
 		// Create the headers, including the signature
 		$now              = Factory::getDate();

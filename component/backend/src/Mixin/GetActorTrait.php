@@ -21,6 +21,12 @@ use Joomla\Utilities\ArrayHelper;
 
 trait GetActorTrait
 {
+	private static array $userToActorCache = [];
+
+	private static array $actorUsernameToUserObjectCache = [];
+
+	private static array $isConsentedCache = [];
+
 	/**
 	 * Retrieve the actor record for the specified user.
 	 *
@@ -36,6 +42,11 @@ trait GetActorTrait
 	public function getActorRecordForUser(?User $user, bool $createActor = false): ?ActorTable
 	{
 		static $table = null;
+
+		if (isset(self::$userToActorCache[$user->username]))
+		{
+			return self::$userToActorCache[$user->username];
+		}
 
 		/** @var ActorTable $table */
 		$table = $table ?? call_user_func(
@@ -56,7 +67,7 @@ trait GetActorTrait
 
 		if ($user === null)
 		{
-			return null;
+			return self::$userToActorCache[$user->username] = null;
 		}
 
 		$loaded = $table->load($user->id <= 0 ? ['username' => $user->username] : ['user_id' => $user->id]);
@@ -64,7 +75,7 @@ trait GetActorTrait
 		// If we are not going to create a new Actor, or the user is not a concrete CMS user, return early.
 		if (!$createActor || $user->id <= 0)
 		{
-			return $loaded ? $table : null;
+			return self::$userToActorCache[$user->username] = ($loaded ? $table : null);
 		}
 
 		if (!$loaded)
@@ -77,10 +88,10 @@ trait GetActorTrait
 				'type'    => 'Person',
 			]);
 
-			return $saved ? $table : null;
+			return self::$userToActorCache[$user->username] = ($saved ? $table : null);
 		}
 
-		return $table;
+		return self::$userToActorCache[$user->username] = $table;
 	}
 
 	/**
@@ -96,6 +107,11 @@ trait GetActorTrait
 		if ($username === null || trim($username) === '')
 		{
 			return null;
+		}
+
+		if (isset(self::$actorUsernameToUserObjectCache[$username]))
+		{
+			return self::$actorUsernameToUserObjectCache[$username];
 		}
 
 		// Search for an already configured virtual Actor
@@ -124,7 +140,7 @@ trait GetActorTrait
 			$user->params = $user->params instanceof Registry ? $user->params : new Registry($user->params);
 			$user->params->set('activitypub.type', $row['type']);
 
-			return $user;
+			return self::$actorUsernameToUserObjectCache[$username] = $user;
 		}
 
 		// Get a Joomla user by username
@@ -134,7 +150,7 @@ trait GetActorTrait
 		// If there is no such user I return null without belabouring the point any further.
 		if (empty($user) || $user->guest || $user->id <= 0)
 		{
-			return null;
+			return self::$actorUsernameToUserObjectCache[$username] = null;
 		}
 
 		$user->params = $user->params instanceof Registry ? $user->params : new Registry($user->params);
@@ -150,7 +166,7 @@ trait GetActorTrait
 
 		if ($db->setQuery($query)->loadResult() >= 1)
 		{
-			return $this->isConsented($user->id) ? $user : null;
+			return self::$actorUsernameToUserObjectCache[$username] = ($this->isConsented($user->id) ? $user : null);
 		}
 
 		// No configured actor. I need the component parameters to decide what to do next.
@@ -161,16 +177,16 @@ trait GetActorTrait
 		// Arbitrary users are not allowed, or I have no allowed groups (therefore nobody is implicitly allowed).
 		if (!$anyUser || !is_array($allowedGroups) || empty($allowedGroups))
 		{
-			return null;
+			return self::$actorUsernameToUserObjectCache[$username] = null;
 		}
 
 		// The user does not belong to the allowed groups
 		if (empty(array_intersect(ArrayHelper::toInteger($allowedGroups), $user->getAuthorisedGroups())))
 		{
-			return null;
+			return self::$actorUsernameToUserObjectCache[$username] = null;
 		}
 
-		return $this->isConsented($user->id) ? $user : null;
+		return self::$actorUsernameToUserObjectCache[$username] = ($this->isConsented($user->id) ? $user : null);
 	}
 
 	/**
@@ -262,7 +278,6 @@ trait GetActorTrait
 			}
 		}
 
-
 		return sprintf(
 			'%s/v1/activitypub/%s/%s',
 			$basePath,
@@ -289,6 +304,11 @@ trait GetActorTrait
 			return true;
 		}
 
+		if (isset(self::$isConsentedCache[$user_id]))
+		{
+			return self::$isConsentedCache[$user_id];
+		}
+
 		// Get the user profile setting
 		/** @var DatabaseDriver $db */
 		$db    = $this->getDatabase();
@@ -313,7 +333,6 @@ trait GetActorTrait
 		}
 
 		// A NULL value is considered de facto consent (the feature is opt-out, not opt-in)
-		return $consent === null || $consent == 1;
+		return self::$isConsentedCache[$user_id] = ($consent === null || $consent == 1);
 	}
-
 }

@@ -22,21 +22,6 @@ Accept: application/activity+json
 
 ###
 
-POST https://{{hostname}}/api/v1/activitypub/inbox/{{username}}
-User-Agent: ApiDevelopment/2.0
-Accept: application/activity+json
-Content-Type: application/activity+json
-
-{
-	"@context": "https://www.w3.org/ns/activitystreams",
-	"id": "https://mastodon.example.com/2ff5bc37-9b1f-4c48-86fb-6f3450e366d6",
-	"type": "Follow",
-	"actor": "https://mastodon.example.com/users/remoteuser",
-	"object": "https://{{hostname}}/api/v1/activitypub/actor/{{username}}"
-}
-
-###
-
 GET https://{{hostname}}/api/v1/activitypub/object/{{username}}/{{object_id}}
 User-Agent: ApiDevelopment/2.0
 Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"

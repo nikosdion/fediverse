@@ -9,6 +9,8 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Controller;
 
 defined('_JEXEC') or die;
 
+use Dionysopoulos\Component\ActivityPub\Administrator\Table\ObjectTable;
+use Dionysopoulos\Component\ActivityPub\Api\Model\ObjectModel;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\MVC\Controller\Exception\ResourceNotFound;
@@ -22,8 +24,6 @@ use Joomla\CMS\MVC\View\JsonApiView;
 class ObjectController extends BaseController
 {
 	protected string $contentType = 'object';
-
-	protected string $stateKey = 'object.username';
 
 	/**
 	 * Displays a single item
@@ -43,7 +43,24 @@ class ObjectController extends BaseController
 			throw new ResourceNotFound(Text::_('COM_ACTIVITYPUB_OBJECT_ERR_NOT_FOUND'), 404);
 		}
 
-		[$extension, $contentType, $id] = explode('.', $objectId, 3);
+		// Create the model
+		/** @var ObjectModel $model */
+		$model = $this->getModel('Object', '', ['ignore_request' => true]);
+
+		if (!$model)
+		{
+			throw new \RuntimeException(Text::_('JLIB_APPLICATION_ERROR_MODEL_CREATE'));
+		}
+
+		/** @var ObjectTable $objectTable */
+		$objectTable = $model->getTable();
+
+		if (!$objectTable->load($objectId))
+		{
+			throw new ResourceNotFound(Text::_('COM_ACTIVITYPUB_OBJECT_ERR_NOT_FOUND'), 404);
+		}
+
+		[$extension, $contentType, $id] = explode('.', $objectTable->context_reference, 3);
 		$context = $extension . '.' . $contentType;
 
 		$document   = $this->app->getDocument();
@@ -66,17 +83,9 @@ class ObjectController extends BaseController
 			throw new \RuntimeException($e->getMessage());
 		}
 
-		// Create the model, ignoring request data, so we can safely set the state in the request from the controller
-		$model = $this->getModel('Object', '', ['ignore_request' => true]);
-
-		if (!$model)
-		{
-			throw new \RuntimeException(Text::_('JLIB_APPLICATION_ERROR_MODEL_CREATE'));
-		}
-
 		$model->setState('object.username', $username);
 		$model->setState('object.context', $context);
-		$model->setState('object.id', $id);
+		$model->setState('object.id', $objectId);
 
 		// Push the model into the view (as default)
 		$view->setModel($model, true);
