@@ -7,12 +7,10 @@
 
 namespace Dionysopoulos\Component\ActivityPub\Api\Model;
 
-use ActivityPhp\Type\AbstractObject;
-use Dionysopoulos\Component\ActivityPub\Administrator\Event\HandleActivity;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
+use Dionysopoulos\Component\ActivityPub\Api\Controller\Mixin\NotImplementedTrait;
 use Exception;
-use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Controller\Exception\ResourceNotFound;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
@@ -24,6 +22,9 @@ use RuntimeException;
 
 class OutboxModel extends BaseDatabaseModel
 {
+	use GetActorTrait;
+	use NotImplementedTrait;
+
 	/**
 	 * Internal memory based cache array of data.
 	 *
@@ -49,18 +50,6 @@ class OutboxModel extends BaseDatabaseModel
 	 */
 	protected array $cacheRelevantFilters = [];
 
-	use GetActorTrait;
-
-	protected string $defaultTarget = 'outbox';
-
-	/**
-	 * The actor for which we're listing Activities in their Outbox.
-	 *
-	 * @var    ActorTable|null
-	 * @since  2.0.0
-	 */
-	private ?ActorTable $actorTable = null;
-
 	/**
 	 * Constructor
 	 *
@@ -76,60 +65,6 @@ class OutboxModel extends BaseDatabaseModel
 
 		$this->context                = strtolower($this->option . '.' . $this->getName());
 		$this->cacheRelevantFilters[] = 'filter.username';
-	}
-
-	/**
-	 * Handles a POST request
-	 *
-	 * @param   string          $username  The local actor username which received a POST request
-	 * @param   AbstractObject  $activity  The activity which was POSTed
-	 * @param   string          $target    The POST target: inbox or outbox
-	 *
-	 * @return  void
-	 * @throws  Exception  When the request cannot be handled
-	 * @since   2.0.0
-	 */
-	public function handlePost(string $username, AbstractObject $activity, string $target = ''): void
-	{
-		$target = $target ?: $this->defaultTarget;
-
-		if (empty($username))
-		{
-			throw new ResourceNotFound('Not Found', 404);
-		}
-
-		$actorTable = $this->getActorTable($username);
-
-		// First, try to run the request through the plugins
-		$event      = new HandleActivity($activity, $actorTable, $target);
-		$dispatcher = Factory::getApplication()->getDispatcher();
-		$dispatcher->dispatch($event->getName(), $event);
-		$results = $event->getArgument('result', []) ?: [];
-		$results = is_array($results) ? $results : [];
-		$handled = array_reduce(
-			$results,
-			fn($carry, $result) => $carry || ($result === true),
-			false
-		);
-
-		// If the request was handled by the plugins, return.
-		if ($handled)
-		{
-			return;
-		}
-
-		// Try with the internal handlers
-		foreach ($this->getHandlerAdapters() as $adapter)
-		{
-			$handled = $adapter->handle($activity, $actorTable);
-
-			if ($handled)
-			{
-				return;
-			}
-		}
-
-		throw new RuntimeException('Not implemented', 501);
 	}
 
 	/**
@@ -150,15 +85,6 @@ class OutboxModel extends BaseDatabaseModel
 			$this->getState('list.limit')
 		);
 	}
-
-	protected function _getList($query, $limitstart = 0, $limit = 0)
-	{
-		return array_map(
-			fn($x) => json_decode($x->activity, true),
-			parent::_getList($query, $limitstart, $limit) ?: []
-		);
-	}
-
 
 	/**
 	 * Method to get a Pagination object for the data set.
@@ -227,6 +153,14 @@ class OutboxModel extends BaseDatabaseModel
 		);
 	}
 
+	protected function _getList($query, $limitstart = 0, $limit = 0)
+	{
+		return array_map(
+			fn($x) => json_decode($x->activity, true),
+			parent::_getList($query, $limitstart, $limit) ?: []
+		);
+	}
+
 	/**
 	 * Method to get a cached copy of the query constructed.
 	 *
@@ -281,8 +215,8 @@ class OutboxModel extends BaseDatabaseModel
 	 */
 	protected function getListQuery(): DatabaseQuery
 	{
-		$username         = $this->getUsername();
-		$this->actorTable = $this->getActorTable($username);
+		$username   = $this->getUsername();
+		$actorTable = $this->getActorTable($username);
 
 		/** @var DatabaseDriver $db */
 		$db = $this->getDatabase();
@@ -293,10 +227,35 @@ class OutboxModel extends BaseDatabaseModel
 		])
 			->from($db->quoteName('#__activitypub_outbox'))
 			->where($db->quoteName('actor_id') . ' = :actorId')
-			->bind(':actorId', $this->actorTable->id, ParameterType::INTEGER)
+			->bind(':actorId', $actorTable->id, ParameterType::INTEGER)
 			->order($db->quoteName('id') . ' DESC');
 
 		return $query;
+	}
+
+	/**
+	 * Get the ActorTable corresponding to a username
+	 *
+	 * @param   string  $username  The username to look up.
+	 *
+	 * @return  ActorTable
+	 * @throws  Exception  If there is no such user, or there is an error.
+	 * @since   2.0.0
+	 */
+	protected function getActorTable(string $username): ActorTable
+	{
+		/** @var ActorModel $actorModel */
+		$actorModel = $this->getMVCFactory()
+			->createModel('Actor', 'Api', ['ignore_request' => true]);
+		$user       = $this->getUserFromUsername($username);
+		$actorTable = $actorModel->getActorRecordForUser($user, false);
+
+		if ($actorTable === null)
+		{
+			throw new ResourceNotFound('Not Found', 404);
+		}
+
+		return $actorTable;
 	}
 
 	/**
@@ -316,71 +275,5 @@ class OutboxModel extends BaseDatabaseModel
 		}
 
 		return $username;
-	}
-
-	/**
-	 * Get the ActorTable corresponding to a username
-	 *
-	 * @param   string  $username  The username to look up.
-	 *
-	 * @return  ActorTable
-	 * @throws  Exception  If there is no such user, or there is an error.
-	 * @since   2.0.0
-	 */
-	private function getActorTable(string $username): ActorTable
-	{
-		/** @var ActorModel $actorModel */
-		$actorModel = $this->getMVCFactory()
-			->createModel('Actor', 'Api', ['ignore_request' => true]);
-		$user       = $this->getUserFromUsername($username);
-		$actorTable = $actorModel->getActorRecordForUser($user, false);
-
-		if ($actorTable === null)
-		{
-			throw new ResourceNotFound('Not Found', 404);
-		}
-
-		return $actorTable;
-	}
-
-	/**
-	 * Returns the Outbox handler adapters
-	 *
-	 * @return  PostHandlerAdapterInterface[]
-	 * @since   2.0.0
-	 */
-	private function getHandlerAdapters(): array
-	{
-		$namespace = __NAMESPACE__ . '\\' . ucfirst($this->defaultTarget) . 'Adapter\\';
-		$di        = new \DirectoryIterator(__DIR__ . '/' . ucfirst($this->defaultTarget) . 'Adapter');
-		$ret       = [];
-
-		/** @var \DirectoryIterator $file */
-		foreach ($di as $file)
-		{
-			if (!$file->isFile() || !$file->isReadable() || $file->getExtension() !== 'php')
-			{
-				continue;
-			}
-
-			$basename  = $file->getBasename('.php');
-			$className = $namespace . $basename;
-
-			if (!class_exists($className))
-			{
-				continue;
-			}
-
-			try
-			{
-				$ret[] = new $className($this->getDatabase(), $this->getMVCFactory());
-			}
-			catch (\Throwable $e)
-			{
-				continue;
-			}
-		}
-
-		return $ret;
 	}
 }

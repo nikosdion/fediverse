@@ -19,7 +19,7 @@ use Joomla\CMS\Event\Result\ResultTypeBooleanAware;
 /**
  * Concrete event class for the `onActivityPubHandleActivity` event.
  *
- * Plugins return a query which is used by the API application to retrieve the activity stream for a given actor.
+ * Handles an activity POSTed to the inbox.
  *
  * @since  2.0.0
  */

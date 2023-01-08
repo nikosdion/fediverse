@@ -27,11 +27,11 @@ class GetObject extends AbstractImmutableEvent implements ResultAwareInterface
 	 *
 	 * @param   ActorTable  $actor    The ActorTable object for which Activities are returned
 	 * @param   string      $context  The context, format extension.subType, e.g. com_content.article
-	 * @param   string      $id       The ID of the object to get within the context
+	 * @param   int         $id       The ID of the object to get (the `#__activitypub_objects` PK)
 	 *
 	 * @since   2.0.0
 	 */
-	public function __construct(ActorTable $actor, string $context, string $id)
+	public function __construct(ActorTable $actor, string $context, int $id)
 	{
 		$arguments = [
 			'actor'   => $actor,
@@ -40,7 +40,7 @@ class GetObject extends AbstractImmutableEvent implements ResultAwareInterface
 		];
 
 		$this->resultAcceptableClasses = [
-			AbstractObject::class
+			AbstractObject::class,
 		];
 
 		parent::__construct('onActivityPubGetObject', $arguments);
@@ -115,14 +115,14 @@ class GetObject extends AbstractImmutableEvent implements ResultAwareInterface
 	}
 
 	/**
-	 * Validator for the `ids` argument
+	 * Validator for the `id` argument
 	 *
-	 * @param   string  $id
+	 * @param   int  $id
 	 *
-	 * @return  string
+	 * @return  int
 	 * @since   2.0.0
 	 */
-	public function setId(string $id): string
+	public function setId(int $id): int
 	{
 		return $id;
 	}

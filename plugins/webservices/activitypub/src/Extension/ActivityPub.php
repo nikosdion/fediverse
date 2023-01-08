@@ -117,7 +117,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 		$routes[] = new Route(
 			['POST'],
 			'v1/activitypub/outbox/:username',
-			'outbox.receivePost',
+			'outbox.notImplemented',
 			[
 				'username' => '[^/]+',
 			],
