@@ -715,6 +715,17 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 	private function getObjectFromRawContent(object $rawData, User $user): AbstractObject
 	{
 		$this->loadLanguage('plg_content_contentactivitypub', JPATH_ADMINISTRATOR);
+		$this->loadLanguage('com_content', JPATH_SITE);
+		$useAltReadmore = false;
+		try
+		{
+			Factory::getApplication()->getLanguage()
+				->load('com_content', JPATH_SITE, reload: true);
+		}
+		catch (Exception $e)
+		{
+			$useAltReadmore = true;
+		}
 
 		$sourceType          = $this->params->get('fulltext', 'introtext');
 		$attachImages        = $this->params->get('images', '1') == 1;
@@ -843,7 +854,9 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			$content .= sprintf(
 				'<p><a href="%s">%s</a></p>',
 				$rawUrl,
-				Text::sprintf('PLG_CONTENT_CONTENTACTIVITYPUB_READMORE', Factory::getApplication()->get('sitename'))
+				$useAltReadmore
+					? Text::sprintf('PLG_CONTENT_CONTENTACTIVITYPUB_READMORE', Factory::getApplication()->get('sitename'))
+					: Text::sprintf('COM_CONTENT_READ_MORE_TITLE', $rawData->title)
 			);
 		}
 
@@ -880,7 +893,9 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 					$altContent .= sprintf(
 						'<p><a href="%s">%s</a></p>',
 						$rawUrl,
-						Text::sprintf('PLG_CONTENT_CONTENTACTIVITYPUB_READMORE', Factory::getApplication()->get('sitename'))
+						$useAltReadmore
+							? Text::sprintf('PLG_CONTENT_CONTENTACTIVITYPUB_READMORE', Factory::getApplication()->get('sitename'))
+							: Text::sprintf('COM_CONTENT_READ_MORE_TITLE', $rawData->title)
 					);
 				}
 
