@@ -1,10 +1,14 @@
 # Content - Embed Toot
 
-This plugin is part of the Fediverse Tools for Joomla package.
-
 The plugin allows you to embed toots in your articles, Custom HTML modules, and every Joomla first or third party extension which supports Joomla's standard content events.
 
-## Embedding a toot
+## Getting started
+
+Go to your site's backend, System, Manage, Plugins.
+
+Publish the “Content - Embed Toot” plugin.
+
+## Embed a toot in your content
 
 Just type the following in your content:
 
@@ -18,6 +22,8 @@ If the toot is in reply to another toot, the parent toot (the one being replied 
 ```html
 {toot https://www.example.com/web/@user/109313843174797180 noreply}
 ```
+
+The `{toot}` plugin code works in any core Joomla and third party extension content area, as long as it goes through Joomla's content preparation. At a minimum, it works in Joomla articles, modules of the “Custom” type (as long as you set Options, Prepare Content to Yes),.
 
 ## Plugin options
 

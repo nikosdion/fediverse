@@ -2,7 +2,21 @@
 
 This module is part of the Fediverse Tools for Joomla package.
 
-The module displays the public toots stream of a Mastodon account. Please note that this only includes public and unlisted posts made directly, reblogged, or replied to by the account. It does not bookmarks, or toots made with any of the more private settings.
+The module displays the public toots stream of a Mastodon account. Please note that this only includes public and unlisted posts made directly, reblogged, or replied to publicly by the account. It does not display likes, or toots made with any of the more private settings.
+
+## Getting started
+
+Go to your site's backend.
+
+Go to Contents, Site Modules, New.
+
+Select the “Fediverse - Mastodon Feed” module type.
+
+In the Username field type the Mastodon username, e.g. `nikosdion@fosstodon.org`.
+
+You can read about what the other options do below.
+
+_Tip_: Do not forget to set the Position, the Access, and select the Menu Assignment options for your module to display where and when you really want it to display.
 
 ## Options
 
