@@ -254,7 +254,7 @@ class ActorTable extends Table
 			->where($db->quoteName('username') . ' = :username')
 			->bind(':username', $username);
 
-		$numberOfUsers = $db->setQuery($query)->loadResult();
+		$numberOfUsers = (int) $db->setQuery($query)->loadResult();
 
 		return $numberOfUsers === 0;
 	}

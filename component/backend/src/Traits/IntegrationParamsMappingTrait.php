@@ -58,17 +58,25 @@ trait IntegrationParamsMappingTrait
 	 * Set values into the form data object from the parameters' registry.
 	 *
 	 * @param   Registry  $params  The parameters registry object.
-	 * @param   object    $data    The form data object which will be used to populate the form.
+	 * @param   array     $data    The form data object which will be used to populate the form.
 	 *
 	 * @return  void
 	 * @since   2.0.0
 	 */
-	protected function setFormDataFromParams(Registry $params, object $data): void
+	protected function setFormDataFromParams(Registry $params, array|object &$data): void
 	{
 		foreach ($this->integrationParamsMap as $info)
 		{
 			[$formKey, $paramsKey, $default] = $info;
-			$data->{$formKey} = $params->get($paramsKey, $default);
+
+			if (is_array($data))
+			{
+				$data[$formKey] = $params->get($paramsKey, $default);
+			}
+			else
+			{
+				$data->{$formKey} = $params->get($paramsKey, $default);
+			}
 		}
 	}
 }

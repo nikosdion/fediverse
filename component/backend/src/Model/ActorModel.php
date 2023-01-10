@@ -177,7 +177,7 @@ class ActorModel extends AdminModel
 		PluginHelper::importPlugin('activitypub');
 
 		// Handle the content parameters, built into the component
-		$params                    = new Registry($data->params ?? []);
+		$params                    = new Registry(is_array($data) ? ($data['params'] ?? []) : ($data->params ?? []));
 
 		$this->setFormDataFromParams($params, $data);
 
