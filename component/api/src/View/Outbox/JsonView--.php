@@ -19,7 +19,7 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseAwareInterface;
 use Joomla\Database\DatabaseAwareTrait;
 
-class Jsonview extends BaseJsonView implements DatabaseAwareInterface
+class JsonView extends BaseJsonView implements DatabaseAwareInterface
 {
 	use DatabaseAwareTrait;
 	use GetActorTrait;
