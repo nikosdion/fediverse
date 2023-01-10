@@ -10,6 +10,7 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Controller;
 \defined('_JEXEC') || die;
 
 use ActivityPhp\Type;
+use Dionysopoulos\Component\ActivityPub\Api\Controller\Mixin\NotImplementedTrait;
 use Dionysopoulos\Component\ActivityPub\Api\Model\OutboxModel;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
@@ -25,6 +26,8 @@ use Joomla\CMS\Object\CMSObject;
  */
 class OutboxController extends BaseController
 {
+	use NotImplementedTrait;
+
 	/**
 	 * The content type returned by this API controller
 	 *
