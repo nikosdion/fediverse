@@ -183,7 +183,7 @@ class Follow extends AbstractPostHandlerAdapter
 
 		if (!$exists)
 		{
-			$follower->created_on = Factory::getDate()->toSql();
+			$follower->created = Factory::getDate()->toSql();
 		}
 
 		// Send an Accept activity to the remote server

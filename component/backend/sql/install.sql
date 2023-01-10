@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_actors`
     `type`       ENUM ('Person', 'Organization', 'Service') NOT NULL DEFAULT 'Person',
     `name`       VARCHAR(255)                               NOT NULL DEFAULT '',
     `username`   VARCHAR(255)                               NOT NULL DEFAULT '',
-    `params`     TEXT                                       NULL     DEFAULT NULL,
-    'created'    DATETIME                                   NULL     DEFAULT NULL,
-    'created_by' BIGINT(20) UNSIGNED                        NULL     DEFAULT NULL,
+    `params`     TEXT                                       NULL DEFAULT NULL,
+    `created`    DATETIME                                   NULL DEFAULT NULL,
+    `created_by` BIGINT(20) UNSIGNED                        NULL DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `#__activitypub_actors_username` (`username`(100))
 ) ENGINE = InnoDB
@@ -24,8 +24,8 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_objects`
     `actor_id`          BIGINT UNSIGNED  NOT NULL,
     `context_reference` VARCHAR(255)     NOT NULL COMMENT 'e.g. com_content.article.123',
     `status`            TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1 exists, 0 deleted',
-    `created`           DATETIME         NOT NULL DEFAULT NOW() COMMENT 'Creation time',
-    `modified`          DATETIME         NULL COMMENT 'Update or deletion time',
+    `created`           DATETIME         NOT NULL COMMENT 'Creation time',
+    `modified`          DATETIME         NULL DEFAULT NULL COMMENT 'Update or deletion time',
     FOREIGN KEY `#__activitypub_outbox_actor` (`actor_id`)
         REFERENCES `#__activitypub_actors` (`id`) ON DELETE CASCADE,
     INDEX `#__activitypub_status_by_content` (`status`, `actor_id`, `context_reference`(100))
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_followers`
     `follow_id`      MEDIUMTEXT,
     `inbox`          MEDIUMTEXT,
     `shared_inbox`   MEDIUMTEXT,
-    `created_on`     DATETIME            NULL DEFAULT NULL,
+    `created`        DATETIME            NULL DEFAULT NULL,
     UNIQUE KEY `#__activitypub_followers_unique` (`actor_id`, `username`(100), `domain`(100)),
     INDEX `#__activitypub_followers_username` (`username`(100)),
     INDEX `#__activitypub_followers_domain` (`domain`(100)),
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_queue`
     `actor_id`    BIGINT(20) UNSIGNED NULL     DEFAULT NULL,
     `follower_id` BIGINT(20) UNSIGNED NULL     DEFAULT NULL,
     `retry_count` INT(2)              NOT NULL DEFAULT 0,
-    `next_try`    DATETIME            NOT NULL DEFAULT NOW(),
+    `next_try`    DATETIME            NOT NULL,
     FOREIGN KEY `#__activitypub_queue_actor_id` (`actor_id`) REFERENCES `#__activitypub_actors` (`id`) ON DELETE CASCADE,
     FOREIGN KEY `#__activitypub_queue_follower_id` (`follower_id`) REFERENCES `#__activitypub_followers` (`id`) ON DELETE CASCADE
 ) ENGINE InnoDB

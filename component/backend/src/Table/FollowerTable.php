@@ -96,7 +96,7 @@ class FollowerTable extends Table
 	 * @var   string|null
 	 * @since 2.0.0
 	 */
-	public ?string $created_on = null;
+	public ?string $created = null;
 
 	/**
 	 * Indicates that columns fully support the NULL value in the database
@@ -150,10 +150,10 @@ class FollowerTable extends Table
 			}
 		}
 
-		// The created_on column must be populated
-		if (empty($this->created_on))
+		// The created column must be populated
+		if (empty($this->created))
 		{
-			$this->created_on = Factory::getDate()->toSql();
+			$this->created = Factory::getDate()->toSql();
 		}
 
 		return parent::check();
