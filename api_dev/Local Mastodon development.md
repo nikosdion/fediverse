@@ -14,13 +14,17 @@ Edit your hosts file to point your fake domain to `127.0.0.1`. On macOS you can 
 
 Clone the [Mastodon repository](https://github.com/mastodon/mastodon) e.g. to `/path/to/the/mastodon/repository`.
 
-Edit the `docker-compose.yml`:
+**IMPORTANT**: If you had already cloned it in the past and you want to start over delete the following folders inside the working copy (might require using `sudo` on Linux):
+* postgres14
+* public/system
+* redis
+
+Edit the `docker-compose.yml` and comment out the `build: .` lines.
+
+_Note_: I also pinned the `tootsuite/mastodon` image to a specific version, in the following example version 4.0.2 (`tootsuite/mastodon:v4.0.2`). This is optional but can seriously save your sanity...
 
 ```yml
 version: '3'
-# See https://vdna.be/site/index.php/2020/11/hosting-your-own-mastodon-instance-via-docker-compose/
-# See https://github.com/McKael/mastodon-documentation/blob/master/Running-Mastodon/Docker-Guide.md
-# See https://gist.github.com/TrillCyborg/84939cd4013ace9960031b803a0590c4
 services:
   db:
     restart: always
@@ -29,17 +33,15 @@ services:
     networks:
       - internal_network
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'mastodon', '-d', 'mastodon_production']
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
     volumes:
       - ./postgres14:/var/lib/postgresql/data
     environment:
-      - 'POSTGRES_PASSWORD=9SyEbgWWNBHa7FdeXtT7nTJj'
-      - 'POSTGRES_DB=mastodon_production'
-      - 'POSTGRES_USER=mastodon'
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
 
   redis:
     restart: always
-    image: redis:6-alpine
+    image: redis:7-alpine
     networks:
       - internal_network
     healthcheck:
@@ -47,7 +49,39 @@ services:
     volumes:
       - ./redis:/data
 
+  # es:
+  #   restart: always
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.17.4
+  #   environment:
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Des.enforce.bootstrap.checks=true"
+  #     - "xpack.license.self_generated.type=basic"
+  #     - "xpack.security.enabled=false"
+  #     - "xpack.watcher.enabled=false"
+  #     - "xpack.graph.enabled=false"
+  #     - "xpack.ml.enabled=false"
+  #     - "bootstrap.memory_lock=true"
+  #     - "cluster.name=es-mastodon"
+  #     - "discovery.type=single-node"
+  #     - "thread_pool.write.queue_size=1000"
+  #   networks:
+  #      - external_network
+  #      - internal_network
+  #   healthcheck:
+  #      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+  #   volumes:
+  #      - ./elasticsearch:/usr/share/elasticsearch/data
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #     nofile:
+  #       soft: 65536
+  #       hard: 65536
+  #   ports:
+  #     - '127.0.0.1:9200:9200'
+
   web:
+    #build: .
     image: tootsuite/mastodon:v4.0.2
     restart: always
     env_file: .env.production
@@ -56,16 +90,19 @@ services:
       - external_network
       - internal_network
     healthcheck:
+      # prettier-ignore
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:3000/health || exit 1']
     ports:
       - '127.0.0.1:3000:3000'
     depends_on:
       - db
       - redis
+      # - es
     volumes:
       - ./public/system:/mastodon/public/system
 
   streaming:
+    #build: .
     image: tootsuite/mastodon:v4.0.2
     restart: always
     env_file: .env.production
@@ -74,6 +111,7 @@ services:
       - external_network
       - internal_network
     healthcheck:
+      # prettier-ignore
       test: ['CMD-SHELL', 'wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1']
     ports:
       - '127.0.0.1:4000:4000'
@@ -82,6 +120,7 @@ services:
       - redis
 
   sidekiq:
+    #build: .
     image: tootsuite/mastodon:v4.0.2
     restart: always
     env_file: .env.production
@@ -97,49 +136,124 @@ services:
     healthcheck:
       test: ['CMD-SHELL', "ps aux | grep '[s]idekiq\ 6' || false"]
 
+  ## Uncomment to enable federation with tor instances along with adding the following ENV variables
+  ## http_proxy=http://privoxy:8118
+  ## ALLOW_ACCESS_TO_HIDDEN_SERVICE=true
+  # tor:
+  #   image: sirboops/tor
+  #   networks:
+  #      - external_network
+  #      - internal_network
+  #
+  # privoxy:
+  #   image: sirboops/privoxy
+  #   volumes:
+  #     - ./priv-config:/opt/config
+  #   networks:
+  #     - external_network
+  #     - internal_network
+
 networks:
   external_network:
   internal_network:
     internal: true
 ```
 
-The referenced `.env.production` file looks like this:
+Copy `.env.production.sample` to `.env.production` and follow its instructions to generate secrets and VAPID keys.
+
+Tip: use `docker compose run --rm web bundle exec rake WHATEVER` instead of the `rake WHATEVER` command line suggested in the configuration file.
 
 ```dotenv
-LOCAL_DOMAIN=mastodon.web
-SINGLE_USER_MODE=false
+# This is a sample configuration file. You can generate your configuration
+# with the `rake mastodon:setup` interactive setup wizard, but to customize
+# your setup even further, you'll need to edit it manually. This sample does
+# not demonstrate all available configuration options. Please look at
+# https://docs.joinmastodon.org/admin/config/ for the full documentation.
 
-REDIS_HOST=mastodon_redis_1
+# Note that this file accepts slightly different syntax depending on whether
+# you are using `docker-compose` or not. In particular, if you use
+# `docker-compose`, the value of each declared variable will be taken verbatim,
+# including surrounding quotes.
+# See: https://github.com/mastodon/mastodon/issues/16895
+
+# Federation
+# ----------
+# This identifies your server and cannot be changed safely later
+# ----------
+LOCAL_DOMAIN=mastodon.web
+LOCAL_HTTPS=true
+
+# Redis
+# -----
+REDIS_HOST=redis
 REDIS_PORT=6379
 
-DB_HOST=mastodon_db_1
-DB_USER=mastodon
-DB_NAME=mastodon_production
-DB_PASS=9SyEbgWWNBHa7FdeXtT7nTJj
+# PostgreSQL
+# ----------
+DB_HOST=db
+DB_USER=postgres
+DB_NAME=postgres
+DB_PASS=
 DB_PORT=5432
+
+# Elasticsearch (optional)
+# ------------------------
+ES_ENABLED=false
+#ES_HOST=localhost
+#ES_PORT=9200
+## Authentication for ES (optional)
+#ES_USER=elastic
+#ES_PASS=password
 
 # Secrets
 # -------
 # Make sure to use `rake secret` to generate secrets
 # -------
-SECRET_KEY_BASE=e928c88bdda184e33fc50258069bbfd390399e732c471ec09d02aa08b22efa55b89d8fa306b2e4691c869e8468561830aa9086ed9f95e52f568c4597726158e2
-OTP_SECRET=a9920472b3336b3a2822d79ae7628910212d531ffdc25df834382947ae12911163ad67835477596a6142e2d9b9e8f4dd892bd42956bba6bc9e475327d6a7c677
+SECRET_KEY_BASE=bc70ab7ba4ea516ac222820d98f2e1d59ede51e62d67f97592f6b6284261b8f08e55c58d2e489240bfc802544378a330a7050807290954ba20386e7d43337ed4
+OTP_SECRET=953517351e4373b6b35696770e47e18f7457b14db2dd9c213009f0143a4ba991ff09092893a5d95f47048ed8dfb46a53fffb39b3b46dc9619307b8f6e1b20d41
 
 # Web Push
 # --------
 # Generate with `rake mastodon:webpush:generate_vapid_key`
 # --------
-VAPID_PRIVATE_KEY=CZVLeviRSM-zlaGxGff35C4KQDuYd2yg82bjr0xTCYA=
-VAPID_PUBLIC_KEY=BCufrndxEtzf-Xwh0OGIQ20r6mrZOKEbasa-TNdvmRxKjMOZ9oyCmbfS8TwhyMQloqqUnA-Fh8VSub0fTmJ49yU=
+VAPID_PRIVATE_KEY=H9QZ_IFiPK-GgZ0vgHFIdwC8g6wn0Cd3dd844Tuk3Uo=
+VAPID_PUBLIC_KEY=BPQxhvTfvEpM2_wuEiwjgWjTbmgiWIWKltluVZIAqVwH2vTwvSCQrciDytgr6U-C9fOX0WwnxQPrCDPI1sMRZ8Y=
 
-SMTP_SERVER=localhost
-SMTP_PORT=25
-SMTP_AUTH_METHOD=none
-SMTP_OPENSSL_VERIFY_MODE=none
+# Sending mail
+# ------------
+SMTP_SERVER=host.docker.internal
+SMTP_PORT=1025
 SMTP_LOGIN=
 SMTP_PASSWORD=
-SMTP_FROM_ADDRESS=Mastodon <notifications@mastodon.web>
+SMTP_FROM_ADDRESS=notifications@mastodon.web
+
+# File storage (optional)
+# -----------------------
+S3_ENABLED=false
+S3_BUCKET=files.example.com
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+S3_ALIAS_HOST=files.example.com
+
+# IP and session retention
+# -----------------------
+# Make sure to modify the scheduling of ip_cleanup_scheduler in config/sidekiq.yml
+# to be less than daily if you lower IP_RETENTION_PERIOD below two days (172800).
+# -----------------------
+IP_RETENTION_PERIOD=31556952
+SESSION_RETENTION_PERIOD=31556952
 ```
+
+Run `docker compose up -d`. Don't worry about any failures in the `sidekiq` and `web` containers.
+
+Initial setup: 
+* `docker compose run --rm web bundle exec rake mastodon:setup`
+* Follow the instructions on the screen.
+* **IMPORTANT**! Note down the initial password.
+* `docker compose stop`
+* `docker compose start`
+* Visit https://mastodon.web
+* Login with the email address and initial password you noted down above.
 
 ## Apache proxy
 
@@ -155,36 +269,55 @@ This requires the following Apache configuration file:
 </VirtualHost>
 
 <VirtualHost *:443>
-   ServerAdmin contact@local.web
-   ServerName mastodon.web
-
-   Protocols h2 h2c http/1.1
-
-   # Remember to change this path
-   DocumentRoot /path/to/the/mastodon/repository/public
-
-   SSLEngine on
-   SSLProtocol -all +TLSv1.2
-   SSLHonorCipherOrder on
-   SSLCipherSuite EECDH+AESGCM:AES256+EECDH:AES128+EECDH
-
-   # Obviously, you need to provide your own TLS key files. See https://www.dionysopoulos.me/forge-your-own-ssl-certificates-for-local-development.html
-   SSLCertificateFile /opt/homebrew/etc/httpd/ssl/mastodon.web.crt
-   SSLCertificateKeyFile /opt/homebrew/etc/httpd/ssl/mastodon.web.key
-
-   ProxyPreserveHost On
-   RequestHeader set X-Forwarded-Proto "https"
-   # Ports 3000 and 4000 are defined in the docker-compose.yml file. They are WebSocket ports.
-   ProxyPass /api/v1/streaming/ ws://localhost:4000/
-   ProxyPassReverse /api/v1/streaming/ ws://localhost:4000/
-   ProxyPass / http://localhost:3000/
-   ProxyPassReverse / http://localhost:3000/
-   ErrorDocument 500 /500.html
-   ErrorDocument 501 /500.html
-   ErrorDocument 502 /500.html
-   ErrorDocument 503 /500.html
-   ErrorDocument 504 /500.html
+    ServerAdmin contact@local.web
+    ServerName mastodon.web
+    
+    Protocols h2 h2c http/1.1
+    
+    # Remember to change this path
+    DocumentRoot /path/to/the/mastodon/repository/public
+    
+    SSLEngine on
+    SSLProtocol -all +TLSv1.2
+    SSLHonorCipherOrder on
+    SSLCipherSuite EECDH+AESGCM:AES256+EECDH:AES128+EECDH
+    
+    # Obviously, you need to provide your own TLS key files. See https://www.dionysopoulos.me/forge-your-own-ssl-certificates-for-local-development.html
+    SSLCertificateFile /path/to/etc/httpd/ssl/mastodon.web.crt
+    SSLCertificateKeyFile /path/to/etc/httpd/ssl/mastodon.web.key
+    
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Proto "https"
+    ProxyAddHeaders On
+    
+    # <LocationMatch "^/(assets|avatars|emoji|headers|packs|sounds|system)">
+    #   Header always set Cache-Control "public, max-age=31536000, immutable"
+    #   Require all granted
+    # </LocationMatch>
+    
+    # These files / paths don't get proxied and are retrieved from DocumentRoot
+    # ProxyPass /500.html !
+    # ProxyPass /sw.js !
+    # ProxyPass /robots.txt !
+    # ProxyPass /manifest.json !
+    # ProxyPass /browserconfig.xml !
+    # ProxyPass /mask-icon.svg !
+    # ProxyPassMatch ^(/.*\.(png|ico)$) !
+    # ProxyPassMatch ^/(assets|avatars|emoji|headers|packs|sounds|system) !
+    
+    # Ports 3000 and 4000 are defined in the docker-compose.yml file. They are WebSocket ports.
+    ProxyPass /api/v1/streaming/ ws://localhost:4000/
+    ProxyPassReverse /api/v1/streaming/ ws://localhost:4000/
+    ProxyPass / http://localhost:3000/
+    ProxyPassReverse / http://localhost:3000/
+    
+    ErrorDocument 500 /500.html
+    ErrorDocument 501 /500.html
+    ErrorDocument 502 /500.html
+    ErrorDocument 503 /500.html
+    ErrorDocument 504 /500.html
 </VirtualHost>
+
 ```
 
 ## Mastodon doesn't like federating to private IP address space
@@ -193,7 +326,11 @@ If you try to federate with a local ActivityPub server, Mastodon will reply with
 
 You need to choose which public IP address to “sacrifice”. I chose `223.254.254.254`, an address in China I am extremely unlikely to need to access in any other way.
 
-The idea is that we will create an alias IP address for the loopback device using this address. On macOS this is:
+The idea is that we will create an alias IP address for the loopback device using this address. 
+
+## macOS
+
+You can do this temporarily with:
 
 ```bash
 sudo ifconfig lo0 alias 223.254.254.254 netmask 255.255.255.0
@@ -228,7 +365,50 @@ Save in /Library/LaunchDaemons/org.localhost.alias.plist
 </plist>
 ```
 
-Finally, remember to edit your hosts file to point your development site to this (misrouted locally!) IP address:
+## Linux
+
+You can do this temporarily with:
+
+```bash
+sudo ip addr add 223.254.254.254/32 dev lo label lo:dummy
+```
+
+To remove the alias, run:
+
+```bash
+ip addr del 223.254.254.254/32 dev lo
+```
+
+To persist these changes, create the file `/etc/systemd/system/loopback-alias.service` with the following contents:
+
+```ini
+[Unit]
+Description=loopback alias
+Wants=network.target
+Before=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/ip addr add 223.254.254.254/32 dev lo label lo:dummy
+ExecStop=/usr/bin/ip addr del 223.254.254.254/32 dev lo
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then run the following:
+
+```bash
+sudo ip addr del 223.254.254.254/32 dev lo # If you had already enabled the alias temporarily.
+sudo systemctl daemon-reload
+sudo systemctl enable loopback-alias
+sudo systemctl start loopback-alias
+```
+
+## Update the hosts file
+
+Finally, remember to edit your hosts file to point your development site to this (intentionally mis-routed locally!) IP address:
 
 ```
 223.254.254.254		activitypub.local.web
@@ -242,7 +422,11 @@ The solution —assuming you don't want to do a custom build of the Mastodon con
 
 Let's say that you have followed my tutorial on custom TLS certificates, so you have a root and an intermediate certificate which are called `root.pem` and `intermediate.pem` respectively.
 
-On the Terminal run `docker exec -u root -it mastodon_web_1 bash` to get a root console in the Web container instance of the Mastodon installation. Run the following:
+On the Terminal run `docker exec -u root -it mastodon_web_1 bash` to get a root console in the Web container instance of the Mastodon installation. 
+
+_Note_: On Linux this is `docker exec -u root -it mastodon-web-1 bash`. It uses dashes instead of underscores.
+
+Run the following:
 
 ```bash
 apt update
@@ -259,6 +443,11 @@ update-ca-certificates
 ```
 
 Now run `docker exec -u root -it mastodon_sidekiq_1 bash` to get a root console in the Sidekiq container instance of the Mastodon installation and carry out the instructions above once again.
+
+_Note_: On Linux this is `docker exec -u root -it mastodon-sidekiq-1 bash`. It uses dashes instead of underscores.
+
+No need to restart the Mastodon services.
+
 
 ## At long last!
 
