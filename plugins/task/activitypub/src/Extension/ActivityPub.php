@@ -9,20 +9,17 @@ namespace Dionysopoulos\Plugin\Task\ActivityPub\Extension;
 
 \defined('_JEXEC') || die;
 
+use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\Request;
+use Dionysopoulos\Component\ActivityPub\Administrator\Helper\MultiRequest;
 use Dionysopoulos\Component\ActivityPub\Administrator\Model\QueueModel;
 use Dionysopoulos\Component\ActivityPub\Administrator\Service\Signature;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\QueueTable;
-use Dionysopoulos\Plugin\Task\ActivityPub\Library\DataShape\Request;
-use Dionysopoulos\Plugin\Task\ActivityPub\Library\MultiRequest;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Filter\InputFilter;
-use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\Router\Route;
-use Joomla\CMS\Router\Router;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Component\Scheduler\Administrator\Event\ExecuteTaskEvent;

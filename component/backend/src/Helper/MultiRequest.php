@@ -5,12 +5,12 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Dionysopoulos\Plugin\Task\ActivityPub\Library;
+namespace Dionysopoulos\Component\ActivityPub\Administrator\Helper;
 
 use Composer\CaBundle\CaBundle;
 use CurlHandle;
 use CurlMultiHandle;
-use Dionysopoulos\Plugin\Task\ActivityPub\Library\DataShape\Request;
+use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\Request;
 use Exception;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Version;
@@ -36,7 +36,7 @@ use SplFixedArray;
  *
  * @since 2.0.0
  */
-class MultiRequest
+final class MultiRequest
 {
 	/**
 	 * The requests being queued.

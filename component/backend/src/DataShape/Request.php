@@ -5,7 +5,7 @@
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Dionysopoulos\Plugin\Task\ActivityPub\Library\DataShape;
+namespace Dionysopoulos\Component\ActivityPub\Administrator\DataShape;
 
 final class Request
 {
