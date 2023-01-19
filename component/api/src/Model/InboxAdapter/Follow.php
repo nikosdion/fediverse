@@ -13,7 +13,6 @@ use ActivityPhp\Type;
 use ActivityPhp\Type\AbstractObject;
 use ActivityPhp\Type\Extended\AbstractActor;
 use ActivityPhp\Type\Extended\Activity\Follow as FollowActivity;
-use ActivityPhp\Type\TypeConfiguration as Config;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Service\Signature;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
@@ -21,11 +20,11 @@ use Dionysopoulos\Component\ActivityPub\Administrator\Table\FollowerTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\OutboxTable;
 use Dionysopoulos\Component\ActivityPub\Api\Model\AbstractPostHandlerAdapter;
 use Dionysopoulos\Component\ActivityPub\Api\Model\ActorModel;
+use Dionysopoulos\Component\ActivityPub\Api\Model\Mixin\FetchRemoteActorTrait;
+use Dionysopoulos\Component\ActivityPub\Api\Model\Mixin\HttpClientTrait;
 use Dionysopoulos\Component\ActivityPub\Api\Model\Mixin\IsBlockedFromFollowingTrait;
 use Exception;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Http\Http;
-use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserFactoryInterface;
@@ -38,6 +37,8 @@ use Joomla\CMS\User\UserFactoryInterface;
 class Follow extends AbstractPostHandlerAdapter
 {
 	use GetActorTrait;
+	use HttpClientTrait;
+	use FetchRemoteActorTrait;
 	use IsBlockedFromFollowingTrait;
 
 	/**
@@ -73,7 +74,7 @@ class Follow extends AbstractPostHandlerAdapter
 			return false;
 		}
 
-		// Check that the local actor ID in the follow request matches the outbox
+		// Check that the local actor ID in the follow request matches the inbox
 		$user         = $actor->user_id > 0
 			? Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($actor->user_id)
 			: $this->getUserFromUsername($actor->username);
@@ -207,43 +208,6 @@ class Follow extends AbstractPostHandlerAdapter
 	}
 
 	/**
-	 * Retrieves the remove actor's information
-	 *
-	 * @param   string  $actorUrl  The URL of the actor to retrieve
-	 *
-	 * @return  AbstractActor
-	 * @throws  Exception
-	 * @since   2.0.0
-	 */
-	private function fetchActor(string $actorUrl): AbstractActor
-	{
-		$http     = $this->getHttpClient();
-		$response = $http->get($actorUrl, [
-			'Accept' => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-		], 5);
-
-		if ($response->code < 200 || $response->code > 299)
-		{
-			throw new \RuntimeException("Cannot retrieve remote actor", $response->code);
-		}
-
-		/** @noinspection PhpIncompatibleReturnTypeInspection */
-		$json = $response->body;
-
-		$temp = Config::get('undefined_properties');
-		Config::set('undefined_properties', 'include');
-
-		try
-		{
-			return Type::fromJson($json);
-		}
-		finally
-		{
-			Config::set('undefined_properties', $temp);
-		}
-	}
-
-	/**
 	 * Send a follow request acceptance message to the remote server.
 	 *
 	 * @param   string          $remoteInbox    The inbox URL of the remote actor.
@@ -339,25 +303,5 @@ class Follow extends AbstractPostHandlerAdapter
 		);
 
 		return $response->code >= 200 && $response->code <= 299;
-	}
-
-	/**
-	 * Get the Joomla HTTP client
-	 *
-	 * @return Http
-	 * @since  2.0.0
-	 */
-	private function getHttpClient(): Http
-	{
-		$options = (defined('JDEBUG') && JDEBUG)
-			? [
-				CURLOPT_SSL_VERIFYHOST   => 0,
-				CURLOPT_SSL_VERIFYPEER   => 0,
-				CURLOPT_SSL_VERIFYSTATUS => 0,
-			] : [];
-
-		return HttpFactory::getHttp([
-			'transport.curl' => $options,
-		]);
 	}
 }

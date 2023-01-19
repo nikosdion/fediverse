@@ -26,7 +26,8 @@ Goes through the `onActivityPubHandleActivity` event handler, see `\Dionysopoulo
 
 * [X] Convert to using the outbox table
 * [X] Send the first batch of notifications immediately, without going through the scheduled task
-* [ ] Implement Unfollow
+* [X] Implement Unfollow (Mastodon sends Undo for a Follow, or Accept Follow)
+* [ ] Send an Update when the account details change
 * [ ] Backend Fediblock management
 * [ ] Backend block management
 * [ ] Frontend per-user profile page

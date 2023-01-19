@@ -11,13 +11,18 @@ namespace Dionysopoulos\Component\ActivityPub\Api\Model;
 
 use ActivityPhp\Type\AbstractObject;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\HandleActivity;
+use Dionysopoulos\Component\ActivityPub\Administrator\Traits\RegisterFileLoggerTrait;
 use Exception;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\MVC\Controller\Exception\ResourceNotFound;
+use Joomla\CMS\Uri\Uri;
 use RuntimeException;
 
 class InboxModel extends OutboxModel
 {
+	use RegisterFileLoggerTrait;
+
 	/**
 	 * Handles a POST request
 	 *
@@ -37,36 +42,123 @@ class InboxModel extends OutboxModel
 			throw new ResourceNotFound('Not Found', 404);
 		}
 
+		// Log requests during development.
+		if (defined('JDEBUG') && JDEBUG)
+		{
+			$this->registerFileLogger('activitypub.inbox');
+
+			$input  = Factory::getApplication()->input;
+			$method = strtoupper($input->getMethod());
+
+			Log::add(
+				sprintf(
+					'Received %s to inbox — %s',
+					$method,
+					Uri::current()
+				),
+				Log::DEBUG, 'activitypub.inbox');
+
+			Log::add(
+				print_r($input->getArray(), true),
+				Log::DEBUG, 'activitypub.inbox');
+
+			Log::add(
+				print_r($activity->toJson(JSON_PRETTY_PRINT), true),
+				Log::DEBUG, 'activitypub.inbox');
+		}
+
 		$actorTable = $this->getActorTable($username);
 
 		// First, try to run the request through the plugins
-		$event      = new HandleActivity($activity, $actorTable, $target);
-		$dispatcher = Factory::getApplication()->getDispatcher();
-		$dispatcher->dispatch($event->getName(), $event);
-		$results = $event->getArgument('result', []) ?: [];
-		$results = is_array($results) ? $results : [];
-		$handled = array_reduce(
-			$results,
-			fn($carry, $result) => $carry || ($result === true),
-			false
-		);
+		try
+		{
+			$event      = new HandleActivity($activity, $actorTable, $target);
+			$dispatcher = Factory::getApplication()->getDispatcher();
+			$dispatcher->dispatch($event->getName(), $event);
+			$results = $event->getArgument('result', []) ?: [];
+			$results = is_array($results) ? $results : [];
+			$handled = array_reduce(
+				$results,
+				fn($carry, $result) => $carry || ($result === true),
+				false
+			);
+		}
+		catch (\Throwable $e)
+		{
+			if (defined('JDEBUG') && JDEBUG)
+			{
+				Log::add(
+					sprintf(
+						'Plugins threw an exception: #%d %s (%s:%d)',
+						$e->getCode(),
+						$e->getMessage(),
+						$e->getFile(),
+						$e->getLine()
+					),
+					Log::DEBUG, 'activitypub.inbox');
+			}
+
+			throw $e;
+		}
 
 		// If the request was handled by the plugins, return.
 		if ($handled)
 		{
+			if (defined('JDEBUG') && JDEBUG)
+			{
+				Log::add(
+					'Request handled by plugin',
+					Log::DEBUG, 'activitypub.inbox');
+			}
+
 			return;
 		}
 
 		// Try with the internal handlers
 		foreach ($this->getHandlerAdapters() as $adapter)
 		{
-			$handled = $adapter->handle($activity, $actorTable);
+			try
+			{
+				$handled = $adapter->handle($activity, $actorTable);
+			}
+			catch (Exception $e)
+			{
+				if (defined('JDEBUG') && JDEBUG)
+				{
+					Log::add(
+						sprintf(
+							'Internal adapter ‘%s’ threw an exception: #%d %s (%s:%d)',
+							get_class($adapter),
+							$e->getCode(),
+							$e->getMessage(),
+							$e->getFile(),
+							$e->getLine()
+						),
+						Log::DEBUG, 'activitypub.inbox');
+				}
+
+				throw $e;
+			}
 
 			if ($handled)
 			{
+				if (defined('JDEBUG') && JDEBUG)
+				{
+					Log::add(
+						sprintf(
+							'Request handled by included adapter %s',
+							get_class($adapter)
+						),
+						Log::DEBUG, 'activitypub.inbox');
+				}
+
 				return;
 			}
 		}
+
+		Log::add(
+			'Unhandled request; will return HTTP 501',
+			Log::DEBUG, 'activitypub.inbox');
 
 		throw new RuntimeException('Not implemented', 501);
 	}
