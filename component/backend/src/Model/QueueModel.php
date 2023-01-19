@@ -10,17 +10,28 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Model;
 \defined('_JEXEC') || die;
 
 use ActivityPhp\Type\Core\AbstractActivity;
+use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\Request;
+use Dionysopoulos\Component\ActivityPub\Administrator\Helper\MultiRequest;
+use Dionysopoulos\Component\ActivityPub\Administrator\Service\Signature;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\OutboxTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\QueueTable;
+use Dionysopoulos\Component\ActivityPub\Administrator\Traits\RegisterFileLoggerTrait;
 use Exception;
+use Joomla\CMS\Application\CMSApplication;
+use Joomla\CMS\Application\ConsoleApplication;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Log\Log;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Table\Table;
+use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Database\DatabaseIterator;
+use Throwable;
 
 class QueueModel extends BaseDatabaseModel
 {
+	use RegisterFileLoggerTrait;
+
 	/**
 	 * Method to get a table object.
 	 *
@@ -140,11 +151,16 @@ class QueueModel extends BaseDatabaseModel
 	 * @throws  Exception
 	 * @since   2.0.0
 	 */
-	public function addToOutboxAndNotifyFollowers(ActorTable $actorTable, AbstractActivity $activity): void
+	public function addToOutboxAndNotifyFollowers(ActorTable $actorTable, AbstractActivity $activity, bool $autoProcessQueue = false): void
 	{
 		$this->addToOutbox($actorTable, $activity);
 
 		$this->notifyFollowers($actorTable, $activity);
+
+		if ($autoProcessQueue)
+		{
+			$this->processQueue();
+		}
 	}
 
 	/**
@@ -221,5 +237,287 @@ class QueueModel extends BaseDatabaseModel
 				// Well, if it fails, it fails.
 			}
 		}
+	}
+
+	/**
+	 * Processes the pending queue.
+	 *
+	 * Expects the following state variables:
+	 * - `option.timeLimit`  The maximum amount of time to spent, in seconds (default 10, minimum 5).
+	 * - `option.runtimeBias`  Guard time to abort the loop, as a percentage of the timeLimit (20 to 90, default 80).
+	 * - `option.requestLimit`  The maximum number of concurrent requests (default 10, min 1, max 50)
+	 *
+	 * @return  void
+	 * @throws  Throwable
+	 *
+	 * @since   2.0.0
+	 */
+	public function processQueue(): void
+	{
+		$timeLimit    = $this->getState('option.timeLimit', 10);
+		$runtimeBias  = $this->getState('option.runtimeBias', 80);
+		$requestLimit = $this->getState('option.requestLimit', 10);
+
+		$this->registerFileLogger('task.activitypub');
+
+		$runtimeBias  = max(20, min(90, $runtimeBias));
+		$requestLimit = min(50, max(1, $requestLimit));
+		$timeLimit    = max(5, $timeLimit);
+		$bailoutLimit = max($timeLimit * ($runtimeBias / 100), 2.0);
+
+		/** @var ActorTable $actorTable */
+		$actorTable = $this->getTable('Actor');
+		$startTime  = microtime(true);
+		$db         = $this->getDatabase();
+
+		// Keep churning activity notifications until we are out of time or have no more pending items
+		while ((microtime(true) - $startTime) < $bailoutLimit)
+		{
+			Log::add(
+				sprintf("Getting up to %d record(s)", $requestLimit),
+				Log::DEBUG,
+				'task.activitypub'
+			);
+
+			// Lock table to maintain consistency while reading
+			$db->lockTable('#__activitypub_queue');
+
+			// Get up to $requestLimit pending requests
+			$pendingQueueItems = $this->getPending($requestLimit);
+
+			// If there are no requests do a fast task exit: return Status::OK
+			if (empty($pendingQueueItems))
+			{
+				Log::add(
+					'No records found.',
+					Log::DEBUG,
+					'task.activitypub'
+				);
+
+				$db->unlockTables();
+
+				return;
+			}
+
+			Log::add(
+				'Temporarily removing activities from the queue',
+				Log::DEBUG,
+				'task.activitypub'
+			);
+
+			/**
+			 * Remove the activities from the pool.
+			 *
+			 * IMPORTANT: Do not start a transaction!
+			 *
+			 * Starting a transaction implicitly removes table locks.
+			 * @see https://dev.mysql.com/doc/refman/8.0/en/commit.html
+			 */
+			/** @var QueueTable $queueTable */
+			foreach ($pendingQueueItems as $queueTable)
+			{
+				$queueTable->delete($queueTable->id);
+			}
+
+			// Unlock the queue table
+			$db->unlockTables();
+
+			/** @var CMSApplication|ConsoleApplication $application */
+			$application      = Factory::getApplication();
+			$now              = Factory::getDate();
+			$signatureService = new Signature(
+				$this->getDatabase(),
+				Factory::getContainer()->get(UserFactoryInterface::class),
+				$application
+			);
+
+			try
+			{
+				Log::add(
+					sprintf('Preparing to send %d notification request(s)', count($pendingQueueItems)),
+					Log::INFO,
+					'task.activitypub'
+				);
+
+				$options = (defined('JDEBUG') && JDEBUG)
+					? [
+						CURLOPT_SSL_VERIFYHOST   => 0,
+						CURLOPT_SSL_VERIFYPEER   => 0,
+						CURLOPT_SSL_VERIFYSTATUS => 0,
+					] : [];
+
+				$multiRequest = new MultiRequest(
+					maxRequests: $requestLimit,
+					headers: [
+						'Accept'       => 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+						'Content-Type' => 'application/activity+json',
+						'Date'         => $now->format(\DateTimeInterface::RFC7231, false, false),
+					],
+					options: $options,
+					callback: function (?string $response, array $requestInfo) use (&$pendingQueueItems) {
+						/** @var Request $requestDeclaration */
+						$requestDeclaration = $requestInfo['request'];
+						/** @var QueueTable $queueItem */
+						$queueItem = $requestDeclaration->userData;
+						$httpCode  = (int) ($requestInfo['http_code'] ?? 500);
+
+						// If the request finished successfully we remove it from the pending queue
+						if ($requestInfo['result'] === CURLE_OK && in_array($httpCode, [200, 201, 202]))
+						{
+							Log::add(
+								sprintf('Request %d finished successfully', $queueItem->id),
+								Log::DEBUG,
+								'task.activitypub'
+							);
+
+							$pendingQueueItems[$queueItem->id] = null;
+
+							return;
+						}
+
+						if ($httpCode > 0 && $httpCode != 200)
+						{
+							$errorReason = sprintf('HTTP status %s', $httpCode);
+						}
+						else
+						{
+							$errNo = curl_errno($requestInfo['handle']);
+							$error = curl_error($requestInfo['handle']);
+
+							$errorReason = sprintf(
+								'cURL error #%d: %s',
+								$errNo, $error
+							);
+						}
+
+						// Try to bump the retry count. If we have already tried too many times, remove from the queue.
+						Log::add(
+							sprintf(
+								'Request %d failed (%s). Bumping retry count.',
+								$queueItem->id,
+								$errorReason
+							),
+							Log::DEBUG,
+							'task.activitypub'
+						);
+
+						if (!$queueItem->bumpRetryCount())
+						{
+							Log::add(
+								sprintf('Request %d failed more than 10 consecutive times; removing from the pool.', $queueItem->id),
+								Log::NOTICE,
+								'task.activitypub'
+							);
+
+							$pendingQueueItems[$queueItem->id] = null;
+
+							return;
+						}
+
+						// Throw the queued item back into the queue.
+						$pendingQueueItems[$queueItem->id] = $queueItem;
+					}
+				);
+
+				/** @var QueueTable $queueItem */
+				foreach ($pendingQueueItems as $queueItem)
+				{
+					$actorTable->reset();
+					$actorTable->id = null;
+
+					if (!$actorTable->load($queueItem->actor_id))
+					{
+						// Pending items with an invalid actor are silently discarded
+						continue;
+					}
+
+					$postBody = $queueItem->activity;
+					$digest   = $signatureService->digest($postBody);
+
+					Log::add(
+						sprintf('Adding request %d to the queue', $queueItem->id),
+						Log::DEBUG,
+						'task.activitypub'
+					);
+
+					$multiRequest->enqueue(
+						url: $queueItem->inbox,
+						postData: $postBody,
+						userData: $queueItem,
+						headers: [
+							'Digest'    => 'SHA-256=' . $digest,
+							'Signature' => $signatureService->sign($actorTable, $queueItem->inbox, $now, $digest),
+						]
+					);
+				}
+
+				// Execute the multirequest
+				$multiRequest->execute();
+			}
+			catch (Throwable $e)
+			{
+				Log::add(
+					'Received error processing the queue.',
+					Log::ERROR,
+					'task.activitypub'
+				);
+
+
+				// Suppress the exception, so we can throw it after persisting the failed items into the database.
+				$exception = $e;
+			}
+
+			// Persist the failed items into the database
+			$pendingQueueItems = array_filter($pendingQueueItems);
+
+			if (!empty($pendingQueueItems))
+			{
+				Log::add(
+					sprintf('There are %d requests to put back into the queue', count($pendingQueueItems)),
+					Log::DEBUG,
+					'task.activitypub'
+				);
+
+				$db->transactionStart();
+
+				foreach ($pendingQueueItems as $queueItem)
+				{
+					try
+					{
+						$queueItem->id = null;
+						$queueItem->store();
+					}
+					catch (\Exception $e)
+					{
+						// If it dies, it dies.
+					}
+				}
+
+				$db->transactionCommit();
+			}
+
+			// So, we had a Throwable. Throw it back so the task saves a Knockout status for this execution.
+			if (isset($exception))
+			{
+				Log::add(
+					sprintf(
+						'Delayed error is now thrown [%s:%d]: %s',
+						$exception->getFile(),
+						$exception->getLine(),
+						$exception->getMessage(),
+					),
+					Log::CRITICAL,
+					'task.activitypub'
+				);
+
+				throw $exception;
+			}
+		}
+
+		Log::add(
+			'Batch processing done.',
+			Log::DEBUG,
+			'task.activitypub'
+		);
 	}
 }

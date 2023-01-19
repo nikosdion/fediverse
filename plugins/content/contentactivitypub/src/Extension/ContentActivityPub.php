@@ -182,13 +182,13 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			);
 
 			// Notify followers
-			/** @var QueueModel $queueModel */
-			$queueModel = $this->getApplication()
-				->bootComponent('com_activitypub')
-				->getMVCFactory()
-				->createModel('Queue', 'Administrator');
-
-			$queueModel->addToOutboxAndNotifyFollowers($actorTable, $activity);
+			$this
+				->getQueueModel()
+				->addToOutboxAndNotifyFollowers(
+					$actorTable,
+					$activity,
+					$this->params->get('immediate_notification', 1) == 1
+				);
 		}
 	}
 
@@ -301,13 +301,13 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				}
 
 				// Notify followers
-				/** @var QueueModel $queueModel */
-				$queueModel = $this->getApplication()
-					->bootComponent('com_activitypub')
-					->getMVCFactory()
-					->createModel('Queue', 'Administrator');
-
-				$queueModel->addToOutboxAndNotifyFollowers($actorTable, $activity);
+				$this
+					->getQueueModel()
+					->addToOutboxAndNotifyFollowers(
+						$actorTable,
+						$activity,
+						$this->params->get('immediate_notification', 1) == 1
+					);
 			}
 		}
 	}
@@ -386,13 +386,13 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			}
 
 			// Notify followers
-			/** @var QueueModel $queueModel */
-			$queueModel = $this->getApplication()
-				->bootComponent('com_activitypub')
-				->getMVCFactory()
-				->createModel('Queue', 'Administrator');
-
-			$queueModel->addToOutboxAndNotifyFollowers($actorTable, $activity);
+			$this
+				->getQueueModel()
+				->addToOutboxAndNotifyFollowers(
+					$actorTable,
+					$activity,
+					$this->params->get('immediate_notification', 1) == 1
+				);
 		}
 	}
 
@@ -471,13 +471,13 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 			);
 
 			// Notify followers
-			/** @var QueueModel $queueModel */
-			$queueModel = $this->getApplication()
-				->bootComponent('com_activitypub')
-				->getMVCFactory()
-				->createModel('Queue', 'Administrator');
-
-			$queueModel->addToOutboxAndNotifyFollowers($actorTable, $activity);
+			$this
+				->getQueueModel()
+				->addToOutboxAndNotifyFollowers(
+					$actorTable,
+					$activity,
+					$this->params->get('immediate_notification', 1) == 1
+				);
 		}
 	}
 
@@ -581,5 +581,27 @@ class ContentActivityPub extends CMSPlugin implements SubscriberInterface, Datab
 				'object'    => $sourceObject,
 			]
 		);
+	}
+
+	/**
+	 * Returns the federated server notification queue model
+	 *
+	 * @return  QueueModel
+	 * @since   2.0.0
+	 */
+	private function getQueueModel(): QueueModel
+	{
+		/** @var QueueModel $queueModel */
+		$queueModel = $this->getApplication()
+			->bootComponent('com_activitypub')
+			->getMVCFactory()
+			->createModel('Queue', 'Administrator', ['ignore_request' => true]);
+
+		// Very optimistic settings for sending notifications (if immediate_notification is 1).
+		$queueModel->setState('option.timeLimit', 10);
+		$queueModel->setState('option.runtimeBias', 75);
+		$queueModel->setState('option.requestLimit', 25);
+
+		return $queueModel;
 	}
 }

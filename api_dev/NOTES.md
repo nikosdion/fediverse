@@ -25,7 +25,7 @@ Goes through the `onActivityPubHandleActivity` event handler, see `\Dionysopoulo
 # Rolling To-Do
 
 * [X] Convert to using the outbox table
-* [ ] Send the first batch of notifications immediately, without going through the scheduled task
+* [X] Send the first batch of notifications immediately, without going through the scheduled task
 * [ ] Implement Unfollow
 * [ ] Backend Fediblock management
 * [ ] Backend block management
