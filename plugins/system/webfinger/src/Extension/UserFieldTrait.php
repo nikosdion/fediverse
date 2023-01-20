@@ -7,11 +7,16 @@
 
 namespace Dionysopoulos\Plugin\System\WebFinger\Extension;
 
+use ActivityPhp\Type;
+use ActivityPhp\Type\Extended\Activity\Update;
+use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
+use Dionysopoulos\Component\ActivityPub\Administrator\Model\QueueModel;
 use Dionysopoulos\Plugin\System\WebFinger\Event\LoadUserForm;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Factory\MVCFactory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\User\User;
 use Joomla\CMS\User\UserFactoryInterface;
@@ -23,6 +28,7 @@ use Joomla\Utilities\ArrayHelper;
 trait UserFieldTrait
 {
 	use UserFilterTrait;
+	use GetActorTrait;
 
 	/**
 	 * Used with HTMLHelper in the frontend to render the WebFinger consent field as a Yes/No language string.
@@ -183,6 +189,7 @@ trait UserFieldTrait
 			return;
 		}
 
+		/** @var User $user */
 		$user = Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($userId);
 
 		// Delete existing WebFinger profile fields
@@ -234,6 +241,30 @@ trait UserFieldTrait
 		{
 			// If it dies, it dies.
 		}
+
+		// Send an update activity
+		$actorTable = $this->getActorRecordForUser($user);
+
+		if ($actorTable === null)
+		{
+			return;
+		}
+
+		/** @var MVCFactory $mvcFactory */
+		$mvcFactory = $this->getApplication()->bootComponent('com_activitypub')->getMVCFactory();
+		/** @var \Dionysopoulos\Component\ActivityPub\Api\Model\ActorModel $actorModel */
+		$actorModel = $mvcFactory->createModel('Actor', 'Api', ['ignore_request' => true]);
+		/** @var QueueModel $actorModel */
+		$queueModel = $mvcFactory->createModel('Queue', 'Administrator', ['ignore_request' => true]);
+		$profile    = $actorModel->getItem($user->username);
+
+		/** @var Update $updateActivity */
+		$updateActivity = Type::create('Update', [
+			'actor'  => $this->getApiUriForUser($user),
+			'object' => $profile
+		]);
+
+		$queueModel->addToOutboxAndNotifyFollowers($actorTable, $updateActivity);
 	}
 
 	/**

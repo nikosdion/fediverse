@@ -9,7 +9,10 @@ namespace Dionysopoulos\Component\ActivityPub\Administrator\Model;
 
 defined('_JEXEC');
 
+use ActivityPhp\Type;
 use Dionysopoulos\Component\ActivityPub\Administrator\Event\SaveActorEvent;
+use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
+use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Dionysopoulos\Component\ActivityPub\Administrator\Traits\IntegrationParamsMappingTrait;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
@@ -17,6 +20,7 @@ use Joomla\CMS\Form\FormFactoryInterface;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\AdminModel;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\User\UserFactoryInterface;
 use Joomla\Registry\Registry;
 
 /**
@@ -47,6 +51,7 @@ use Joomla\Registry\Registry;
  */
 class ActorModel extends AdminModel
 {
+	use GetActorTrait;
 	use IntegrationParamsMappingTrait;
 
 	/**
@@ -109,6 +114,7 @@ class ActorModel extends AdminModel
 	public function save($data)
 	{
 		// Load the record, if editing an existing one
+		/** @var ActorTable $table */
 		$table = $this->getTable();
 		$key   = $table->getKeyName();
 		$pk    = (isset($data[$key])) ? $data[$key] : (int) $this->getState($this->getName() . '.id');
@@ -144,7 +150,17 @@ class ActorModel extends AdminModel
 		// Convert params registry to JSON string and put it into the $data array
 		$data['params'] = $params->toString();
 
-		return parent::save($data);
+		$saved = parent::save($data);
+		$isNew = $this->getState($this->getName() . '.new', false);
+
+		if (!$isNew && $saved)
+		{
+			$table->load($pk);
+
+			$this->notifyProfileHasChanged($table);
+		}
+
+		return $saved;
 	}
 
 	protected function loadFormData()
@@ -183,5 +199,45 @@ class ActorModel extends AdminModel
 
 		// Call the parent method which goes through the plugins
 		parent::preprocessData($context, $data, $group);
+	}
+
+	/**
+	 * Notify federated servers that the user's profile has been updated.
+	 *
+	 * @param   string  $username  The username of the actor whose profile has been updated.
+	 *
+	 * @return  void
+	 * @since   2.0.0
+	 */
+	public function notifyProfileHasChanged(ActorTable $actorTable): void
+	{
+		$username = $actorTable->username
+			?? Factory::getContainer()->get(UserFactoryInterface::class)->loadUserById($actorTable->user_id)->username;
+
+		if (empty($username))
+		{
+			return;
+		}
+
+		$user = $this->getUserFromUsername($username);
+
+		if ($user === null)
+		{
+			return;
+		}
+
+		/** @var \Dionysopoulos\Component\ActivityPub\Api\Model\ActorModel $actorModel */
+		$actorModel = $this->getMVCFactory()->createModel('Actor', 'Api', ['ignore_request' => true]);
+		/** @var QueueModel $actorModel */
+		$queueModel = $this->getMVCFactory()->createModel('Queue', 'Administrator', ['ignore_request' => true]);
+		$profile    = $actorModel->getItem($username);
+
+		/** @var Type\Extended\Activity\Update $updateActivity */
+		$updateActivity = Type::create('Update', [
+			'actor'  => $this->getApiUriForUser($user),
+			'object' => $profile
+		]);
+
+		$queueModel->addToOutboxAndNotifyFollowers($actorTable, $updateActivity);
 	}
 }
