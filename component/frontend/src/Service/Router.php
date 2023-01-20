@@ -20,6 +20,7 @@ defined('_JEXEC') || die;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Joomla\CMS\Application\SiteApplication;
+use Joomla\CMS\Categories\CategoryFactoryInterface;
 use Joomla\CMS\Component\Router\RouterView;
 use Joomla\CMS\Component\Router\RouterViewConfiguration;
 use Joomla\CMS\Component\Router\Rules\MenuRules;
@@ -44,13 +45,12 @@ class Router extends RouterView
 	use DatabaseAwareTrait;
 	use GetActorTrait;
 
-	public function __construct(SiteApplication $app = null, AbstractMenu $menu = null, DatabaseInterface $db, MVCFactory $factory)
+	public function __construct(?SiteApplication $app = null, ?AbstractMenu $menu = null, ?CategoryFactoryInterface $categoryFactory = null, ?DatabaseInterface $db = null)
 	{
-		$this->setDatabase($db);
-		$this->setMVCFactory($factory);
-
-		$profiles = new RouterViewConfiguration('profiles');
-		$this->registerView($profiles);
+		if ($db instanceof DatabaseInterface)
+		{
+			$this->setDatabase($db);
+		}
 
 		$profile = (new RouterViewConfiguration('profile'))
 			->setKey('id');

@@ -7,21 +7,18 @@
 
 use Akeeba\Component\ATS\Administrator\Helper\Debug;
 use Dionysopoulos\Component\ActivityPub\Administrator\Extension\ActivityPubComponent;
-use Dionysopoulos\Component\ActivityPub\Administrator\Service\Provider\RouterFactory;
+use Dionysopoulos\Component\ActivityPub\Administrator\Service\Provider\RouterFactoryProvider;
 use Dionysopoulos\Component\ActivityPub\Administrator\Traits\RegisterFileLoggerTrait;
 use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Component\Router\RouterFactoryInterface;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
 use Joomla\CMS\Extension\ComponentInterface;
 use Joomla\CMS\Extension\Service\Provider\ComponentDispatcherFactory;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Factory as JoomlaFactory;
-use Joomla\CMS\Filter\InputFilter;
-use Joomla\CMS\Log\Log;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseDriver;
-use Joomla\Database\ParameterType;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 
@@ -51,7 +48,7 @@ return new class implements ServiceProviderInterface {
 		// Finally, get on with instantiating this extension
 		$container->registerServiceProvider(new MVCFactory('Dionysopoulos\\Component\\ActivityPub'));
 		$container->registerServiceProvider(new ComponentDispatcherFactory('Dionysopoulos\\Component\\ActivityPub'));
-		$container->registerServiceProvider(new RouterFactory('Dionysopoulos\\Component\\ActivityPub'));
+		$container->registerServiceProvider(new RouterFactoryProvider('Dionysopoulos\\Component\\ActivityPub'));
 
 		$container->set(
 			ComponentInterface::class,
@@ -59,6 +56,7 @@ return new class implements ServiceProviderInterface {
 				$component = new ActivityPubComponent($container->get(ComponentDispatcherFactoryInterface::class));
 
 				$component->setMVCFactory($container->get(MVCFactoryInterface::class));
+				$component->setRouterFactory($container->get(RouterFactoryInterface::class));
 
 				$this->updateMagicParameters($container);
 

@@ -12,11 +12,13 @@ defined('_JEXEC') || die;
 use ActivityPhp\Type;
 use ActivityPhp\Type\Extended\AbstractActor;
 use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\KeyPair;
+use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActivityPubParamsTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;
 use Dionysopoulos\Component\ActivityPub\Administrator\Table\ActorTable;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseDriver;
 use Joomla\Database\ParameterType;
@@ -25,6 +27,7 @@ use Joomla\Registry\Registry;
 class ActorModel extends BaseDatabaseModel
 {
 	use GetActorTrait;
+	use GetActivityPubParamsTrait;
 
 	/**
 	 * Get an Actor object given a username
@@ -45,7 +48,6 @@ class ActorModel extends BaseDatabaseModel
 		{
 			return null;
 		}
-
 
 		$type     = $user->params->get('activitypub.type', 'Person') ?: 'Person';
 		$language = $user->params->get('language', Factory::getApplication()->getLanguage()->getTag() ?: 'en-GB');
@@ -119,6 +121,14 @@ class ActorModel extends BaseDatabaseModel
 			$mediaType = 'image/tiff';
 		}
 
+		$profileLink = Route::link(
+			'site',
+			'index.php?option=com_activitypub&view=profile&id=' . $actorTable->id,
+			false,
+			Route::TLS_FORCE,
+			true
+		);
+
 		/**
 		 * @see https://www.w3.org/TR/activitypub/#actors
 		 */
@@ -148,8 +158,9 @@ class ActorModel extends BaseDatabaseModel
 				'owner'        => $this->getApiUriForUser($user),
 				'publicKeyPem' => $publicKeyPem,
 			],
-			'published' => Factory::getDate($actorTable->created ?? 'now')->format(DATE_ATOM),
+			'published'         => Factory::getDate($actorTable->created ?? 'now')->format(DATE_ATOM),
 			'summary'           => $actorParams->get('activitypub.summary', '') ?? '',
+			'url'               => $profileLink,
 			'icon'              => [
 				'type'      => 'Image',
 				'mediaType' => $mediaType,
@@ -157,11 +168,9 @@ class ActorModel extends BaseDatabaseModel
 			],
 			// TODO: Profile header image, same format as 'icon'
 			// 'image' => null,
-			// TODO: Public profile URL
-			// 'url' => null,
 			// TODO: Profile fields, see https://docs.joinmastodon.org/spec/activitypub/#PropertyValue
-			'attachment' => [],
- 		];
+			'attachment'        => [],
+		];
 
 		if (empty($publicKeyPem))
 		{
@@ -183,48 +192,5 @@ class ActorModel extends BaseDatabaseModel
 
 		/** @noinspection PhpIncompatibleReturnTypeInspection */
 		return Type::create($actorConfiguration);
-	}
-
-	public function getUserActivityPubParams(ActorTable $actorTable): Registry
-	{
-		$actorParams = new Registry($actorTable->params);
-
-		if ($actorTable->user_id > 0)
-		{
-			/** @var DatabaseDriver $db */
-			$db            = $this->getDatabase();
-			$userId        = $actorTable->user_id;
-			$query         = $db->getQuery(true)
-				->select([
-					$db->quoteName('profile_key'),
-					$db->quoteName('profile_value'),
-				])
-				->from($db->quoteName('#__user_profiles'))
-				->where(
-					[
-						$db->quoteName('profile_key') . ' LIKE ' . $db->quote('webfinger.activitypub_%'),
-						$db->quoteName('user_id') . ' = :userId',
-					]
-				)
-				->bind(':userId', $userId, ParameterType::INTEGER);
-			$profileParams = $db->setQuery($query)->loadAssocList('profile_key', 'profile_value') ?: [];
-
-			foreach ($profileParams as $k => $v)
-			{
-				if (!str_starts_with($k, 'webfinger.activitypub_'))
-				{
-					continue;
-				}
-
-				if (empty($v))
-				{
-					continue;
-				}
-
-				$actorParams->set('activitypub.' . substr($k, 22), $v);
-			}
-		}
-
-		return $actorParams;
 	}
 }
