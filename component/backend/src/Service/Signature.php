@@ -7,6 +7,8 @@
 
 namespace Dionysopoulos\Component\ActivityPub\Administrator\Service;
 
+\defined('_JEXEC') || die;
+
 use ActivityPhp\Type\Extended\AbstractActor;
 use Dionysopoulos\Component\ActivityPub\Administrator\DataShape\KeyPair;
 use Dionysopoulos\Component\ActivityPub\Administrator\Mixin\GetActorTrait;

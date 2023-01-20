@@ -30,12 +30,12 @@ Goes through the `onActivityPubHandleActivity` event handler, see `\Dionysopoulo
 * [X] Send an Update when the account details change
   * By editing the Actor
   * By updating the user profile
-* [ ] Profile fields
-* [ ] Profile header image
 * [ ] Frontend per-user profile page
   * [ ] Opt-out feature per actor and user profile options
   * [ ] Add the profile page to the Actor object unless opted out
   * [ ] Tabs: Activity (always public), Followers (public by default), Blocked (private)
+* [ ] Profile fields
+* [ ] Profile header image
 * [ ] Backend Fediblock management
 * [ ] Backend block management
 * [ ] Frontend block management (per-user)

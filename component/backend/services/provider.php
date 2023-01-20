@@ -7,6 +7,7 @@
 
 use Akeeba\Component\ATS\Administrator\Helper\Debug;
 use Dionysopoulos\Component\ActivityPub\Administrator\Extension\ActivityPubComponent;
+use Dionysopoulos\Component\ActivityPub\Administrator\Service\Provider\RouterFactory;
 use Dionysopoulos\Component\ActivityPub\Administrator\Traits\RegisterFileLoggerTrait;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
@@ -50,6 +51,7 @@ return new class implements ServiceProviderInterface {
 		// Finally, get on with instantiating this extension
 		$container->registerServiceProvider(new MVCFactory('Dionysopoulos\\Component\\ActivityPub'));
 		$container->registerServiceProvider(new ComponentDispatcherFactory('Dionysopoulos\\Component\\ActivityPub'));
+		$container->registerServiceProvider(new RouterFactory('Dionysopoulos\\Component\\ActivityPub'));
 
 		$container->set(
 			ComponentInterface::class,
