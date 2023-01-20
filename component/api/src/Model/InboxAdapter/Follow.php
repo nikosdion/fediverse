@@ -98,13 +98,13 @@ class Follow extends AbstractPostHandlerAdapter
 		try
 		{
 			/**
-			 * @var AbstractActor $remoteActor The AbstractActor instance of the remote actor
-			 * @var string        $username    The remote actor's username
-			 * @var string        $domain      The remote actor's domain name
-			 * @var string        $inbox       The remote actor's inbox URL
+			 * @var AbstractActor $remoteActor    The AbstractActor instance of the remote actor
+			 * @var string        $remoteUsername The remote actor's username
+			 * @var string        $domain         The remote actor's domain name
+			 * @var string        $inbox          The remote actor's inbox URL
 			 */
 			$remoteActor = $this->fetchActor($remoteActorId);
-			$username    = $remoteActor->preferredUsername;
+			$remoteUsername    = $remoteActor->preferredUsername;
 			$domain      = (new Uri($remoteActorId))->getHost();
 			$inbox       = $remoteActor->inbox;
 		}
@@ -153,8 +153,8 @@ class Follow extends AbstractPostHandlerAdapter
 		// Get the AbstractActor object for the local Actor
 		/** @var ActorModel $actorModel */
 		$actorModel = $this->getMVCFactory()->createModel('Actor', 'Api', ['ignore_request' => true]);
-		$myActor    = $actorModel->getItem($username);
-		$isBlocked  = $this->isBlockedFromFollowing($actor, $username, $domain);
+		$myActor    = $actorModel->getItem($user->username);
+		$isBlocked  = $this->isBlockedFromFollowing($actor, $remoteUsername, $domain);
 
 		if ($isBlocked)
 		{
@@ -175,7 +175,7 @@ class Follow extends AbstractPostHandlerAdapter
 		$follower->bind([
 			'actor_id'       => $actor->id,
 			'follower_actor' => $remoteActorId,
-			'username'       => $username,
+			'username'       => $remoteUsername,
 			'domain'         => $domain,
 			'follow_id'      => $followId,
 			'inbox'          => $inbox,
