@@ -7,15 +7,24 @@
 This is a package of Joomla!™ extensions which allow you to integrate Mastodon and ActivityPub in meaningful ways with your Joomla! site.
 
 There are three levels of integration which can be used concurrently or independently of each other:
+
 * **Consume**. You can display Mastodon [posts (toots)](plg_content_fediverse.md) and [activity streams](mod_fediversefeed.md) on your site.
-* **Announce**. You can announce your Mastodon presence on your own site so that users who have your username and domain name can follow you on Mastodon, without having to explicitly tell them in advance your Mastodon handle.
+* **Announce**. You can announce your Mastodon presence on your own site so that users who have your username and domain name can follow you on Mastodon, without having to explicitly tell them your Mastodon handle in advance.
 * **Publish**. You can publish your own site's content into the Fediverse. Any ActivityPub user (Mastodon, PeerTube, Pixelfed, Tumblr, …) can “follow” an account on your site and see your site's posts in their feed.
 
 Unlike other microblogging / social media integration extensions there is no privacy-invading JavaScript, no need for cookie banners, no centralised control of the published content. You are in full control of your content.
 
 ## Getting started
 
-* [Crash course in the Fediverse lingo](lingo.md) a.k.a. terminology you need to understand
+Here are some quick “recipes” to get you started on your journey to the Fediverse using Joomla and this the Fediverse Tools for Joomla.
+
+* [Use case: embed Mastodon toots in your site's content](uscase_embed_toots.md).
+* [Use case: display a Mastodon stream on your site](usecase_stream.md).
+* [Use case: Make your Mastodon presence easier to discover](usecase_mastodon_discovery.md).
+* [Use case: Make your single-author blog available on the Fediverse](usecase_single_author_blog.md).
+* [Use case: Make your multi-author news section available on the Fediverse](usecase_multiauthor_blog.md).
+
+In case something sounds unfamiliar and unintuitive, please take the [crash course in the Fediverse lingo](lingo.md) a.k.a. the common terminology for all things Fediverse.
 
 ## Documentation by extension
 
