@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `#__activitypub_objects`
     `status`            TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1 exists, 0 deleted',
     `created`           DATETIME         NOT NULL COMMENT 'Creation time',
     `modified`          DATETIME         NULL DEFAULT NULL COMMENT 'Update or deletion time',
-    FOREIGN KEY `#__activitypub_outbox_actor` (`actor_id`)
+    FOREIGN KEY `#__activitypub_objects_actor` (`actor_id`)
         REFERENCES `#__activitypub_actors` (`id`) ON DELETE CASCADE,
     INDEX `#__activitypub_status_by_content` (`status`, `actor_id`, `context_reference`(100))
 ) ENGINE = InnoDB
