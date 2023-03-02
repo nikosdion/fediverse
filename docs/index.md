@@ -16,17 +16,27 @@ Unlike other microblogging / social media integration extensions there is no pri
 
 ## Getting started
 
-Here are some quick “recipes” to get you started on your journey to the Fediverse using Joomla and this the Fediverse Tools for Joomla.
+Getting started with software tends to be hard. Most of the time, developers will tell you how every bit and piece works instead of telling _how to get stuff done_. That's why I decided to start this documentation from the opposite direction: give you step-by-step guides on how to do something practical, along with some pointers to let you dive deeper _if you want to_.
 
-* [Use case: embed Mastodon toots in your site's content](uscase_embed_toots.md).
-* [Use case: display a Mastodon stream on your site](usecase_stream.md).
-* [Use case: Make your Mastodon presence easier to discover](usecase_mastodon_discovery.md).
-* [Use case: Make your single-author blog available on the Fediverse](usecase_single_author_blog.md).
-* [Use case: Make your multi-author news section available on the Fediverse](usecase_multiauthor_blog.md).
+**Basic usage: consuming Mastodon posts (toots)**
+
+* [Embed Mastodon toots in your site's content](uscase_embed_toots.md).
+* [Display a Mastodon stream on your site](usecase_stream.md).
+
+**Intermediate usage: announcing your Mastodon presence to the world**
+
+* [Make your Mastodon presence easier to discover](usecase_mastodon_discovery.md).
+
+**Advanced usage: publishing your content to Mastodon and the Fediverse**
+
+* [Make your single-author blog available on the Fediverse](usecase_single_author_blog.md).
+* [Make your multi-author news section available on the Fediverse](usecase_multiauthor_blog.md).
+
+**ActivityPub? Fediverse? Are you talking in tongues, mate?!**
 
 In case something sounds unfamiliar and unintuitive, please take the [crash course in the Fediverse lingo](lingo.md) a.k.a. the common terminology for all things Fediverse.
 
-## Documentation by extension
+## Documentation by extension, a.k.a. Reference Manual
 
 ### Displaying toots
 
@@ -56,4 +66,4 @@ Using the component and plugins in this section you can allow ActivityPub / Mast
 
 ## Further information
 
-* [Accessibility statement](accessibility.md)
+Please take a look at the [accessibility statement](accessibility.md) to understand what Fediverse Tools for Joomla does to make sure that the content it produces is accessible to users with disabilities.

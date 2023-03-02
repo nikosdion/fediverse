@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="Rochen" createEmptyFolders="true" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="Rochen">
+        <serverdata>
+          <mappings>
+            <mapping deploy="plugins" local="$PROJECT_DIR$/plugins" web="/plugins" />
+            <mapping deploy="/api/components/com_activitypub" local="$PROJECT_DIR$/component/api" web="/api/components/com_activitypub" />
+            <mapping deploy="/administrator/components/com_activitypub" local="$PROJECT_DIR$/component/backend" web="/administrator/components/com_activitypub" />
+            <mapping deploy="/components/com_activitypub" local="$PROJECT_DIR$/component/frontend" web="/components/com_activitypub" />
+            <mapping deploy="/api/language/en-GB" local="$PROJECT_DIR$/component/api/language/en-GB" web="/api/language/en-GB" />
+            <mapping deploy="/administrator/language/en-GB" local="$PROJECT_DIR$/component/backend/language/en-GB" web="/administrator/language/en-GB" />
+            <mapping deploy="/media/plg_content_fediverse" local="$PROJECT_DIR$/plugins/content/fediverse/media" web="/media/plg_content_fediverse" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

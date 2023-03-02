@@ -21,6 +21,8 @@ If you are using an IIS (Microsoft Internet Information Services) web server you
 
 If you are using an NginX web server you need to [follow Joomla's advice](https://docs.joomla.org/Nginx) on setting up URL redirections. Alternatively, you can create the necessary code using Admin Tools Professional's NginX Conf Maker feature.
 
+If you have a `.well-known` directory on your site please make sure that it does not have a folder or file named `webfinger` in it. If it does, please delete it now.
+
 ## Getting started
 
 Go to your site's backend, System, Manage, Plugins.

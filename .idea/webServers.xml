@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="460fef61-efae-4587-abad-9d22b3292ecd" name="Rochen" url="https://www.dionysopoulos.me">
+        <fileTransfer rootFolder="/home/xsjwksuw/public_html" accessType="SFTP" host="uk601.directrouter.com" port="22" sshConfigId="7b0c439c-80ae-4a82-a801-ca5f105078e9" sshConfig="xsjwksuw@uk601.directrouter.com:22 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

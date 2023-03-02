@@ -6,6 +6,10 @@ What would be much easier is following someone based on their username on their 
 
 Well, with Fediverse Tools for Joomla, you can!
 
+This use case requires Search Engine Friendly URLs to be enabled on your site. You can find the instructions to enable that in [the Requirements section of the WebFinger plugin's documentation page](plg_system_webfinger.md#requirements).
+
+Once you've confirmed Search Engine Friendly URLs are set up, here's what you need to do next: 
+
 1. Enable the System - WebFinger plugin and set List Users in WebFinger to Consent-based.
 1. Enable the WebFinger - Link to Mastodon plugin.
 1. Go to your site's administrator, User Menu (top right), Edit account.

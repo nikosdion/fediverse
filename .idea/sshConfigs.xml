@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="OPEN_SSH" connectionConfig="{&quot;hostKeyVerifier&quot;:{&quot;hashKnownHosts&quot;:true,&quot;stringHostKeyChecking&quot;:&quot;ASK&quot;},&quot;serverAliveInterval&quot;:300}" host="uk601.directrouter.com" id="7b0c439c-80ae-4a82-a801-ca5f105078e9" port="22" nameFormat="DESCRIPTIVE" username="xsjwksuw" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</project>

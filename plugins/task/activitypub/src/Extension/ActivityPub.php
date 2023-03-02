@@ -93,7 +93,7 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface, DatabaseAwar
 		}
 
 		$cParams = ComponentHelper::getParams('com_activitypub');
-		$siteURL = $cParams->get('siteurl', null) ?: $app->set('live_site', null);
+		$siteURL = $cParams->get('siteurl', null) ?: $app->get('live_site', null);
 
 		if (empty($siteURL) || $siteURL === 'https://joomla.invalid/set/by/console/application')
 		{
