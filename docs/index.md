@@ -14,6 +14,10 @@ There are three levels of integration which can be used concurrently or independ
 
 Unlike other microblogging / social media integration extensions there is no privacy-invading JavaScript, no need for cookie banners, no centralised control of the published content. You are in full control of your content.
 
+## 🚧 Work in progress 🚧
+
+This documentation is currently a work in progress. Links surrounded with a work in progress sign (🚧) point to pages which have not been written yet. Selecting them will result in an error. Luckily, the functionality they describe is either explained in the Getting Started section below, or is self-explanatory _as long as you use the Show/Hide Inline Help when editing the corresponding plugin_ (a standard feature in Joomla 4.1 and later).
+
 ## Getting started
 
 Getting started with software tends to be hard. Most of the time, developers will tell you how every bit and piece works instead of telling _how to get stuff done_. That's why I decided to start this documentation from the opposite direction: give you step-by-step guides on how to do something practical, along with some pointers to let you dive deeper _if you want to_.
@@ -32,7 +36,7 @@ Getting started with software tends to be hard. Most of the time, developers wil
 * [Make your single-author blog available on the Fediverse](usecase_single_author_blog.md).
 * [Make your multi-author news section available on the Fediverse](usecase_multiauthor_blog.md).
 
-**ActivityPub? Fediverse? Are you talking in tongues, mate?!**
+**ActivityPub? Fediverse? Are you talking in tongues?!**
 
 In case something sounds unfamiliar and unintuitive, please take the [crash course in the Fediverse lingo](lingo.md) a.k.a. the common terminology for all things Fediverse.
 
@@ -52,17 +56,17 @@ _Tip_: See [which features are supported](features_displaying.md)
 WebFinger is an Internet protocol ([RFC 7033](https://www.rfc-editor.org/rfc/rfc7033)) which allows remote servers to query information about users on your site. You can use it to either publish information about your Mastodon presence (so you can be followed as `user@example.com` where example.com is _your Joomla site's domain name_, regardless of what your Mastodon handle is), or to let other ActivityPub / Mastodon users “follow” your site's content when used together with the ActivityPub component described in the next section.
 
 * [**System - WebFinger** (Plugin)](plg_system_webfinger.md). Implements the WebFinger protocol (RFC 7033) in Joomla.
-* [**WebFinger - Link to Mastodon** (Plugin)](plg_webfinger_mastodon.md). Add a link to your Mastodon identity in the WebFinger profile.
+* [🚧 **WebFinger - Link to Mastodon** (Plugin) 🚧](plg_webfinger_mastodon.md). Add a link to your Mastodon identity in the WebFinger profile.
 
 ### Federating your content
 
 Using the component and plugins in this section you can allow ActivityPub / Mastodon users to “follow” your site's content — either the content published by a specific user, or aggregated content across categories and users which you choose.
 
-* [**ActivityPub** (Component)](com_activitypub.md). The component which allows you to define ActivityPub Actors (users) and which handles the ActivityPub API — this enables federation of your site's content with third party ActivityPub servers such as Mastodon instances. Requires all other plugins in this section, as well as “System - WebFinger” to be published with their Access set to Public for content federation to work. Moreover, you will need a scheduled task of the “ActivityPub - Notify” type running every minute through Joomla's Scheduled Tasks.
-* [**WebFinger - ActivityPub** (Plugin)](plg_webfinger_activitypub.md). Adds ActivityPub information in the WebFinger protocol (RFC 7033) responses. This lets other ActivityPub users (such as Mastodon users) to “follow” your content. Requires the System - WebFinger plugin to be enabled.
-* [**Content - ActivityPub integration for Joomla articles** (Plugin)](plg_content_contentactivitypub.md). Provides the link between Joomla's Articles (`com_content`) and the ActivityPub component. This is what allows your _articles_ to be federated with other ActivityPub instances.
-* [**Task - ActivityPub** (Plugin)](plg_task_activitypub.md). Provides the “ActivityPub - Notify” task type. You need a task of that type running every minute; it ‘pushes’ the content you publish into other federated ActivityPub (e.g. Mastodon) instances.
-* [**Web Services - ActivityPub** (Plugin)](plg_webservices_activitypub.md). Enables the ActivityPub component's Joomla API part. Having this plugin published is **mandatory** for the ActivityPub component to work.
+* [🚧 **ActivityPub** (Component) 🚧](com_activitypub.md). The component which allows you to define ActivityPub Actors (users) and which handles the ActivityPub API — this enables federation of your site's content with third party ActivityPub servers such as Mastodon instances. Requires all other plugins in this section, as well as “System - WebFinger” to be published with their Access set to Public for content federation to work. Moreover, you will need a scheduled task of the “ActivityPub - Notify” type running every minute through Joomla's Scheduled Tasks.
+* [🚧 **WebFinger - ActivityPub** (Plugin) 🚧](plg_webfinger_activitypub.md). Adds ActivityPub information in the WebFinger protocol (RFC 7033) responses. This lets other ActivityPub users (such as Mastodon users) to “follow” your content. Requires the System - WebFinger plugin to be enabled.
+* [🚧 **Content - ActivityPub integration for Joomla articles** (Plugin) 🚧](plg_content_contentactivitypub.md). Provides the link between Joomla's Articles (`com_content`) and the ActivityPub component. This is what allows your _articles_ to be federated with other ActivityPub instances.
+* [🚧 **Task - ActivityPub** (Plugin) 🚧](plg_task_activitypub.md). Provides the “ActivityPub - Notify” task type. You need a task of that type running every minute; it ‘pushes’ the content you publish into other federated ActivityPub (e.g. Mastodon) instances.
+* [🚧 **Web Services - ActivityPub** (Plugin) 🚧](plg_webservices_activitypub.md). Enables the ActivityPub component's Joomla API part. Having this plugin published is **mandatory** for the ActivityPub component to work.
 
 ## Further information
 
