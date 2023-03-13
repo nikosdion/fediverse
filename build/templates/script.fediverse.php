@@ -1,8 +1,8 @@
 <?php
-/*
+/**
  * @package   FediverseForJoomla
- * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
- * @license   GNU General Public License, version 3
+ * @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+ * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
 // Prevent direct access
@@ -29,10 +29,13 @@ class Pkg_FediverseInstallerScript extends InstallerScript
 	 * @var   array
 	 */
 	protected $extensionsToEnable = [
-		// System plugins
 		['plugin', 'fediverse', 1, 'content'],
+		['plugin', 'plg_content_contentactivitypub', 1, 'content'],
+		['plugin', 'webfinger', 1, 'system'],
+		['plugin', 'activitypub', 1, 'task'],
+		['plugin', 'activitypub', 1, 'webfinger'],
+		['plugin', 'activitypub', 1, 'webservices'],
 	];
-
 
 	/**
 	 * Tuns on installation (but not on upgrade). This happens in install and discover_install installation routes.

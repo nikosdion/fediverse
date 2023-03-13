@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<form>
+    <fields name="webfinger">
+        <fieldset name="webfinger"
+                  addfieldprefix="Dionysopoulos\Plugin\System\WebFinger\Field"
+        >
+            <field name="activitypub_enabled"
+                   type="radio"
+                   layout="joomla.form.field.radio.switcher"
+                   default="1"
+                   label="PLG_WEBFINGER_ACTIVITYPUB_ENABLED_LABEL"
+                   description="PLG_WEBFINGER_ACTIVITYPUB_ENABLED_DESC"
+                   showon="consent:1"
+            >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+
+            <field name="activitypub_summary"
+                   type="editor"
+                   default=""
+                   showon="consent:1"
+                   label="PLG_WEBFINGER_ACTIVITYPUB_SUMMARY_LABEL"
+                   description="PLG_WEBFINGER_ACTIVITYPUB_SUMMARY_DESC"
+                   cols="50"
+                   rows="5"
+                   filter="JComponentHelper::filterText"
+                   buttons="false"
+           />
+
+            <field name="activitypub_icon_source"
+                   type="list"
+                   default=""
+                   label="PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_LABEL"
+                   description="PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_DESC"
+                   showon="consent:1"
+            >
+                <option value="">PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_DEFAULT</option>
+                <option value="none">PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_NONE</option>
+                <option value="gravatar">PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_GRAVATAR</option>
+                <option value="url">PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_URL</option>
+                <option value="media">PLG_WEBFINGER_ACTIVITYPUB_ICON_SOURCE_MEDIA</option>
+            </field>
+
+            <field name="activitypub_url"
+                   type="url"
+                   filter="url"
+                   validate="url"
+                   label="PLG_WEBFINGER_ACTIVITYPUB_URL_LABEL"
+                   description="PLG_WEBFINGER_ACTIVITYPUB_URL_DESC"
+                   showon="consent:1[AND]activitypub_icon_source:url"
+            />
+
+            <field name="activitypub_media"
+                   type="media"
+                   label="PLG_WEBFINGER_ACTIVITYPUB_MEDIA_LABEL"
+                   description="PLG_WEBFINGER_ACTIVITYPUB_MEDIA_DESC"
+                   showon="consent:1[AND]activitypub_icon_source:media"
+            />
+
+        </fieldset>
+    </fields>
+</form>

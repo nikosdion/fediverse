@@ -1,23 +1,23 @@
 <?php
-/*
+/**
  * @package   FediverseForJoomla
- * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
- * @license   GNU General Public License, version 3
+ * @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+ * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Module\FediverseFeed\Site\Dispatcher\Dispatcher;
 use Joomla\CMS\Application\SiteApplication;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
 use Joomla\Input\Input;
-use Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher;
 use Joomla\Registry\Registry;
 
 /**
  * These variables are extracted from the indexed array returned by the getLayoutData() method.
  *
- * @see \Joomla\Module\FediverseFeed\Site\Dispatcher\Dispatcher::getLayoutData()
+ * @see \Dionysopoulos\Module\FediverseFeed\Site\Dispatcher\Dispatcher::getLayoutData()
  *
  * @var stdClass        $module          The module data loaded by Joomla
  * @var SiteApplication $app             The Joomla administrator application object

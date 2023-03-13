@@ -1,17 +1,17 @@
 <?php
-/*
+/**
  * @package   FediverseForJoomla
- * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
- * @license   GNU General Public License, version 3
+ * @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+ * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\Content\Fediverse\Extension\Fediverse;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\WebAsset\WebAssetManager;
-use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;
 
 /**
  * The variables are passed from the content plugin

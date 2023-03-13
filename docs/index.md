@@ -4,56 +4,70 @@
 
 ## What's this all about?
 
-This is a package of Joomla!™ extensions which allow you to integrate Mastodon in meaningful ways with your Joomla! site.
+This is a package of Joomla!™ extensions which allow you to integrate Mastodon and ActivityPub in meaningful ways with your Joomla! site.
 
-It's a lot like the other microblogging integration extensions, with a big difference: there is no privacy-invading JavaScript, no need for cookie banners. 
+There are three levels of integration which can be used concurrently or independently of each other:
 
-## Crash course in the Fediverse lingo
+* **Consume**. You can display Mastodon [posts (toots)](plg_content_fediverse.md) and [activity streams](mod_fediversefeed.md) on your site.
+* **Announce**. You can announce your Mastodon presence on your own site so that users who have your username and domain name can follow you on Mastodon, without having to explicitly tell them your Mastodon handle in advance.
+* **Publish**. You can publish your own site's content into the Fediverse. Any ActivityPub user (Mastodon, PeerTube, Pixelfed, Tumblr, …) can “follow” an account on your site and see your site's posts in their feed.
 
-Mastodon is a microblogging platform, essentially a social network much like the infamous site with the bird logo. Unlike that site, Mastodon is neither closed source, nor centralised. It is Open Source, anyone can run a copy of it (called an “instance”), and instances can talk to each other — meaning that you can connect to your friends even if they have an account on a different server.
+Unlike other microblogging / social media integration extensions there is no privacy-invading JavaScript, no need for cookie banners, no centralised control of the published content. You are in full control of your content.
 
-Each instance can have its own rules such as requiring someone to be a practitioner of a specific profession, or use a specific language for their posts. Some instances have a specific theme, e.g. art, open source software, etc. It's like the BBS of the 90s, only that instead of being isolated communities they can talk to each other and interconnect their members.
+## 🚧 Work in progress 🚧
 
-This ‘talking to each other’ part about Mastodon instances? It's called _federation_.
+This documentation is currently a work in progress. Links surrounded with a work in progress sign (🚧) point to pages which have not been written yet. Selecting them will result in an error. Luckily, the functionality they describe is either explained in the Getting Started section below, or is self-explanatory _as long as you use the Show/Hide Inline Help when editing the corresponding plugin_ (a standard feature in Joomla 4.1 and later).
 
-Third party software other than Mastodon can also federate with Mastodon instances and each other. That's why the term Mastodon is only used for the software, not the network of federated servers. The global sum total of federated servers is called the _Fediverse_, a portmanteau of “federation” and “universe”.
+## Getting started
 
-The microblogging posts users make on a Mastodon instance are called _toots_.
+Getting started with software tends to be hard. Most of the time, developers will tell you how every bit and piece works instead of telling _how to get stuff done_. That's why I decided to start this documentation from the opposite direction: give you step-by-step guides on how to do something practical, along with some pointers to let you dive deeper _if you want to_.
 
-A toot contains plain text, up to 500 characters of it, and optionally media (images and videos). The entire post, or just some of its media files, can have a _content warning_ to indicate that they contain sensitive, triggering, inappropriate, NSFW (not suitable for word), or otherwise upsetting material — this is a lot like a “viewer discretion recommended” kind of warning. It is good practice that content warnings are taken into consideration and the content behind them be hidden by default, until the user chooses to display it.
+**Basic usage: consuming Mastodon posts (toots)**
 
-## Extensions included
+* [Embed Mastodon toots in your site's content](uscase_embed_toots.md).
+* [Display a Mastodon stream on your site](usecase_stream.md).
+
+**Intermediate usage: announcing your Mastodon presence to the world**
+
+* [Make your Mastodon presence easier to discover](usecase_mastodon_discovery.md).
+
+**Advanced usage: publishing your content to Mastodon and the Fediverse**
+
+* [Make your single-author blog available on the Fediverse](usecase_single_author_blog.md).
+* [Make your multi-author news section available on the Fediverse](usecase_multiauthor_blog.md).
+
+**ActivityPub? Fediverse? Are you talking in tongues?!**
+
+In case something sounds unfamiliar and unintuitive, please take the [crash course in the Fediverse lingo](lingo.md) a.k.a. the common terminology for all things Fediverse.
+
+## Documentation by extension, a.k.a. Reference Manual
+
+### Displaying toots
+
+Fediverse Tools allows you to display individual toots or toot streams from any Mastodon user.
+
+_Tip_: See [which features are supported](features_displaying.md)
 
 * [**Fediverse - Mastodon Feed** (Module)](mod_fediversefeed.md). Displays the public Mastodon feed of a user. Supports media (images and videos), as well as content warnings on the entire toot or just each media item.
-* [**Content - Embed Toot (Plugin)**](plg_content_fediverse.md). A plugin to embed toots in articles, Custom HTML modules, and third party extensions which support Joomla's standard content events.
+* [**Content - Embed Toot** (Plugin)](plg_content_fediverse.md). A plugin to embed toots in articles, Custom HTML modules, and third party extensions which support Joomla's standard content events.
 
-## Supported features
+### WebFinger
 
-The following features are currently supported when displaying toots:
+WebFinger is an Internet protocol ([RFC 7033](https://www.rfc-editor.org/rfc/rfc7033)) which allows remote servers to query information about users on your site. You can use it to either publish information about your Mastodon presence (so you can be followed as `user@example.com` where example.com is _your Joomla site's domain name_, regardless of what your Mastodon handle is), or to let other ActivityPub / Mastodon users “follow” your site's content when used together with the ActivityPub component described in the next section.
 
-* **User information: avatar, username, display name** is shown for every toot (embed) or once on the module header (toots stream). This is linked back to the user's profile page on their Mastodon instance.
-* **Toot language and RTL languages**. The content of each toot is marked with the language communicated by the server. If the language is using an RTL (Right-to-Left) script —as is the case for arabic or hebrew, for example— the content will be correctly displayed right-to-left.
-* **Custom Emoji (in usernames and toots)**. Custom emoji images are loaded from the Mastodon server directly.
-* **Content warnings on the entire toot**. The toot is rendered as an HTML DETAILS element with the Content Warning being the only visible content until the user clicks on it.
-* **Sensitive media**. Sensitive media appear blurred until the user clicks on them.
-* **Media previews**. Supported media files (see below) are shown with each toot using a tiled layout with the first media item preview appearing larger than the other ones. The (downscaled) preview image is displayed for each media file in the preview to save bandwidth and increase the page rendering performance. Clicking on it will load the full image.
-* **Images**. Images are fully supported; Mastodon only uses web-safe image formats. 
-* **Image descriptions**. Image descriptions are rendered as ALT tags for screen readers and also as a FIGCAPTION for sighted users (the latter only after clicking on the image).
-* **Videos (both `video` and `gifv` types)** using the browser's native video player. The media preview shows the static frame (“poster frame”) sent by the Mastodon server. The video player only loads the video file when playing the video, to save bandwidth and make the page loading faster. 
-* **Polls**. Poll results and the poll closing date and time appear in toots. You can not vote on the polls through the toot stream and embedded toots; you have to visit the toot on the Mastodon instance to do that.
-* **Information about the toot visibility** (only in embeds). An icon with the visibility, public or unlisted, is displayed and presented as human-readable text with a `title` attribute and a visibly hidden (but screen reader announced) text. 
-* **Information about the application used to post the toot** (only in embeds). The name of the application used to post the toot will be displayed and, if a link is provided, linked to as well.
-* **Reply, reblog, and favourite counts** (only in embeds).
-* **Dark Mode**. If your browser is set to use dark mode the software will use alternate rules to render the toots in a bright text on dark background color theme.
+* [**System - WebFinger** (Plugin)](plg_system_webfinger.md). Implements the WebFinger protocol (RFC 7033) in Joomla.
+* [🚧 **WebFinger - Link to Mastodon** (Plugin) 🚧](plg_webfinger_mastodon.md). Add a link to your Mastodon identity in the WebFinger profile.
 
-Features not supported (yet):
+### Federating your content
 
-* Static custom emoji. Animated emoji are always loaded as moving images, regardless of the user's preferences on reduced motion. I understand this is an accessibility concern, and I'm trying to find a way to render the static custom emoji image provided by the server when the user prefers reduced motion.
-* High contrast mode. Some users with certain types of visual impairment need a high contrast mode which is absolutely _not_ the same as Dark Mode (nor should the two ever be conflated). This is an accessibility issue I am aware of. I have to figure out how to set up high contrast on my own environment in a way that doesn't clash with my cognitive disability (ADHD) so I can work on it.
-* Audio embeds. Audio embeds appear as being of an unknown type. An audio player will be used in a future version.
+Using the component and plugins in this section you can allow ActivityPub / Mastodon users to “follow” your site's content — either the content published by a specific user, or aggregated content across categories and users which you choose.
 
-Features which will NOT be supported:
+* [🚧 **ActivityPub** (Component) 🚧](com_activitypub.md). The component which allows you to define ActivityPub Actors (users) and which handles the ActivityPub API — this enables federation of your site's content with third party ActivityPub servers such as Mastodon instances. Requires all other plugins in this section, as well as “System - WebFinger” to be published with their Access set to Public for content federation to work. Moreover, you will need a scheduled task of the “ActivityPub - Notify” type running every minute through Joomla's Scheduled Tasks.
+* [🚧 **WebFinger - ActivityPub** (Plugin) 🚧](plg_webfinger_activitypub.md). Adds ActivityPub information in the WebFinger protocol (RFC 7033) responses. This lets other ActivityPub users (such as Mastodon users) to “follow” your content. Requires the System - WebFinger plugin to be enabled.
+* [🚧 **Content - ActivityPub integration for Joomla articles** (Plugin) 🚧](plg_content_contentactivitypub.md). Provides the link between Joomla's Articles (`com_content`) and the ActivityPub component. This is what allows your _articles_ to be federated with other ActivityPub instances.
+* [🚧 **Task - ActivityPub** (Plugin) 🚧](plg_task_activitypub.md). Provides the “ActivityPub - Notify” task type. You need a task of that type running every minute; it ‘pushes’ the content you publish into other federated ActivityPub (e.g. Mastodon) instances.
+* [🚧 **Web Services - ActivityPub** (Plugin) 🚧](plg_webservices_activitypub.md). Enables the ActivityPub component's Joomla API part. Having this plugin published is **mandatory** for the ActivityPub component to work.
 
-* Displaying private or direct message toots. For obvious reasons accessing these toots requires authenticating with the Mastodon instance using OAuth2. While it's possible to do that with a two-step process (with the user copying a token manually) I am not convinced there is a compelling, real-world use case where a (public) site would need to display this kind of privileged, unlisted information — or what the privacy implications would be for all parties involved.
-* Directly launching a reply, reblog, or favourite from an embedded toot. Obviously, your site is NOT a Mastodon instance.
-* Language written vertically. I speak none of them, and I am not sure CSS Flexbox can correctly support them. As far as I can tell, only Mongolian is always written top-to-bottom, and it's possible but optional for Chinese and Japanese to be written like that as well (though virtually all content in the latter languages uses left-to-right content flow). Just to be on the safe side, I'm using CSS classes referencing block, inline, start, and end instead of top, bottom, left, and right.
+## Further information
+
+Please take a look at the [accessibility statement](accessibility.md) to understand what Fediverse Tools for Joomla does to make sure that the content it produces is accessible to users with disabilities.

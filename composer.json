@@ -11,19 +11,17 @@
     }
   ],
   "config": {
-    "vendor-dir": "vendor",
+    "vendor-dir": "component/backend/vendor",
     "platform": {
       "php": "8.0.0"
     }
   },
   "require": {
     "php": "^8.0.0",
+    "kornrunner/blurhash": "^1.2.2",
     "ext-json": "*",
-    "ext-simplexml": "*",
-    "ext-libxml": "*",
-    "ext-xmlreader": "*"
-  },
-  "suggest": {
-    "ext-curl": "*"
+    "ext-openssl": "*",
+    "ext-curl": "*",
+    "ext-gd": "*"
   }
 }

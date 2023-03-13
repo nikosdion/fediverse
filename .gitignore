@@ -1,5 +1,18 @@
+### Node.js and Composer build dependencies
 /node_modules
-/release
+# This one is legacy. Left here to prevent issues switching branches.
 /vendor
+# This one is the current.
+/component/backend/vendor
 
+### Release builds
+/release
+
+### Temporary XML manifests
+# These manifests are not supposed to be committed to Git or packaged in builds
 /pkg_*.xml
+/component/backend/activitypub.xml
+
+### Private files
+/api_dev/http-client.private.env.json
+/api_dev/test.php

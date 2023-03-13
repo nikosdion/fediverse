@@ -1,12 +1,14 @@
 <?php
-/*
+/**
  * @package   FediverseForJoomla
- * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
- * @license   GNU General Public License, version 3
+ * @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+ * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
 defined('_JEXEC') || die;
 
+use Dionysopoulos\Plugin\Content\Fediverse\Extension\Fediverse;
+use Dionysopoulos\Plugin\Content\Fediverse\Service\TootLoader;
 use Joomla\CMS\Extension\PluginInterface;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Http\HttpFactory;
@@ -14,8 +16,6 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\Content\Fediverse\Extension\Fediverse;
-use Joomla\Plugin\Content\Fediverse\Service\TootLoader;
 use Joomla\Registry\Registry;
 
 return new class implements ServiceProviderInterface {

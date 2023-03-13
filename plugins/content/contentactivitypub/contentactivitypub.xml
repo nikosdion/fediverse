@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<extension type="plugin" group="content" method="upgrade">
+    <name>PLG_CONTENT_CONTENTACTIVITYPUB</name>
+    <author>Nicholas K. Dionysopoulos</author>
+    <authorEmail>nicholas@dionysopoulos.me</authorEmail>
+    <authorUrl>https://www.dionysopoulos.me</authorUrl>
+    <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU GPL v3 or later</license>
+    <creationDate>2022-11-17</creationDate>
+    <version>1.0.1</version>
+    <description>PLG_CONTENT_CONTENTACTIVITYPUB_XML_DESCRIPTION</description>
+    <namespace path="src">Dionysopoulos\Plugin\Content\ContentActivityPub</namespace>
+
+    <files>
+        <folder>services</folder>
+        <folder plugin="contentactivitypub">src</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_content_contentactivitypub.ini</language>
+        <language tag="en-GB">en-GB/plg_content_contentactivitypub.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+
+				<field name="fulltext"
+					   type="list"
+					   default="introtext"
+					   label="PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_LABEL"
+					   description="PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_DESC"
+					   validate="options"
+				>
+					<option value="introtext">PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_OPT_INTROTEXT</option>
+					<option value="fulltext">PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_OPT_FULLTEXT</option>
+					<option value="both">PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_OPT_BOTH</option>
+					<option value="metadesc">PLG_CONTENT_CONTENTACTIVITYPUB_FULLTEXT_OPT_METADESC</option>
+				</field>
+
+                <field name="object_type"
+                       type="list"
+                       default="Note"
+                       label="PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_LABEL"
+                       description="PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_DESC"
+                       validate="options"
+                       showon="fulltext!:metadesc"
+                >
+                    <option value="Note">PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_NOTE</option>
+                    <option value="Article">PLG_CONTENT_CONTENTACTIVITYPUB_OBJECT_TYPE_ARTICLE</option>
+                </field>
+
+                <field name="url"
+                       type="list"
+                       default="both"
+                       label="PLG_CONTENT_CONTENTACTIVITYPUB_URL_LABEL"
+                       description="PLG_CONTENT_CONTENTACTIVITYPUB_URL_DESC"
+               >
+                    <option value="none">PLG_CONTENT_CONTENTACTIVITYPUB_URL_NONE</option>
+                    <option value="url" >PLG_CONTENT_CONTENTACTIVITYPUB_URL_URL</option>
+                    <option value="link">PLG_CONTENT_CONTENTACTIVITYPUB_URL_LINK</option>
+                    <option value="both">PLG_CONTENT_CONTENTACTIVITYPUB_URL_BOTH</option>
+                </field>
+
+				<field name="images"
+					   type="radio"
+					   layout="joomla.form.field.radio.switcher"
+					   default="1"
+					   label="PLG_CONTENT_CONTENTACTIVITYPUB_IMAGES_LABEL"
+					   description="PLG_CONTENT_CONTENTACTIVITYPUB_IMAGES_DESC"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+
+                <field name="immediate_notification"
+                       type="radio"
+                       layout="joomla.form.field.radio.switcher"
+                       default="1"
+                       label="PLG_CONTENT_CONTENTACTIVITYPUB_IMMEDIATE_NOTIFICATION_LABEL"
+                       description="PLG_CONTENT_CONTENTACTIVITYPUB_IMMEDIATE_NOTIFICATION_DESC"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
+			</fieldset>
+        </fields>
+    </config>
+</extension>

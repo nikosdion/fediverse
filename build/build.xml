@@ -1,4 +1,10 @@
 <?xml version="1.0"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
 <project name="FediverseForJoomla" description="Fediverse for Joomla" default="git" >
 	<import file="${phing.dir}/../../buildfiles/phing/common.xml" />
 
@@ -13,9 +19,18 @@
 		<include name="script.fediverse.php" />
 	</fileset>
 
-	<target name="package-com" description="Builds the component">
-		<echo>This is a plugins and modules only solution.</echo>
-	</target>
+	<fileset dir="${dirs.component}" id="component">
+		<include name="api/**"/>
+		<include name="backend/**"/>
+		<include name="frontend/**"/>
+		<include name="*.xml"/>
+		<include name="*"/>
+
+		<exclude name="LICENSE.txt"/>
+		<exclude name="script.fediverse.php"/>
+
+		<exclude name="backend/activitypub.xml"/>
+	</fileset>
 
 	<target name="documentation" description="The documentation">
 		<echo message="The documentation can be found in the repository's Wiki on GitHub. This task is obsolete." />

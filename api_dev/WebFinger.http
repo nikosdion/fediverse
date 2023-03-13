@@ -1,0 +1,2 @@
+GET https://{{hostname}}/.well-known/webfinger?resource=acct:{{username}}@boot4.local.web
+User-Agent: ApiDevelopment/2.0

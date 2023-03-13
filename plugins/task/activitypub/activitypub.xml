@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<extension type="plugin" group="task" method="upgrade">
+    <name>PLG_TASK_ACTIVITYPUB</name>
+    <author>Nicholas K. Dionysopoulos</author>
+    <authorEmail>nicholas@dionysopoulos.me</authorEmail>
+    <authorUrl>https://www.dionysopoulos.me</authorUrl>
+    <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU General Public License version 3, or later</license>
+    <license>GNU GPL v3 or later</license>
+    <creationDate>2023-01-03</creationDate>
+    <version>2.0.0</version>
+    <description>PLG_TASK_ACTIVITYPUB_XML_DESCRIPTION</description>
+    <namespace path="src">Dionysopoulos\Plugin\Task\ActivityPub</namespace>
+
+    <files>
+        <folder>forms</folder>
+        <folder plugin="activitypub">services</folder>
+        <folder>src</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_task_activitypub.ini</language>
+        <language tag="en-GB">en-GB/plg_task_activitypub.sys.ini</language>
+    </languages>
+</extension>

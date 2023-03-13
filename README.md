@@ -1,33 +1,27 @@
 # Fediverse Tools for Joomla!
 
-**Joomla! extensions to integrate Mastodon with your site**
+**Joomla! extensions to integrate Mastodon and federate over ActivityPub in Joomla**
 
-Copyright (C) 2022  Nicholas K. Dionysopoulos
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received [a copy of the GNU General Public License](LICENSE)
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+[Documentation](docs/index.md) • [Downloads](https://github.com/nikosdion/fediverse/releases) • [Issues](https://github.com/nikosdion/fediverse/issues)
 
 ## About
 
-The extensions in this package help you integrate Mastodon with your site. Currently, the following extensions are included:
+This is a package of Joomla!™ extensions which allow you to integrate Mastodon and ActivityPub in meaningful ways with your Joomla! site.
 
-* [**Fediverse - Mastodon Feed** (Module)](docs/mod_fediversefeed.md). Displays the public Mastodon feed of a user. Supports media (images and videos), as well as content warnings on the entire toot or just each media item.
-* [**Content - Embed Toot** (Plugin)](docs/plg_content_fediverse.md). A plugin to embed toots in articles, Custom HTML modules, and third party extensions which support Joomla's standard content events.
+There are three levels of integration which can be used concurrently or independently of each other:
+* **Consume**. You can display Mastodon posts and streams on your site.
+* **Announce**. You can announce your Mastodon presence on your own site so that users who have your username and domain name can follow you on Mastodon, without having to explicitly tell them in advance your Mastodon handle.
+* **Publish**. You can publish your own site's content into the Fediverse. Any ActivityPub user (Mastodon, PeerTube, Pixelfed, Tumblr, …) can “follow” an account on your site and see your site's posts in their feed.
 
-## Accessibility matters
+Unlike other microblogging / social media integration extensions there is no privacy-invading JavaScript, no need for cookie banners, no centralised control of the published content. You are in full control of your content.
 
-I am taking accessibility very seriously into consideration when writing this software. I want my software to be as inclusive as humanly possible.
+## Copyright statement
 
-Unfortunately, I am not an accessibility expert. I do the best I can, using my understanding of often conflicting or possibly outdated information. I am also human and do make mistakes.
+Copyright (C) 2022-2023 Nicholas K. Dionysopoulos
 
-If you have found an accessibility issue you are affected by please do let me know. I will do my best to cater for you. Together, we can make the web a better place, one small software module at a time.
+This program is free software: you can redistribute it and/or modify  it under the terms of the GNU General Public License as published by  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received [a copy of the GNU General Public License](LICENSE) along with this program.  If not, see <https://www.gnu.org/licenses/>.
+

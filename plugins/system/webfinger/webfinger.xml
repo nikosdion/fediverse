@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<extension type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_WEBFINGER</name>
+    <author>Nicholas K. Dionysopoulos</author>
+    <authorEmail>nicholas@dionysopoulos.me</authorEmail>
+    <authorUrl>https://www.dionysopoulos.me</authorUrl>
+    <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
+    <license>GNU GPL v3 or later</license>
+    <creationDate>2022-12-18</creationDate>
+    <version>1.0.1</version>
+    <description>PLG_SYSTEM_WEBFINGER_XML_DESCRIPTION</description>
+    <namespace path="src">Dionysopoulos\Plugin\System\WebFinger</namespace>
+
+    <files>
+        <folder>forms</folder>
+        <folder>services</folder>
+        <folder plugin="webfinger">src</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_system_webfinger.ini</language>
+        <language tag="en-GB">en-GB/plg_system_webfinger.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+
+                <field name="user_mode"
+                       type="list"
+                       default="consent"
+                       label="PLG_SYSTEM_WEBFINGER_CONFIG_USER_MODE_LABEL"
+                       description="PLG_SYSTEM_WEBFINGER_CONFIG_USER_MODE_DESC"
+                       layout="joomla.form.field.radio.buttons"
+                       class="btn-group"
+                >
+                    <option class="btn btn-outline-danger" value="all">PLG_SYSTEM_WEBFINGER_CONFIG_USER_MODE_ALL</option>
+                    <option value="consent">PLG_SYSTEM_WEBFINGER_CONFIG_USER_MODE_CONSENT</option>
+                    <option class="btn btn-outline-success" value="none">PLG_SYSTEM_WEBFINGER_CONFIG_USER_MODE_NONE</option>
+                </field>
+
+                <field name="allow_groups"
+                       type="Usergrouplist"
+                       label="PLG_SYSTEM_WEBFINGER_CONFIG_ALLOW_GROUPS_LABEL"
+                       description="PLG_SYSTEM_WEBFINGER_CONFIG_ALLOW_GROUPS_DESC"
+                       checksuperusergroup="0"
+                       multiple="true"
+                       layout="joomla.form.field.list-fancy-select"
+                       default=""
+                       showon="user_mode:consent"
+                />
+
+                <field name="disallow_groups"
+                       type="Usergrouplist"
+                       label="PLG_SYSTEM_WEBFINGER_CONFIG_DISALLOW_GROUPS_LABEL"
+                       description="PLG_SYSTEM_WEBFINGER_CONFIG_DISALLOW_GROUPS_DESC"
+                       checksuperusergroup="0"
+                       multiple="true"
+                       layout="joomla.form.field.list-fancy-select"
+                       default=""
+                       showon="user_mode:consent"
+                />
+
+            </fieldset>
+        </fields>
+    </config>
+</extension>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<form addfieldprefix="Dionysopoulos\Component\ActivityPub\Administrator\Field">
+    <config>
+        <inlinehelp button="show"/>
+    </config>
+    <fieldset name="main"
+              label="JGLOBAL_FIELDSET_GLOBAL">
+        <field
+                name="id"
+                type="text"
+                label="JGLOBAL_FIELD_ID_LABEL"
+                default="0"
+                readonly="true"
+                class="readonly"
+        />
+
+        <field
+                name="user_id"
+                type="user"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_USER_ID_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_USER_ID_DESC"
+                default=""
+                validate="UserId"
+        />
+
+        <field
+                name="name"
+                type="text"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_NAME_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_NAME_DESC"
+                default=""
+                showon="user_id:0"
+        />
+
+        <field
+                name="username"
+                type="text"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_USERNAME_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_USERNAME_DESC"
+                default=""
+                showon="user_id:0"
+        />
+
+        <field
+                name="type"
+                type="list"
+                label="COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_DESC"
+                default="Person"
+                validate="options"
+        >
+            <option value="Person">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_PERSON</option>
+            <option value="Organization">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_ORGANIZATION</option>
+            <option value="Service">COM_ACTIVITYPUB_ACTOR_FIELD_TYPE_SERVICE</option>
+        </field>
+
+        <field name="created"
+               type="calendar"
+               label="JGLOBAL_CREATED_DATE"
+               translateformat="true"
+               showtime="true"
+               size="22"
+               filter="user_utc"
+        />
+
+        <field name="created_by"
+               type="user"
+               label="JGLOBAL_CREATED"
+               validate="UserId"
+               class="readonly"
+               readonly="true"
+        />
+
+    </fieldset>
+
+    <fieldset name="params"
+              label="JGLOBAL_FIELDSET_INTEGRATION">
+
+        <field name="activitypub_summary"
+               type="editor"
+               default=""
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_SUMMARY_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_SUMMARY_DESC"
+               cols="50"
+               rows="5"
+               filter="JComponentHelper::filterText"
+               buttons="false"
+        />
+
+        <field name="activitypub_icon_source"
+               type="list"
+               default="gravatar"
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_DESC"
+        >
+            <option value="none">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_NONE</option>
+            <option value="gravatar">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_GRAVATAR</option>
+            <option value="url">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_URL</option>
+            <option value="media">COM_ACTIVITYPUB_ACTOR_INTEGRATION_ICON_SOURCE_MEDIA</option>
+        </field>
+
+        <field name="activitypub_url"
+               type="url"
+               filter="url"
+               validate="url"
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_URL_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_URL_DESC"
+               showon="activitypub_icon_source:url"
+        />
+
+        <field name="activitypub_media"
+               type="media"
+               label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_MEDIA_LABEL"
+               description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_MEDIA_DESC"
+               showon="activitypub_icon_source:media"
+        />
+
+        <!-- TODO Separator -->
+
+        <field
+                name="content_enable"
+                type="radio"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ENABLE_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ENABLE_DESC"
+                default="1"
+                layout="joomla.form.field.radio.switcher"
+                filter="integer"
+        >
+            <option value="0">JNO</option>
+            <option value="1">JYES</option>
+        </field>
+
+        <field
+                name="content_note_filtered"
+                type="note"
+                class="alert alert-info w-100"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_FILTERED_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_FILTERED_DESC"
+                showon="content_enable:1[AND]user_id!:0"
+            />
+
+        <field
+                name="content_note_unfiltered"
+                type="note"
+                class="alert alert-warning w-100"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_UNFILTERED_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_NOTE_UNFILTERED_DESC"
+                showon="content_enable:1[AND]user_id:0"
+            />
+
+        <field
+                name="content_categories"
+                type="category"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_CATEGORIES_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_CATEGORIES_DESC"
+                extension="com_content"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                default=""
+                showon="content_enable:1"
+        />
+
+        <field
+                name="content_language"
+                type="languages"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_LANGUAGE_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_LANGUAGE_DESC"
+                client="site"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                showon="content_enable:1"
+        />
+
+        <field
+                name="content_accesslevel"
+                type="accesslevel"
+                label="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ACCESSLEVEL_LABEL"
+                description="COM_ACTIVITYPUB_ACTOR_INTEGRATION_CONTENT_ACCESSLEVEL_DESC"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                default="[1,5]"
+                showon="content_enable:1"
+        />
+
+    </fieldset>
+</form>

@@ -1,0 +1,27 @@
+GET https://{{hostname}}/api/v1/activitypub/actor/{{username}}
+User-Agent: ApiDevelopment/2.0
+Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"
+
+###
+
+GET https://{{hostname}}/api/v1/activitypub/outbox/{{username}}
+User-Agent: ApiDevelopment/2.0
+Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"
+
+###
+
+GET https://{{hostname}}/api/v1/activitypub/outbox/{{username}}?page=true
+User-Agent: ApiDevelopment/2.0
+Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"
+
+###
+
+POST https://{{hostname}}/api/v1/activitypub/outbox/{{username}}
+User-Agent: ApiDevelopment/2.0
+Accept: application/activity+json
+
+###
+
+GET https://{{hostname}}/api/v1/activitypub/object/{{username}}/{{object_id}}
+User-Agent: ApiDevelopment/2.0
+Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"

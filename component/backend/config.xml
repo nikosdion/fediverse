@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ @package   FediverseForJoomla
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
+  -->
+
+<config>
+    <inlinehelp button="show"/>
+
+    <fieldset
+            name="articles"
+            label="JGLOBAL_FIELDSET_GLOBAL"
+    >
+
+        <field
+                name="arbitrary_users"
+                type="list"
+                label="COM_ACTIVITYPUB_CONFIG_USERS_LABEL"
+                description="COM_ACTIVITYPUB_CONFIG_USERS_DESC"
+                default="0"
+        >
+            <option value="0">COM_ACTIVITYPUB_CONFIG_USERS_CONFIGURED</option>
+            <option value="1">COM_ACTIVITYPUB_CONFIG_USERS_ARBITRARY</option>
+        </field>
+
+        <field
+                name="allowed_groups"
+                type="Usergrouplist"
+                label="COM_ACTIVITYPUB_CONFIG_ALLOWED_GROUPS_LABEL"
+                description="COM_ACTIVITYPUB_CONFIG_ALLOWED_GROUPS_DESC"
+                checksuperusergroup="0"
+                multiple="true"
+                layout="joomla.form.field.list-fancy-select"
+                default="1"
+                showon="arbitrary_users:1"
+        />
+
+        <field
+                name="siteurl"
+                type="hidden"
+        />
+
+    </fieldset>
+</config>

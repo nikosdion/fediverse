@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   FediverseForJoomla
-  ~ @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
-  ~ @license   GNU General Public License, version 3
+  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
   -->
 
 <extension type="package" method="upgrade">
@@ -16,14 +16,26 @@
     <url>https://www.dionysopoulos.me</url>
     <packager>Nicholas K. Dionysopoulos</packager>
     <packagerurl>https://www.dionysopoulos.me</packagerurl>
-    <copyright>Copyright (c)2022 Nicholas K. Dionysopoulos</copyright>
+    <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
     <description>PKG_FEDIVERSE_XML_DESCRIPTION</description>
 
     <files>
+        <file type="component" id="com_activitypub">com_activitypub.zip</file>
+
         <file type="module" client="site" id="mod_fediversefeed">mod_fediversefeed.zip</file>
 
         <file type="plugin" group="content" id="fediverse">plg_content_fediverse.zip</file>
+        <file type="plugin" group="content" id="contentactivitypub">plg_content_contentactivitypub.zip</file>
+
+        <file type="plugin" group="system" id="webfinger">plg_system_webfinger.zip</file>
+
+        <file type="plugin" group="task" id="activitypub">plg_task_activitypub.zip</file>
+
+        <file type="plugin" group="webfinger" id="mastodon">plg_webfinger_mastodon.zip</file>
+        <file type="plugin" group="webfinger" id="activitypub">plg_webfinger_activitypub.zip</file>
+
+        <file type="plugin" group="webservices" id="activitypub">plg_webservices_activitypub.zip</file>
     </files>
 
     <languages folder="language">
@@ -34,6 +46,8 @@
     <scriptfile>script.fediverse.php</scriptfile>
 
     <updateservers>
-        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">https://raw.githubusercontent.com/nikosdion/fediverse/main/update/pkg_fediverse.xml</server>
+        <server type="extension" priority="1" name="Fediverse Tools for Joomla, Updates">
+            https://raw.githubusercontent.com/nikosdion/fediverse/main/update/pkg_fediverse.xml
+        </server>
     </updateservers>
 </extension>

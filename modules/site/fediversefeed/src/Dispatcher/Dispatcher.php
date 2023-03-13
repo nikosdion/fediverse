@@ -1,15 +1,16 @@
 <?php
-/*
+/**
  * @package   FediverseForJoomla
- * @copyright Copyright (c)2022 Nicholas K. Dionysopoulos
- * @license   GNU General Public License, version 3
+ * @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+ * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
-namespace Joomla\Module\FediverseFeed\Site\Dispatcher;
+namespace Dionysopoulos\Module\FediverseFeed\Site\Dispatcher;
 
+use Dionysopoulos\Module\FediverseFeed\Site\Service\AccountLoader;
+use Dionysopoulos\Module\FediverseFeed\Site\Service\TootStreamLoader;
 use Exception;
 use Joomla\CMS\Application\CMSApplication;
-use Joomla\CMS\Date\Date;
 use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
@@ -17,8 +18,6 @@ use Joomla\CMS\Http\Http;
 use Joomla\CMS\Http\HttpFactory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\WebAsset\WebAssetManager;
-use Joomla\Module\FediverseFeed\Site\Service\AccountLoader;
-use Joomla\Module\FediverseFeed\Site\Service\TootStreamLoader;
 use Joomla\Registry\Registry;
 
 class Dispatcher extends AbstractModuleDispatcher
@@ -229,7 +228,7 @@ class Dispatcher extends AbstractModuleDispatcher
 	{
 		if (is_string($referenceDateTime))
 		{
-			$referenceDateTime = Date::getInstance($referenceDateTime)->getTimestamp();
+			$referenceDateTime = (clone Factory::getDate($referenceDateTime))->getTimestamp();
 		}
 
 		$currentDateTime = time();
