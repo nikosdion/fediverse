@@ -187,6 +187,11 @@ class ActivityPub extends CMSPlugin implements SubscriberInterface
 		$path         = trim($path, '/');
 		$acceptHeader = $this->getApplication()->input->server->getString('HTTP_ACCEPT');
 
+		if (str_starts_with($path, 'index.php/'))
+		{
+			$path = substr($path, 10);
+		}
+
 		if (str_starts_with($path, 'v1/activitypub/') && $acceptHeader === null && $this->getApplication()->input->getMethod() === 'POST')
 		{
 			$this->getApplication()->input->server->set('HTTP_ACCEPT', 'application/activity+json');
