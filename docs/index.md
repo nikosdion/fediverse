@@ -56,7 +56,7 @@ _Tip_: See [which features are supported](features_displaying.md)
 WebFinger is an Internet protocol ([RFC 7033](https://www.rfc-editor.org/rfc/rfc7033)) which allows remote servers to query information about users on your site. You can use it to either publish information about your Mastodon presence (so you can be followed as `user@example.com` where example.com is _your Joomla site's domain name_, regardless of what your Mastodon handle is), or to let other ActivityPub / Mastodon users “follow” your site's content when used together with the ActivityPub component described in the next section.
 
 * [**System - WebFinger** (Plugin)](plg_system_webfinger.md). Implements the WebFinger protocol (RFC 7033) in Joomla.
-* [🚧 **WebFinger - Link to Mastodon** (Plugin) 🚧](plg_webfinger_mastodon.md). Add a link to your Mastodon identity in the WebFinger profile.
+* [**WebFinger - Link to Mastodon** (Plugin)](plg_webfinger_mastodon.md). Add a link to your Mastodon identity in the WebFinger profile.
 
 ### Federating your content
 
