@@ -12,8 +12,8 @@
     <authorUrl>https://www.dionysopoulos.me</authorUrl>
     <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
-    <creationDate>2022-12-18</creationDate>
-    <version>1.0.1</version>
+    <creationDate>2023-04-04</creationDate>
+    <version>2.0.0</version>
     <description>PLG_WEBSERVICES_ACTIVITYPUB_XML_DESCRIPTION</description>
     <namespace path="src">Dionysopoulos\Plugin\WebServices\ActivityPub</namespace>
 

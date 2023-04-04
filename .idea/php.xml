@@ -12,8 +12,6 @@
   <component name="PhpIncludePathManager">
     <include_path>
       <path value="$PROJECT_DIR$/../../master/joomla4" />
-      <path value="$PROJECT_DIR$/component/backend/vendor/composer" />
-      <path value="$PROJECT_DIR$/component/backend/vendor/kornrunner/blurhash" />
       <path value="$USER_HOME$/Sites/boot4/configuration.php" />
       <path value="/var/www/boot4/configuration.php" />
     </include_path>
