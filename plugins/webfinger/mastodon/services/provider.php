@@ -32,7 +32,7 @@ return new class implements ServiceProviderInterface {
 			function (Container $container) {
 				$pluginsParams = (array) PluginHelper::getPlugin(type: 'webfinger', plugin: 'mastodon');
 				$dispatcher    = $container->get(DispatcherInterface::class);
-				$plugin        = new Mastodon(subject: $dispatcher, config: $pluginsParams);
+				$plugin        = new Mastodon($dispatcher, $pluginsParams);
 
 				$plugin->setApplication(application: Factory::getApplication());
 				$plugin->setDatabase(db: $container->get(DatabaseDriver::class));

@@ -31,7 +31,7 @@ return new class implements ServiceProviderInterface {
 			function (Container $container) {
 				$pluginsParams = (array) PluginHelper::getPlugin(type: 'webservices', plugin: 'activitypub');
 				$dispatcher    = $container->get(DispatcherInterface::class);
-				$plugin        = new ActivityPub(subject: $dispatcher, config: $pluginsParams);
+				$plugin        = new ActivityPub($dispatcher, $pluginsParams);
 
 				$plugin->setApplication(application: Factory::getApplication());
 
