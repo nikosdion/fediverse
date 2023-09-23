@@ -39,7 +39,7 @@ use Joomla\CMS\Language\Text;
 		<div class="alert alert-warning">
 			<?= Text::sprintf(
 				'PLG_CONTENT_FEDIVERSE_ERR_UNSUPPORTED_MEDIA',
-				$attachment->type
+				is_string($attachment->type) ? $attachment->type : '(unknown)'
 			) ?>
 		</div>
 		<?php endif ?>

@@ -78,7 +78,7 @@ $webAssetManager->usePreset('mod_fediversefeed.media');
 				<div class="alert alert-warning">
 					<?= Text::sprintf(
 						'MOD_FEDIVERSEFEED_ERR_UNSUPPORTED_MEDIA',
-						$media->type
+						is_string($media->type) ? $media->type : '(unknown)'
 					) ?>
 				</div>
 			<?php endif; ?>

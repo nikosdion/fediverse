@@ -1,3 +1,7 @@
+Fediverse Tools for Joomla, version 2.0.2
+================================================================================
+# [HIGH] Some unsupported media types may break the display of toots (gh-12)
+
 Fediverse Tools for Joomla, version 2.0.1
 ================================================================================
 # [HIGH] Typo in module causes it to display nothing (gh-10)
