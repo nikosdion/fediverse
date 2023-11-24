@@ -7,6 +7,7 @@
 
 namespace Dionysopoulos\Plugin\Content\Fediverse\Service;
 
+use Joomla\Application\ApplicationInterface;
 use Joomla\CMS\Application\CMSApplication;
 use Joomla\CMS\Cache\CacheControllerFactoryInterface;
 use Joomla\CMS\Cache\Controller\CallbackController;
@@ -28,11 +29,11 @@ class TootLoader
 	 * @since   1.0.0
 	 */
 	public function __construct(
-		private Http           $http,
-		private CMSApplication $app,
-		private int            $cacheLifetime = 120,
-		private int            $requestTimeout = 5,
-		private bool           $useCaching = true,
+		private Http $http,
+		private ApplicationInterface $app,
+		private int $cacheLifetime = 120,
+		private int $requestTimeout = 5,
+		private bool $useCaching = true,
 	) {}
 
 	/**
@@ -58,19 +59,19 @@ class TootLoader
 		}
 
 		return $this->getCache()
-		            ->get(
-			            function ($url) {
-				            try
-				            {
-					            return $this->loadToot($url);
-				            }
-				            catch (\Exception $e)
-				            {
-					            return null;
-				            }
-			            },
-			            [$url]
-		            );
+			->get(
+				function ($url) {
+					try
+					{
+						return $this->loadToot($url);
+					}
+					catch (\Exception $e)
+					{
+						return null;
+					}
+				},
+				[$url]
+			);
 	}
 
 	/**
@@ -97,8 +98,8 @@ class TootLoader
 		];
 
 		return Factory::getContainer()
-		              ->get(CacheControllerFactoryInterface::class)
-		              ->createCacheController('callback', $options);
+			->get(CacheControllerFactoryInterface::class)
+			->createCacheController('callback', $options);
 	}
 
 	/**
