@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ @package   FediverseForJoomla
-  ~ @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+  ~ @copyright Copyright (c)2022-2024 Nicholas K. Dionysopoulos
   ~ @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
   -->
 
@@ -9,7 +9,7 @@
     <name>MOD_FEDIVERSEFEED</name>
     <author>Nicholas K. Dionysopoulos</author>
     <creationDate>2022-11-17</creationDate>
-    <copyright>Copyright (c)2022-2023 Nicholas K. Dionysopoulos</copyright>
+    <copyright>Copyright (c)2022-2024 Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
     <authorEmail>nicholas@dionysopoulos.me</authorEmail>
     <authorUrl>www.dionysopoulos.me</authorUrl>

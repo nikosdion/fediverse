@@ -17,7 +17,7 @@ Unlike other microblogging / social media integration extensions there is no pri
 
 ## Copyright statement
 
-Copyright (C) 2022-2023 Nicholas K. Dionysopoulos
+Copyright (C) 2022-2024 Nicholas K. Dionysopoulos
 
 This program is free software: you can redistribute it and/or modify  it under the terms of the GNU General Public License as published by  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

@@ -1,6 +1,6 @@
 /*
  * @package   FediverseForJoomla
- * @copyright Copyright (c)2022-2023 Nicholas K. Dionysopoulos
+ * @copyright Copyright (c)2022-2024 Nicholas K. Dionysopoulos
  * @license   https://opensource.org/licenses/GPL-3.0 GPL-3.0-or-later
  */
 
