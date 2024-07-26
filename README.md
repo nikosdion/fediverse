@@ -1,4 +1,6 @@
-# Fediverse Tools for Joomla!
+# Fediverse Tools for Joomla! (ARCHIVED)
+
+🚨🚨🚨 **This project is no longer maintained**. 🚨🚨🚨
 
 **Joomla! extensions to integrate Mastodon and federate over ActivityPub in Joomla**
 
